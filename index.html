@@ -541,7 +541,7 @@
   <script>
   (function(){
     // ===== Datos de configuración — KPIs reales (17-ago vs. semana anterior 10-ago) =====
-    const ciaKpis = [{"label":"Biomasa total activa","value":"1,084.8","unit":"t","delta":"+3.7% vs. semana anterior (GENERAL)","icon":"shrimp","color":"#00C9A7","bg":"rgba(0,201,167,.14)","tone":"good"},{"label":"Biomasa / Ha (kg) activa","value":"892","unit":"kg/ha","delta":"+5.8% vs. semana anterior (GENERAL)","icon":"biomassPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa total cosechada","value":"1,752.0","unit":"t","delta":"267 estanques cosechados · Ciclo 1 2026","icon":"harvestBiomass","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa cosechada / Ha","value":"1,401","unit":"kg/ha","delta":"1,250.85 ha cosechadas · SANTAFE, 4-H, OWEN 1, OWEN 2","icon":"harvestPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Costo / kg total","value":"60.77","unit":"MXN/kg","delta":"Directo $49.55 · Indirecto $11.22 · Ciclo 1 2026","icon":"dollarSign","color":"#F4A261","bg":"rgba(244,162,97,.14)","tone":"neutral"}];
+    const ciaKpis = [{"label":"Biomasa total activa","value":"1,084.8","unit":"t","delta":"+3.7% vs. semana anterior (GENERAL)","icon":"shrimp","color":"#00C9A7","bg":"rgba(0,201,167,.14)","tone":"good"},{"label":"Biomasa / Ha (kg) activa","value":"892","unit":"kg/ha","delta":"+5.8% vs. semana anterior (GENERAL)","icon":"biomassPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa total cosechada","value":"1,752.0","unit":"t","delta":"267 estanques cosechados · Ciclo 1 2026","icon":"harvestBiomass","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa cosechada / Ha","value":"1,445","unit":"kg/ha","delta":"1,250.85 ha cosechadas · SANTAFE, 4-H, OWEN 1, OWEN 2","icon":"harvestPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Costo / kg total","value":"60.77","unit":"MXN/kg","delta":"Directo $49.55 · Indirecto $11.22 · Ciclo 1 2026","icon":"dollarSign","color":"#F4A261","bg":"rgba(244,162,97,.14)","tone":"neutral"}];
     const ciaMeta = {"updated":"09 sep 2026","coverage":"260 estanques cosechados · 1,229.65 ha · SANTAFE, 4-H, OWEN 1, OWEN 2"};
 
     // key = mismo argumento que ya usa openReport(key) — no se toca la lógica existente
@@ -644,17 +644,23 @@
               if(wanted && r.SITIO !== wanted) return;
               const f = r['FECHA DE COSECHA'];
               if(!f) return;
-              if(!byDate[f]) byDate[f] = { bio:0, ha:0 };
+              if(!byDate[f]) byDate[f] = { bio:0, ha:0, perHaSum:0, n:0 };
               byDate[f].bio += Number(r.BIOMASA) || 0;
               byDate[f].ha += Number(r.HAS) || 0;
+              byDate[f].perHaSum += Number(r['BIOMASA X HECTAREA']) || 0;
+              byDate[f].n += 1;
             });
             const fechas = Object.keys(byDate).sort();
-            let accBio = 0, accHa = 0;
+            // "Biomasa cosechada / Ha" es el promedio simple de kg/ha por estanque
+            // cosechado (no biomasa total / ha total): un estanque resembrado y
+            // cosechado dos veces (2do ciclo) suma su hectarea otra vez en el total
+            // de hectareas, lo que diluye artificialmente el kg/ha si se usa suma/suma.
+            let accBio = 0, accPerHaSum = 0, accN = 0;
             const bioAcum = [], bioAcumDates = [], perHaAcum = [], perHaAcumDates = [];
             fechas.forEach(f=>{
-              accBio += byDate[f].bio; accHa += byDate[f].ha;
+              accBio += byDate[f].bio; accPerHaSum += byDate[f].perHaSum; accN += byDate[f].n;
               bioAcum.push(accBio/1000); bioAcumDates.push(f);
-              if(accHa>0){ perHaAcum.push(accBio/accHa); perHaAcumDates.push(f); }
+              if(accN>0){ perHaAcum.push(accPerHaSum/accN); perHaAcumDates.push(f); }
             });
             if(bioAcum.length >= 2) hist['Biomasa total cosechada'] = {values:bioAcum, dates:bioAcumDates};
             if(perHaAcum.length >= 2) hist['Biomasa cosechada / Ha'] = {values:perHaAcum, dates:perHaAcumDates};
@@ -1339,17 +1345,21 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     if(targetKey === 'cosechas_general'){
       const rawData = extractJSValue(text, 'RAW_DATA');
       if(Array.isArray(rawData)){
-        let bioKg = 0, ha = 0, estCount = 0;
+        let bioKg = 0, ha = 0, estCount = 0, perHaSum = 0;
         rawData.forEach(r=>{
           bioKg += Number(r.BIOMASA)||0;
           ha += Number(r.HAS)||0;
+          perHaSum += Number(r['BIOMASA X HECTAREA'])||0;
           estCount++;
         });
         if(bioKg > 0){
           const kBio = kpiByLabel['Biomasa total cosechada'];
           const kHa = kpiByLabel['Biomasa cosechada / Ha'];
           if(kBio){ kBio.value = fmtNum(bioKg/1000, 1); kBio.delta = estCount + ' estanques cosechados · Ciclo 1 2026'; }
-          if(kHa && ha > 0){ kHa.value = fmtNum(Math.round(bioKg/ha), 0); kHa.delta = fmtNum(ha,2) + ' ha cosechadas · SANTAFE, 4-H, OWEN 1, OWEN 2'; }
+          // Promedio simple de kg/ha por estanque (no biomasa total / ha total):
+          // con estanques resembrados y cosechados 2 veces (2do ciclo), sumar sus
+          // hectareas otra vez en el denominador diluye el numero hacia abajo.
+          if(kHa && estCount > 0){ kHa.value = fmtNum(Math.round(perHaSum/estCount), 0); kHa.delta = fmtNum(ha,2) + ' ha cosechadas · SANTAFE, 4-H, OWEN 1, OWEN 2'; }
           updated = true;
         }
       }
@@ -1557,6 +1567,17 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
       if(btn){ btn.disabled = false; btn.textContent = '📥 Descargar portal actualizado'; }
     }
   };
+  // Recalcula en vivo "Biomasa total cosechada" y "Biomasa cosechada / Ha" cada vez
+  // que se abre el portal, leyendo el reporte ya embebido en REPORTS_DATA — asi no
+  // hace falta re-subirlo manualmente desde el panel admin para que el numero grande
+  // de la tarjeta quede al dia.
+  try{
+    if(window.REPORTS_DATA && window.REPORTS_DATA['cosechas_general'] && typeof b64ToUtf8 === 'function'){
+      const liveUpdated = autoUpdateKpisFromUpload('cosechas_general', b64ToUtf8(window.REPORTS_DATA['cosechas_general']));
+      if(liveUpdated && window.renderKpis) window.renderKpis();
+    }
+  }catch(err){}
+
 })();
 </script>
 
