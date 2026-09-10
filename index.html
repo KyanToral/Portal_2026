@@ -639,11 +639,15 @@
             // Nombres de sitio distintos entre reportes ("SANTA FE" vs "SANTAFE").
             const siteMap = { 'SANTA FE':'SANTAFE', '4-H':'4-H', 'OWEN 1':'OWEN 1', 'OWEN 2':'OWEN 2' };
             const wanted = filter.site === 'TODOS' ? null : (siteMap[filter.site] || filter.site);
+            // Igual que en el recálculo del KPI: una fecha de cosecha programada a futuro
+            // (ej. Owen 1/2 con cosechas detenidas por ahora) todavía no cuenta como cosechada.
+            const hoyISO = new Date().toISOString().slice(0,10);
             const byDate = {};
             rawData.forEach(r=>{
               if(wanted && r.SITIO !== wanted) return;
               const f = r['FECHA DE COSECHA'];
               if(!f) return;
+              if(f > hoyISO) return;
               if(!byDate[f]) byDate[f] = { bio:0, ha:0, perHaSum:0, n:0 };
               byDate[f].bio += Number(r.BIOMASA) || 0;
               byDate[f].ha += Number(r.HAS) || 0;
@@ -984,16 +988,30 @@
     }
     function renderKpis(){
       const filter = window.ciaFilter;
+      // "Biomasa total cosechada" y "Biomasa cosechada / Ha" se alimentan del reporte de
+      // Cosechas General, NO del Resumen General por Sitio — así que el filtro "desde"
+      // (que se autorellena con la última fecha del Resumen General, ej. 07-sep) no les
+      // corresponde: solo las recortaba con una fecha ajena a su propia fuente de datos.
+      // Por eso estas dos tarjetas ignoran "desde" y solo respetan sitio/ciclo si el
+      // usuario los elige explícitamente.
+      const COSECHA_KPI_LABELS = ['Biomasa total cosechada', 'Biomasa cosechada / Ha'];
       const filterActive = filter.site!=='TODOS' || filter.ciclo!=='GENERAL' || filter.desde!=='TODO';
       const filterLabel = (filter.site==='TODOS'?'Todos los sitios':filter.site) + (filter.ciclo==='GENERAL'?'':(' · Ciclo '+filter.ciclo)) + (filter.desde==='TODO'?'':(' · al '+ciaFmtDate(filter.desde)));
+      const filterLabelSinFecha = (filter.site==='TODOS'?'Todos los sitios':filter.site) + (filter.ciclo==='GENERAL'?'':(' · Ciclo '+filter.ciclo));
       const hist = ciaBuildHistories(filter);
       let h = '';
       ciaKpis.forEach((k, idx)=>{
         const meta = ciaParseDelta(k);
         const chartColor = k.tone==='warn' ? '#FF6B6B' : CIA_CHART_PALETTE[idx % CIA_CHART_PALETTE.length];
         const isCosto = k.label === 'Costo / kg total';
+        const isCosechaKpi = COSECHA_KPI_LABELS.indexOf(k.label) !== -1;
+        const kpiFilterActive = isCosechaKpi ? (filter.site!=='TODOS' || filter.ciclo!=='GENERAL') : filterActive;
+        const kpiFilterLabel = isCosechaKpi ? filterLabelSinFecha : filterLabel;
         const rawSeries = isCosto ? null : hist[k.label];
-        const series = isCosto ? null : ciaApplyDesde(rawSeries, filter.desde);
+        // Para las tarjetas de cosecha usamos la serie completa (sin truncar por "desde"),
+        // así el punto más reciente del sparkline siempre es la última fecha real de cosecha
+        // en el reporte, y se actualiza solo cada vez que se reincrusta la tarjeta.
+        const series = isCosto ? null : (isCosechaKpi ? rawSeries : ciaApplyDesde(rawSeries, filter.desde));
         const dec = (k.value.split('.')[1] || '').length;
         let chart = ciaCardChart(series, chartColor, k.unit, dec);
         if(!chart && isCosto){
@@ -1003,12 +1021,12 @@
         // Si hay un filtro activo y sí hay serie filtrada, el valor grande refleja el filtro
         // en vez del total corporativo estático (para no mostrar un número que no corresponde).
         let bigValue = k.value, badgeHtml = '', sub2Html = meta.sub2 ? `<div class="cia-kpi-sub2">${meta.sub2}</div>` : '';
-        if(!isCosto && filterActive && series && series.values.length){
+        if(!isCosto && kpiFilterActive && series && series.values.length){
           const fmt = n => n.toLocaleString('es-MX', {minimumFractionDigits:dec, maximumFractionDigits:dec});
           bigValue = fmt(series.values[series.values.length-1]);
-          badgeHtml = `<div class="cia-kpi-sub" style="margin-bottom:8px">${filterLabel}</div>`;
-        } else if(!isCosto && filterActive && (!series || !series.values.length)){
-          badgeHtml = `<div class="cia-kpi-sub" style="margin-bottom:8px">${filterLabel} · sin datos</div>`;
+          badgeHtml = `<div class="cia-kpi-sub" style="margin-bottom:8px">${kpiFilterLabel}</div>`;
+        } else if(!isCosto && kpiFilterActive && (!series || !series.values.length)){
+          badgeHtml = `<div class="cia-kpi-sub" style="margin-bottom:8px">${kpiFilterLabel} · sin datos</div>`;
         } else {
           badgeHtml = meta.badge ? `<div class="cia-kpi-badgerow"><span class="cia-kpi-badge" style="background:${meta.badgeBg};color:${meta.badgeColor}">${meta.badgeIcon} ${meta.badge}</span>${meta.sub?`<span class="cia-kpi-sub">${meta.sub}</span>`:''}</div>` : (meta.sub?`<div class="cia-kpi-sub" style="margin-bottom:8px">${meta.sub}</div>`:'');
         }
@@ -1345,8 +1363,14 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     if(targetKey === 'cosechas_general'){
       const rawData = extractJSValue(text, 'RAW_DATA');
       if(Array.isArray(rawData)){
+        // Algunos estanques (sobre todo Owen 1 / Owen 2, con cosechas detenidas por ahora)
+        // aparecen en el reporte con una FECHA DE COSECHA programada a futuro que todavía
+        // no sucede. No deben sumar a "ya cosechado" hasta que esa fecha llegue.
+        const hoyISO = new Date().toISOString().slice(0,10);
         let bioKg = 0, ha = 0, estCount = 0, perHaSum = 0;
         rawData.forEach(r=>{
+          const f = r['FECHA DE COSECHA'];
+          if(f && f > hoyISO) return;
           bioKg += Number(r.BIOMASA)||0;
           ha += Number(r.HAS)||0;
           perHaSum += Number(r['BIOMASA X HECTAREA'])||0;
