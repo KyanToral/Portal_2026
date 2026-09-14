@@ -541,8 +541,8 @@
   <script>
   (function(){
     // ===== Datos de configuración — KPIs reales (17-ago vs. semana anterior 10-ago) =====
-    const ciaKpis = [{"label":"Biomasa total activa","value":"1,084.8","unit":"t","delta":"+3.7% vs. semana anterior (GENERAL)","icon":"shrimp","color":"#00C9A7","bg":"rgba(0,201,167,.14)","tone":"good"},{"label":"Biomasa / Ha (kg) activa","value":"892","unit":"kg/ha","delta":"+5.8% vs. semana anterior (GENERAL)","icon":"biomassPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa total cosechada","value":"1,798.0","unit":"t","delta":"276 estanques cosechados · Ciclo 1 2026","icon":"harvestBiomass","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa cosechada / Ha","value":"1,427","unit":"kg/ha","delta":"1,304.05 ha cosechadas · SANTAFE, 4-H, OWEN 1, OWEN 2","icon":"harvestPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Costo / kg total","value":"60.77","unit":"MXN/kg","delta":"Directo $49.55 · Indirecto $11.22 · Ciclo 1 2026","icon":"dollarSign","color":"#F4A261","bg":"rgba(244,162,97,.14)","tone":"neutral"}];
-    const ciaMeta = {"updated":"14 sep 2026","coverage":"260 estanques cosechados · 1,229.65 ha · SANTAFE, 4-H, OWEN 1, OWEN 2"};
+    const ciaKpis = [{"label":"Biomasa total activa","value":"1,084.8","unit":"t","delta":"+3.7% vs. semana anterior (GENERAL)","icon":"shrimp","color":"#00C9A7","bg":"rgba(0,201,167,.14)","tone":"good"},{"label":"Biomasa / Ha (kg) activa","value":"892","unit":"kg/ha","delta":"+5.8% vs. semana anterior (GENERAL)","icon":"biomassPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa total cosechada","value":"1,803.5","unit":"t","delta":"277 estanques cosechados · Ciclo 1 2026","icon":"harvestBiomass","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa cosechada / Ha","value":"1,425","unit":"kg/ha","delta":"1,309.95 ha cosechadas · SANTAFE, 4-H, OWEN 1, OWEN 2","icon":"harvestPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Costo / kg total","value":"60.77","unit":"MXN/kg","delta":"Directo $49.55 · Indirecto $11.22 · Ciclo 1 2026","icon":"dollarSign","color":"#F4A261","bg":"rgba(244,162,97,.14)","tone":"neutral"}];
+    const ciaMeta = {"updated":"14 sep 2026","coverage":"277 estanques cosechados · 1,309.95 ha · SANTAFE, 4-H, OWEN 1, OWEN 2"};
 
     // key = mismo argumento que ya usa openReport(key) — no se toca la lógica existente
     const ciaReports = [
@@ -639,15 +639,14 @@
             // Nombres de sitio distintos entre reportes ("SANTA FE" vs "SANTAFE").
             const siteMap = { 'SANTA FE':'SANTAFE', '4-H':'4-H', 'OWEN 1':'OWEN 1', 'OWEN 2':'OWEN 2' };
             const wanted = filter.site === 'TODOS' ? null : (siteMap[filter.site] || filter.site);
-            // Igual que en el recálculo del KPI: una fecha de cosecha programada a futuro
-            // (ej. Owen 1/2 con cosechas detenidas por ahora) todavía no cuenta como cosechada.
-            const hoyISO = new Date().toISOString().slice(0,10);
+            // Se cuenta todo lo que aparece en la tarjeta de cosechas (sin excluir
+            // fechas futuras), para que este KPI siempre coincida con el total real
+            // que muestra la tarjeta "Reporte de Cosechas General".
             const byDate = {};
             rawData.forEach(r=>{
               if(wanted && r.SITIO !== wanted) return;
               const f = r['FECHA DE COSECHA'];
               if(!f) return;
-              if(f > hoyISO) return;
               if(!byDate[f]) byDate[f] = { bio:0, ha:0, perHaSum:0, n:0 };
               byDate[f].bio += Number(r.BIOMASA) || 0;
               byDate[f].ha += Number(r.HAS) || 0;
@@ -1363,14 +1362,12 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     if(targetKey === 'cosechas_general'){
       const rawData = extractJSValue(text, 'RAW_DATA');
       if(Array.isArray(rawData)){
-        // Algunos estanques (sobre todo Owen 1 / Owen 2, con cosechas detenidas por ahora)
-        // aparecen en el reporte con una FECHA DE COSECHA programada a futuro que todavía
-        // no sucede. No deben sumar a "ya cosechado" hasta que esa fecha llegue.
-        const hoyISO = new Date().toISOString().slice(0,10);
+        // Se cuenta todo lo que aparece en la tarjeta de cosechas (sin excluir fechas
+        // futuras), para que este KPI siempre coincida con el total real de la tarjeta
+        // "Reporte de Cosechas General", sin importar cuándo se reemplace su archivo.
         let bioKg = 0, ha = 0, estCount = 0, perHaSum = 0;
         rawData.forEach(r=>{
           const f = r['FECHA DE COSECHA'];
-          if(f && f > hoyISO) return;
           bioKg += Number(r.BIOMASA)||0;
           ha += Number(r.HAS)||0;
           perHaSum += Number(r['BIOMASA X HECTAREA'])||0;
