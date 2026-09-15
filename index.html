@@ -1730,7 +1730,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
 <script>
 (function(){
   // >>> CONFIGURA AQUÍ la URL de tu Cloud Function una vez desplegada <<<
-  const IA_ENDPOINT = 'https://us-central1-cosechas-santa-fe.cloudfunctions.net/portalAssistant';
+  const IA_ENDPOINT = 'https://REGION-PROJECTID.cloudfunctions.net/portalAssistant';
 
   function iaAppend(role, text){
     const msgs = document.getElementById('ia-msgs');
@@ -1807,11 +1807,60 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
       if(raw) ctx.mapa_biomasa_santafe = raw;
     }
 
-    // Cosechas: histórico por estanque ya cosechado
+    // Cosechas: histórico por estanque ya cosechado (detalle individual, útil para
+    // identificar estanques específicos — no usar esto para promedios por sitio/ciclo,
+    // para eso está cosechas_resumen_por_sitio_ciclo más abajo, ya calculado correctamente).
     const cosechasTxt = decodeReport('cosechas_general');
+    let cosechasRaw = null;
     if(cosechasTxt){
-      const raw = localExtractJSValue(cosechasTxt, 'RAW_DATA');
-      if(raw) ctx.cosechas = raw;
+      cosechasRaw = localExtractJSValue(cosechasTxt, 'RAW_DATA');
+      if(cosechasRaw) ctx.cosechas = cosechasRaw;
+    }
+
+    // Resumen de cosechas PRECALCULADO por sitio y ciclo (y totales por sitio con
+    // ambos ciclos combinados). Se calcula aquí con aritmética normal, igual que las
+    // tarjetas de KPI del propio reporte, para que el asistente no tenga que promediar
+    // 277 registros por su cuenta (eso causaba errores de cálculo).
+    if(Array.isArray(cosechasRaw)){
+      function agregarGrupo(registros){
+        const n = registros.length;
+        const sum = (campo) => registros.reduce((acc,r)=> acc + (Number(r[campo]) || 0), 0);
+        const biomasaTotal = sum('BIOMASA');
+        const alimentoTotal = sum('ALIMENTO');
+        const hasTotal = sum('HAS');
+        const pesoKey = 'PESO              GR'; // nombre exacto de la columna en el Excel fuente
+        const wAvg = (campo) => biomasaTotal > 0
+          ? registros.reduce((acc,r)=> acc + (Number(r[campo])||0) * (Number(r['BIOMASA'])||0), 0) / biomasaTotal
+          : null;
+        return {
+          estanques_cosechados: n,
+          biomasa_total_kg: Math.round(biomasaTotal),
+          biomasa_kg_ha: hasTotal > 0 ? Math.round(biomasaTotal / hasTotal) : null,
+          alimento_total_kg: Math.round(alimentoTotal),
+          fca: biomasaTotal > 0 ? +(alimentoTotal / biomasaTotal).toFixed(3) : null,
+          sobrevivencia_pct: wAvg('SOB%') !== null ? +(wAvg('SOB%')*100).toFixed(1) : null,
+          dc_promedio: wAvg('D/C') !== null ? +wAvg('D/C').toFixed(1) : null,
+          peso_promedio_g: wAvg(pesoKey) !== null ? +wAvg(pesoKey).toFixed(2) : null,
+          crec_semanal_promedio: wAvg('CRES POR SEMANA') !== null ? +wAvg('CRES POR SEMANA').toFixed(3) : null
+        };
+      }
+      const bySitioCiclo = {};
+      const bySitioTotal = {};
+      cosechasRaw.forEach(r=>{
+        const sitio = r.SITIO || 'Sin sitio';
+        const ciclo = 'Ciclo ' + (r.CICLO != null ? r.CICLO : '?');
+        (bySitioCiclo[sitio] = bySitioCiclo[sitio] || {})[ciclo] = (bySitioCiclo[sitio][ciclo] || []).concat([r]);
+        (bySitioTotal[sitio] = bySitioTotal[sitio] || []).push(r);
+      });
+      const resumen = {};
+      Object.keys(bySitioCiclo).forEach(sitio=>{
+        resumen[sitio] = { por_ciclo: {}, total_ambos_ciclos: agregarGrupo(bySitioTotal[sitio]) };
+        Object.keys(bySitioCiclo[sitio]).forEach(ciclo=>{
+          resumen[sitio].por_ciclo[ciclo] = agregarGrupo(bySitioCiclo[sitio][ciclo]);
+        });
+      });
+      ctx.cosechas_resumen_por_sitio_ciclo = resumen;
+      ctx.cosechas_resumen_nota = 'FCA, sobrevivencia, DC, peso y crecimiento semanal aquí YA vienen calculados correctamente (ponderados por biomasa, igual que el dashboard). Úsalos siempre que te pregunten un promedio o agregado por sitio/ciclo — no los recalcules desde el array cosechas.';
     }
 
     // Costos: se manda un resumen agregado por sitio, NO los miles de renglones crudos
