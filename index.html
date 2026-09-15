@@ -1144,7 +1144,8 @@
     "resumen2026": { title: "Resumen General por Sitio 2026" },
     "mapa_biomasa": { title: "Mapa Biomasa kg/ha — Santa Fe" },
     "cosechas_general": { title: "Reporte de Cosechas General" },
-    "mapa_estanques_cosechados": { title: "Mapa de Estanques Cosechados" }
+    "mapa_estanques_cosechados": { title: "Mapa de Estanques Cosechados" },
+    "estanques_activos": { title: "Estanques Activos (Power BI)" }
   };
 
   function showSelector(user){
@@ -1446,7 +1447,95 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
       </div>`;
     }).join('');
     ADMIN_KEYS.forEach(k=>{ document.getElementById('target-'+k).value = k; });
+
+    // Fila extra: fuente de datos para el Asistente IA (no es una tarjeta visible del menú,
+    // solo alimenta el contexto que se envía al modelo). Acepta el export de Power BI
+    // "Estanques y Secciones" en .xlsx/.xls/.csv y lo guarda como JSON dentro de REPORTS_DATA.
+    const aiRow = document.createElement('div');
+    aiRow.className = 'admin-card-row';
+    aiRow.innerHTML = `
+      <div class="acr-info">
+        <div class="acr-title">Estanques Activos — datos para el Asistente IA</div>
+        <div class="acr-detect" id="detect-estanques_activos">Sube el export de Power BI "Estanques y Secciones" (.xlsx, .xls o .csv)</div>
+      </div>
+      <input type="file" accept=".xlsx,.xls,.csv" onchange="handleAdminXlsxFile(event)">
+      <button class="admin-apply-btn" id="apply-estanques_activos" disabled onclick="applyAdminXlsxFile()">Aplicar</button>
+    `;
+    wrap.appendChild(aiRow);
   }
+
+  // Carga perezosa de SheetJS (solo cuando el admin sube un .xlsx/.xls) — no se toca el <head>.
+  let xlsxLoadPromise = null;
+  function ensureXLSX(){
+    if(window.XLSX) return Promise.resolve();
+    if(xlsxLoadPromise) return xlsxLoadPromise;
+    xlsxLoadPromise = new Promise((resolve, reject)=>{
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s.onload = resolve;
+      s.onerror = () => reject(new Error('No se pudo cargar la librería de lectura de Excel.'));
+      document.head.appendChild(s);
+    });
+    return xlsxLoadPromise;
+  }
+
+  let pendingXlsx = null;
+  window.handleAdminXlsxFile = function(evt){
+    const file = evt.target.files[0];
+    if(!file) return;
+    const detectEl = document.getElementById('detect-estanques_activos');
+    const btn = document.getElementById('apply-estanques_activos');
+    detectEl.textContent = 'Leyendo ' + file.name + '...';
+    btn.disabled = true;
+    const finish = (rows) => {
+      pendingXlsx = { rows: rows, filename: file.name };
+      detectEl.textContent = '✓ ' + rows.length + ' estanques leídos de ' + file.name + ' (' + Object.keys(rows[0]||{}).length + ' columnas)';
+      detectEl.classList.add('match');
+      btn.disabled = false;
+      btn.textContent = 'Aplicar';
+      btn.classList.remove('done');
+    };
+    const fail = (err) => {
+      detectEl.textContent = 'Error leyendo el archivo: ' + err.message;
+      detectEl.classList.remove('match');
+    };
+    if(/\.csv$/i.test(file.name)){
+      const reader = new FileReader();
+      reader.onload = function(){
+        ensureXLSX().then(()=>{
+          const wb = XLSX.read(reader.result, {type:'string'});
+          const sheet = wb.Sheets[wb.SheetNames[0]];
+          finish(XLSX.utils.sheet_to_json(sheet, {defval:null}));
+        }).catch(fail);
+      };
+      reader.readAsText(file, 'UTF-8');
+    } else {
+      const reader = new FileReader();
+      reader.onload = function(){
+        ensureXLSX().then(()=>{
+          const wb = XLSX.read(new Uint8Array(reader.result), {type:'array'});
+          const sheet = wb.Sheets[wb.SheetNames[0]];
+          finish(XLSX.utils.sheet_to_json(sheet, {defval:null}));
+        }).catch(fail);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+  };
+
+  window.applyAdminXlsxFile = function(){
+    if(!pendingXlsx) return;
+    if(!window.REPORTS_DATA) window.REPORTS_DATA = {};
+    window.REPORTS_DATA['estanques_activos'] = utf8ToB64(JSON.stringify({
+      updated: new Date().toISOString(),
+      source: pendingXlsx.filename,
+      rows: pendingXlsx.rows
+    }));
+    const detectEl = document.getElementById('detect-estanques_activos');
+    const btn = document.getElementById('apply-estanques_activos');
+    detectEl.textContent += ' — aplicado. El Asistente IA ya puede usar estos ' + pendingXlsx.rows.length + ' estanques. Descarga el portal actualizado para dejarlo en GitHub.';
+    btn.textContent = '✓ Actualizado en vivo';
+    btn.classList.add('done');
+  };
 
   window.handleAdminFile = function(evt, rowKey){
     const file = evt.target.files[0];
@@ -1599,6 +1688,209 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     }
   }catch(err){}
 
+})();
+</script>
+
+<!-- ===================== Asistente IA (Centro de Inteligencia Acuícola) ===================== -->
+<style>
+  #ia-fab{position:fixed;right:24px;bottom:24px;width:58px;height:58px;border-radius:50%;
+    background:linear-gradient(135deg,#0EA5A5,#0B7285);color:#fff;border:none;cursor:pointer;
+    box-shadow:0 6px 20px rgba(11,114,133,.4);z-index:9998;display:flex;align-items:center;justify-content:center;font-size:26px;}
+  #ia-fab:hover{filter:brightness(1.08);}
+  #ia-panel{position:fixed;right:24px;bottom:94px;width:380px;max-width:92vw;height:560px;max-height:78vh;
+    background:#fff;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.25);z-index:9999;
+    display:none;flex-direction:column;overflow:hidden;font-family:inherit;}
+  #ia-panel.open{display:flex;}
+  #ia-head{background:linear-gradient(135deg,#0EA5A5,#0B7285);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;}
+  #ia-head strong{font-size:14.5px;}
+  #ia-head span{display:block;font-size:11px;opacity:.85;margin-top:2px;}
+  #ia-close{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;}
+  #ia-msgs{flex:1;overflow-y:auto;padding:14px;background:#F7F9FA;display:flex;flex-direction:column;gap:10px;}
+  .ia-msg{max-width:86%;padding:10px 12px;border-radius:12px;font-size:13.5px;line-height:1.45;white-space:pre-wrap;}
+  .ia-msg.user{align-self:flex-end;background:#0EA5A5;color:#fff;border-bottom-right-radius:3px;}
+  .ia-msg.bot{align-self:flex-start;background:#fff;color:#1f2937;border:1px solid #E5E7EB;border-bottom-left-radius:3px;}
+  .ia-msg.bot.loading{color:#6b7280;font-style:italic;}
+  #ia-inputrow{display:flex;gap:8px;padding:10px;border-top:1px solid #E5E7EB;background:#fff;}
+  #ia-input{flex:1;border:1px solid #E5E7EB;border-radius:10px;padding:9px 12px;font-size:13.5px;resize:none;font-family:inherit;}
+  #ia-send{background:#0B7285;color:#fff;border:none;border-radius:10px;padding:0 16px;cursor:pointer;font-size:13.5px;}
+  #ia-send:disabled{opacity:.5;cursor:default;}
+</style>
+<button id="ia-fab" onclick="window.iaOpen()" title="Asistente IA">💬</button>
+<div id="ia-panel">
+  <div id="ia-head">
+    <div><strong>Asistente de Producción</strong><span>Grupo Acuícola Santa Fe</span></div>
+    <button id="ia-close" onclick="window.iaClose()">✕</button>
+  </div>
+  <div id="ia-msgs"></div>
+  <div id="ia-inputrow">
+    <textarea id="ia-input" rows="1" placeholder="Ej. ¿Cuántos estanques hay de 14.5 a 16 g?"></textarea>
+    <button id="ia-send" onclick="window.iaSend()">Enviar</button>
+  </div>
+</div>
+<script>
+(function(){
+  // >>> CONFIGURA AQUÍ la URL de tu Cloud Function una vez desplegada <<<
+  const IA_ENDPOINT = 'https://us-central1-cosechas-santa-fe.cloudfunctions.net/portalAssistant';
+
+  function iaAppend(role, text){
+    const msgs = document.getElementById('ia-msgs');
+    const div = document.createElement('div');
+    div.className = 'ia-msg ' + role;
+    div.textContent = text;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+    return div;
+  }
+
+  window.iaOpen = function(){
+    const panel = document.getElementById('ia-panel');
+    panel.classList.add('open');
+    if(!panel.dataset.greeted){
+      iaAppend('bot', 'Hola, soy el asistente del Portal. Puedo responder sobre estanques activos, biometría, cosechas, biomasa y costos con los datos ya cargados en el Portal. ¿Qué necesitas saber?');
+      panel.dataset.greeted = '1';
+    }
+  };
+  window.iaClose = function(){ document.getElementById('ia-panel').classList.remove('open'); };
+
+  // Extrae de un reporte embebido (HTML en base64) un array/objeto declarado como
+  // "const VAR = [...]" o "const VAR = {...}", reutilizando extractJSValue del panel admin
+  // si está disponible en el scope global; si no, hace una copia mínima aquí.
+  function localExtractJSValue(text, varName){
+    const marker = 'const ' + varName + ' = ';
+    let idx = text.indexOf(marker);
+    if(idx === -1) return null;
+    let start = idx + marker.length;
+    while(start < text.length && /\s/.test(text[start])) start++;
+    const openChar = text[start];
+    const closeChar = openChar === '{' ? '}' : (openChar === '[' ? ']' : null);
+    if(!closeChar) return null;
+    let depth = 0, inStr = false, esc = false, i = start, end = -1;
+    for(; i < text.length; i++){
+      const c = text[i];
+      if(inStr){
+        if(esc){ esc = false; }
+        else if(c === '\\'){ esc = true; }
+        else if(c === '"'){ inStr = false; }
+      } else {
+        if(c === '"'){ inStr = true; }
+        else if(c === openChar){ depth++; }
+        else if(c === closeChar){ depth--; if(depth === 0){ end = i+1; break; } }
+      }
+    }
+    if(end === -1) return null;
+    try{ return Function('"use strict"; return (' + text.slice(start,end) + ')')(); }
+    catch(err){ return null; }
+  }
+
+  function decodeReport(key){
+    if(!(window.REPORTS_DATA && window.REPORTS_DATA[key])) return null;
+    try{ return b64ToUtf8(window.REPORTS_DATA[key]); }catch(err){ return null; }
+  }
+
+  // Arma el contexto que se manda al modelo. Se mantiene liviano: solo las tablas y KPIs
+  // que hacen falta para responder preguntas por estanque, no los reportes completos.
+  function buildContext(){
+    const ctx = { generado: new Date().toISOString() };
+
+    // Estanques activos (export de Power BI "Estanques y Secciones", subido desde el panel admin)
+    if(window.REPORTS_DATA && window.REPORTS_DATA['estanques_activos']){
+      try{
+        const parsed = JSON.parse(b64ToUtf8(window.REPORTS_DATA['estanques_activos']));
+        ctx.estanques_activos = parsed;
+      }catch(err){}
+    }
+
+    // Biometría por estanque, Mapa Biomasa (solo Santa Fe)
+    const mapaTxt = decodeReport('mapa_biomasa');
+    if(mapaTxt){
+      const raw = localExtractJSValue(mapaTxt, 'RAW_DATA') || localExtractJSValue(mapaTxt, 'ESTANQUES_DATA');
+      if(raw) ctx.mapa_biomasa_santafe = raw;
+    }
+
+    // Cosechas: histórico por estanque ya cosechado
+    const cosechasTxt = decodeReport('cosechas_general');
+    if(cosechasTxt){
+      const raw = localExtractJSValue(cosechasTxt, 'RAW_DATA');
+      if(raw) ctx.cosechas = raw;
+    }
+
+    // Costos: se manda un resumen agregado por sitio, NO los miles de renglones crudos
+    // (eso saturaría el contexto). Misma lógica que ya usa la tarjeta de KPIs corporativos.
+    const costosTxt = decodeReport('costos');
+    if(costosTxt){
+      const rawCostos = localExtractJSValue(costosTxt, 'RAW_DATA');
+      const kgCosechado = localExtractJSValue(costosTxt, 'KG_COSECHADO');
+      if(Array.isArray(rawCostos)){
+        const porSitio = {};
+        rawCostos.forEach(r=>{
+          const sitio = r.sitio || 'Sin sitio';
+          if(!porSitio[sitio]) porSitio[sitio] = { costo_directo: 0, costo_indirecto: 0 };
+          const imp = Number(r.importe) || 0;
+          if(r.tipo === 'Costo Directo') porSitio[sitio].costo_directo += imp;
+          else porSitio[sitio].costo_indirecto += imp;
+        });
+        Object.keys(porSitio).forEach(sitio=>{
+          const s = porSitio[sitio];
+          s.costo_total = s.costo_directo + s.costo_indirecto;
+          const kg = kgCosechado ? Number(kgCosechado[sitio]) || 0 : 0;
+          if(kg > 0) s.costo_por_kg = s.costo_total / kg;
+        });
+        ctx.costos_resumen_por_sitio = porSitio;
+        ctx.costos_nota = 'Importes acumulados de las semanas cargadas en la tarjeta de Costos (ciclo 1 2026). No incluye el detalle línea por línea, solo el agregado por sitio.';
+      }
+    }
+
+    // Biomasa/hectárea activa por sitio en la semana más reciente (mismo cálculo que
+    // usa la tarjeta "Resumen General por Sitio 2026" para sus KPIs corporativos).
+    const resumenTxt = decodeReport('resumen2026');
+    if(resumenTxt){
+      const datesData = localExtractJSValue(resumenTxt, 'DATES_DATA');
+      if(datesData){
+        const fechas = Object.keys(datesData).sort();
+        const last = fechas[fechas.length-1];
+        if(last && datesData[last] && datesData[last].sites){
+          ctx.biomasa_activa_por_sitio_ultima_semana = { fecha: last, sitios: datesData[last].sites };
+        }
+      }
+    }
+
+    // KPIs corporativos y meta del portal
+    if(window.ciaKpis) ctx.kpis_corporativos = window.ciaKpis;
+    if(window.ciaMeta) ctx.meta = window.ciaMeta;
+
+    return ctx;
+  }
+
+  window.iaSend = async function(){
+    const input = document.getElementById('ia-input');
+    const question = input.value.trim();
+    if(!question) return;
+    input.value = '';
+    iaAppend('user', question);
+    const loadingEl = iaAppend('bot loading', 'Consultando datos...');
+    document.getElementById('ia-send').disabled = true;
+
+    try{
+      const context = buildContext();
+      const res = await fetch(IA_ENDPOINT, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ question, context })
+      });
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      loadingEl.textContent = data.answer || 'No obtuve respuesta.';
+      loadingEl.classList.remove('loading');
+    }catch(err){
+      loadingEl.textContent = 'No se pudo consultar al asistente (' + err.message + '). Verifica que la Cloud Function esté desplegada y la URL configurada en IA_ENDPOINT.';
+      loadingEl.classList.remove('loading');
+    }
+    document.getElementById('ia-send').disabled = false;
+  };
+
+  document.getElementById('ia-input').addEventListener('keydown', function(e){
+    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); window.iaSend(); }
+  });
 })();
 </script>
 
