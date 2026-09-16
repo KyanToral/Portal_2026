@@ -401,6 +401,16 @@
   .admin-kpi-row, .admin-meta-row{ grid-template-columns:1fr; }
 }
 
+
+  #ia-messages{overflow-x:hidden!important}
+  .ia-msg,.ia-msg-col,.ia-bubble,.ia-rich{min-width:0!important;max-width:100%!important}
+  .ia-rich *{box-sizing:border-box}
+
+  .ia-summary-simple{width:auto;max-width:100%;border-collapse:collapse;margin-top:5px;font-size:8.8px}
+  .ia-summary-simple th{padding:3px 7px 3px 3px;text-align:left;color:#64788c;border-bottom:1px solid #dfe7ed;font-weight:700}
+  .ia-summary-simple td{padding:3px 7px 3px 3px;border-bottom:1px solid #edf2f5;color:#2f4659;text-align:left;white-space:nowrap}
+  .ia-summary-simple td:first-child{padding-right:14px}
+  .ia-summary-simple td:last-child{text-align:left;font-weight:700;color:#17384e;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1750,70 +1760,276 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
 })();
 </script>
 
-<!-- ===================== Asistente IA (Centro de Inteligencia Acuícola) ===================== -->
+<!-- ===================== Asistente IA v3 (Centro de Inteligencia Acuícola) ===================== -->
 <style>
-  #ia-fab{position:fixed;right:24px;bottom:24px;width:58px;height:58px;border-radius:50%;
-    background:linear-gradient(135deg,#0EA5A5,#0B7285);color:#fff;border:none;cursor:pointer;
-    box-shadow:0 6px 20px rgba(11,114,133,.4);z-index:9998;display:flex;align-items:center;justify-content:center;font-size:26px;}
-  #ia-fab:hover{filter:brightness(1.08);}
-  #ia-panel{position:fixed;right:24px;bottom:94px;width:380px;max-width:92vw;height:560px;max-height:78vh;
-    background:#fff;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.25);z-index:9999;
-    display:none;flex-direction:column;overflow:hidden;font-family:inherit;}
-  #ia-panel.open{display:flex;}
-  #ia-head{background:linear-gradient(135deg,#0EA5A5,#0B7285);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;}
-  #ia-head strong{font-size:14.5px;}
-  #ia-head span{display:block;font-size:11px;opacity:.85;margin-top:2px;}
-  #ia-close{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;}
-  #ia-msgs{flex:1;overflow-y:auto;padding:14px;background:#F7F9FA;display:flex;flex-direction:column;gap:10px;}
-  .ia-msg{max-width:86%;padding:10px 12px;border-radius:12px;font-size:13.5px;line-height:1.45;white-space:pre-wrap;}
-  .ia-msg.user{align-self:flex-end;background:#0EA5A5;color:#fff;border-bottom-right-radius:3px;}
-  .ia-msg.bot{align-self:flex-start;background:#fff;color:#1f2937;border:1px solid #E5E7EB;border-bottom-left-radius:3px;}
-  .ia-msg.bot.loading{color:#6b7280;font-style:italic;}
-  #ia-inputrow{display:flex;gap:8px;padding:10px;border-top:1px solid #E5E7EB;background:#fff;}
-  #ia-input{flex:1;border:1px solid #E5E7EB;border-radius:10px;padding:9px 12px;font-size:13.5px;resize:none;font-family:inherit;}
-  #ia-send{background:#0B7285;color:#fff;border:none;border-radius:10px;padding:0 16px;cursor:pointer;font-size:13.5px;}
-  #ia-send:disabled{opacity:.5;cursor:default;}
+  :root{
+    --ia-navy:#07182a;
+    --ia-navy-2:#0b233c;
+    --ia-teal:#0ea5a5;
+    --ia-teal-2:#0b7285;
+    --ia-cyan:#31c7c7;
+    --ia-gold:#e8b84b;
+    --ia-ink:#122033;
+    --ia-muted:#6f8195;
+    --ia-line:#dfe7ee;
+    --ia-soft:#f5f8fa;
+    --ia-ok:#18a66a;
+  }
+  #ia-fab{
+    position:fixed; right:26px; bottom:26px; width:64px; height:64px; border-radius:22px;
+    border:1px solid rgba(255,255,255,.18); cursor:pointer; z-index:9998; color:#fff;
+    background:linear-gradient(145deg,var(--ia-navy-2),var(--ia-teal-2));
+    box-shadow:0 16px 38px rgba(7,24,42,.34), inset 0 1px 0 rgba(255,255,255,.14);
+    display:flex; align-items:center; justify-content:center; transition:.22s ease;
+  }
+  #ia-fab:hover{ transform:translateY(-3px) scale(1.02); box-shadow:0 20px 44px rgba(7,24,42,.42); }
+  #ia-fab .ia-fab-core{ width:34px;height:34px;border-radius:12px;display:grid;place-items:center;
+    background:linear-gradient(145deg,var(--ia-cyan),var(--ia-teal-2));font-size:18px;font-weight:800; }
+  #ia-fab .ia-fab-dot{ position:absolute;right:7px;top:7px;width:10px;height:10px;border-radius:50%;
+    background:#52e39c;border:2px solid var(--ia-navy-2);box-shadow:0 0 0 3px rgba(82,227,156,.14); }
+
+  #ia-panel{
+    position:fixed; right:26px; bottom:102px; width:470px; max-width:calc(100vw - 24px);
+    height:680px; max-height:82vh; z-index:9999; display:none; flex-direction:column; overflow:hidden;
+    border-radius:24px; border:1px solid rgba(255,255,255,.55); background:#fff;
+    box-shadow:0 28px 80px rgba(6,20,35,.34); font-family:'Inter',sans-serif;
+  }
+  #ia-panel.open{display:flex; animation:iaPop .18s ease-out;}
+  @keyframes iaPop{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+
+  #ia-head{
+    padding:16px 17px 14px; color:#fff; display:flex; align-items:center; gap:12px;
+    background:
+      radial-gradient(circle at 85% -20%,rgba(49,199,199,.28),transparent 42%),
+      linear-gradient(135deg,var(--ia-navy),var(--ia-navy-2) 62%,#0d314b);
+    border-bottom:1px solid rgba(255,255,255,.09);
+  }
+  .ia-brandmark{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;flex:0 0 auto;
+    background:linear-gradient(145deg,var(--ia-cyan),var(--ia-teal-2));box-shadow:0 8px 22px rgba(14,165,165,.26);
+    font-weight:900;letter-spacing:-.5px;font-size:15px;}
+  .ia-headcopy{min-width:0;flex:1}
+  .ia-headcopy strong{display:block;font-size:14.5px;letter-spacing:.1px}
+  .ia-headcopy span{display:flex;align-items:center;gap:6px;font-size:11.2px;opacity:.82;margin-top:3px}
+  .ia-status-dot{width:7px;height:7px;border-radius:50%;background:#52e39c;box-shadow:0 0 0 3px rgba(82,227,156,.13)}
+  .ia-head-actions{display:flex;gap:6px}
+  .ia-icon-btn{width:32px;height:32px;border-radius:10px;border:1px solid rgba(255,255,255,.12);color:#fff;
+    background:rgba(255,255,255,.06);cursor:pointer;font-size:16px;display:grid;place-items:center}
+  .ia-icon-btn:hover{background:rgba(255,255,255,.12)}
+
+  #ia-intro{padding:14px 14px 10px;background:linear-gradient(180deg,#f8fbfc,#f4f8fa);border-bottom:1px solid var(--ia-line)}
+  .ia-intro-title{font-size:12px;font-weight:800;color:var(--ia-ink);margin-bottom:9px;display:flex;align-items:center;gap:7px}
+  .ia-chiprow{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+  .ia-chiprow::-webkit-scrollbar{display:none}
+  .ia-chip{white-space:nowrap;border:1px solid #d7e2e9;background:#fff;color:#284055;padding:7px 10px;border-radius:999px;
+    font-size:11.5px;cursor:pointer;transition:.16s ease;box-shadow:0 2px 8px rgba(25,55,76,.04)}
+  .ia-chip:hover{border-color:#9bd9d9;color:#075e68;background:#f7ffff;transform:translateY(-1px)}
+
+  #ia-msgs{flex:1;overflow-y:auto;padding:16px;background:#f4f7f9;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
+  .ia-msg-wrap{display:flex;gap:8px;align-items:flex-end;max-width:92%}
+  .ia-msg-wrap.user{align-self:flex-end;flex-direction:row-reverse}
+  .ia-avatar{width:27px;height:27px;border-radius:9px;display:grid;place-items:center;flex:0 0 auto;font-size:10px;font-weight:900}
+  .ia-msg-wrap.bot .ia-avatar{background:linear-gradient(145deg,var(--ia-navy-2),var(--ia-teal-2));color:#fff}
+  .ia-msg-wrap.user .ia-avatar{background:#dce9ef;color:#37566d}
+  .ia-msg{padding:11px 13px;border-radius:16px;font-size:13.3px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+  .ia-msg.user{background:linear-gradient(145deg,#0b8190,#0b7285);color:#fff;border-bottom-right-radius:5px;box-shadow:0 7px 17px rgba(11,114,133,.18)}
+  .ia-msg.bot{background:#fff;color:#203246;border:1px solid #e0e8ee;border-bottom-left-radius:5px;box-shadow:0 4px 14px rgba(28,55,74,.05)}
+  .ia-msg-meta{font-size:10px;color:#8998a7;margin-top:4px;padding:0 4px}
+  .ia-msg-wrap.user .ia-msg-meta{text-align:right}
+  .ia-msg.loading{color:#6c7d8e;font-style:normal;display:flex;align-items:center;gap:8px}
+  .ia-thinking{display:inline-flex;gap:4px;align-items:center}
+  .ia-thinking i{width:5px;height:5px;border-radius:50%;background:#0ea5a5;display:block;animation:iaBounce 1s infinite ease-in-out}
+  .ia-thinking i:nth-child(2){animation-delay:.12s}.ia-thinking i:nth-child(3){animation-delay:.24s}
+  @keyframes iaBounce{0%,70%,100%{transform:translateY(0);opacity:.35}35%{transform:translateY(-4px);opacity:1}}
+
+  /* v3: respuestas analíticas enriquecidas */
+  .ia-rich{margin-top:9px;border-top:1px solid #e7edf2;padding-top:10px}
+  .ia-kpi-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-bottom:9px}
+  .ia-kpi{background:#f7fafb;border:1px solid #e2eaf0;border-radius:11px;padding:8px 9px}
+  .ia-kpi b{display:block;color:#13283c;font-size:14px;line-height:1.15}
+  .ia-kpi span{display:block;color:#718297;font-size:9.8px;margin-top:3px;text-transform:uppercase;letter-spacing:.35px}
+  .ia-flag{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 7px;font-size:9.8px;font-weight:800;margin:2px 3px 2px 0}
+  .ia-flag.warn{background:#fff0ed;color:#b5473e}.ia-flag.ok{background:#eaf9f2;color:#0c7d50}.ia-flag.info{background:#eaf5f8;color:#176979}
+  .ia-mini-title{font-size:10.5px;font-weight:800;color:#31485d;margin:8px 0 5px}
+  .ia-bar-row{display:grid;grid-template-columns:72px 1fr 54px;gap:7px;align-items:center;margin:5px 0;font-size:9.8px;color:#536779}
+  .ia-bar-track{height:7px;border-radius:999px;background:#e6edf1;overflow:hidden}
+  .ia-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#0ea5a5,#0b7285)}
+  .ia-bar-fill.bad{background:linear-gradient(90deg,#f4a261,#e8615a)}
+  .ia-mini-table{width:100%;border-collapse:collapse;margin-top:5px;font-size:9.7px}
+  .ia-mini-table th{color:#718297;text-align:left;font-weight:700;padding:5px 4px;border-bottom:1px solid #dde6ec;white-space:nowrap}
+  .ia-mini-table td{color:#31485d;padding:5px 4px;border-bottom:1px solid #edf2f5;white-space:nowrap}
+  .ia-table-scroll{width:100%;overflow-x:auto;overscroll-behavior-inline:contain;padding-bottom:3px}
+  .ia-op-table{width:100%;min-width:660px;font-size:8.1px;table-layout:auto}
+  .ia-op-table th,.ia-op-table td{padding:3px 3px;text-align:center}
+  .ia-op-table th:first-child,.ia-op-table td:first-child,.ia-op-table th:nth-child(2),.ia-op-table td:nth-child(2){text-align:left}
+  .ia-rich{max-width:100%;width:100%;min-width:0;overflow:hidden;box-sizing:border-box}
+  .ia-table-scroll{display:block;max-width:100%;width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;box-sizing:border-box;-webkit-overflow-scrolling:touch}
+  .ia-local-note{font-size:9.3px;color:#8392a1;margin-top:6px;line-height:1.35}
+  #ia-messages,.ia-msg,.ia-msg-col,.ia-bubble{max-width:100%;min-width:0}
+  .ia-msg-col{overflow:hidden}
+
+  #ia-contextbar{padding:8px 13px;background:#fff;border-top:1px solid var(--ia-line);font-size:10.5px;color:#74879a;display:flex;justify-content:space-between;gap:10px}
+  #ia-contextbar strong{color:#3a5268;font-weight:700}
+
+  #ia-inputarea{padding:10px 11px 12px;background:#fff}
+  #ia-inputrow{display:flex;align-items:flex-end;gap:8px;padding:7px;border:1px solid #dbe4ea;border-radius:15px;background:#fbfcfd;box-shadow:inset 0 1px 0 #fff;transition:.16s ease}
+  #ia-inputrow:focus-within{border-color:#8fcfd3;box-shadow:0 0 0 3px rgba(14,165,165,.08)}
+  #ia-input{flex:1;min-height:38px;max-height:110px;border:none;outline:none;background:transparent;padding:9px 8px;font-size:13.2px;resize:none;font-family:inherit;color:#1e3044}
+  #ia-input::placeholder{color:#93a2b1}
+  #ia-send{height:40px;min-width:42px;border:none;border-radius:12px;background:linear-gradient(145deg,var(--ia-teal),var(--ia-teal-2));color:#fff;cursor:pointer;font-size:17px;font-weight:800;box-shadow:0 8px 18px rgba(14,165,165,.2)}
+  #ia-send:hover{filter:brightness(1.04)}
+  #ia-send:disabled{opacity:.48;cursor:default;box-shadow:none}
+  .ia-inputhint{font-size:10px;color:#9aa7b4;margin:6px 4px 0;text-align:center}
+
+  @media (max-width:640px){
+    #ia-panel{right:8px;bottom:8px;width:calc(100vw - 16px);height:calc(100vh - 16px);max-height:none;border-radius:20px}
+    #ia-fab{right:18px;bottom:18px}
+    #ia-intro{padding-top:11px}
+  }
 </style>
-<button id="ia-fab" onclick="window.iaOpen()" title="Asistente IA">💬</button>
-<div id="ia-panel">
+
+<button id="ia-fab" onclick="window.iaOpen()" title="Centro de Inteligencia Acuícola" aria-label="Abrir asistente de producción">
+  <span class="ia-fab-core">IA</span><span class="ia-fab-dot"></span>
+</button>
+
+<div id="ia-panel" aria-live="polite">
   <div id="ia-head">
-    <div><strong>Asistente de Producción</strong><span>Grupo Acuícola Santa Fe</span></div>
-    <button id="ia-close" onclick="window.iaClose()">✕</button>
+    <div class="ia-brandmark">CIA</div>
+    <div class="ia-headcopy">
+      <strong>Centro de Inteligencia Acuícola</strong>
+      <span><i class="ia-status-dot"></i> Asistente de producción · Santa Fe</span>
+    </div>
+    <div class="ia-head-actions">
+      <button class="ia-icon-btn" onclick="window.iaClear()" title="Nueva conversación">↻</button>
+      <button class="ia-icon-btn" onclick="window.iaClose()" title="Cerrar">✕</button>
+    </div>
   </div>
+
+  <div id="ia-intro">
+    <div class="ia-intro-title">⚡ Consultas rápidas</div>
+    <div class="ia-chiprow">
+      <button class="ia-chip" data-q="Dame el resumen actual de la producción activa, separado por sitio y por ciclo.">Resumen actual</button>
+      <button class="ia-chip" data-q="¿Qué estanques tienen el crecimiento más bajo y requieren atención?">Crecimiento bajo</button>
+      <button class="ia-chip" data-q="¿Qué estanques crecieron menos de 1.0 g esta semana?">Inc. &lt; 1 g</button>
+      <button class="ia-chip" data-q="¿Qué estanques crecieron entre 1.51 y 2.50 g/sem por sitio?">Inc. 1.51–2.50</button>
+      <button class="ia-chip" data-q="¿Qué estanques tienen FCA arriba de 1.50?">FCA &gt;1.50</button>
+      <button class="ia-chip" data-q="¿Qué estanques están arriba de 14 g por sitio?">Estanques ≥14 g</button>
+      <button class="ia-chip" data-q="¿Cuál es la biomasa activa por sitio y el total?">Biomasa activa</button>
+      <button class="ia-chip" data-q="¿Cuánta biomasa cosechada llevamos en total y por sitio?">Biomasa cosechada</button>
+      <button class="ia-chip" data-q="Dame un resumen de cosechas realizadas en total y por sitio.">Resumen cosechas</button>
+      <button class="ia-chip" data-q="¿Cuál es la programación de cosechas de esta semana por sitio?">Programa cosechas</button>
+      <button class="ia-chip" data-q="¿Cuánto alimento diario estamos dando en total y por sitio?">Alimento</button>
+      <button class="ia-chip" data-q="¿Cuáles son los costos acumulados en total y por sitio?">Costos</button>
+      <button class="ia-chip" data-q="¿Cuál es el crecimiento semanal actual general y por sitio?">Crecimiento</button>
+      <button class="ia-chip" data-q="Compara el rendimiento de los laboratorios con crecimiento, sobrevivencia y FCA semanal.">Laboratorios</button>
+      <button class="ia-chip" data-q="Dame el ranking general de estanques por desempeño actual.">Ranking estanques</button>
+      <button class="ia-chip" data-q="Proyecta el alimento necesario para la próxima semana si crecen 1.5 g/sem.">Alimento proyectado</button>
+      <button class="ia-chip" data-q="¿Cuántos estanques llegarán a 18 g en 2 semanas si crecen 1.5 g/sem?">Escenario cosecha</button>
+      <button class="ia-chip" data-q="Analiza los datos disponibles y señala riesgos operativos relevantes, explicando por qué.">Analizar riesgos</button>
+      <button class="ia-chip" data-q="Proyecta la talla de los estanques para la próxima semana suponiendo crecimiento de 1.5 g/sem.">Proyección +1.5 g</button>
+    </div>
+  </div>
+
   <div id="ia-msgs"></div>
-  <div id="ia-inputrow">
-    <textarea id="ia-input" rows="1" placeholder="Ej. ¿Cuántos estanques hay de 14.5 a 16 g?"></textarea>
-    <button id="ia-send" onclick="window.iaSend()">Enviar</button>
+
+  <div id="ia-contextbar">
+    <span><strong>Datos:</strong> portal cargado</span>
+    <span id="ia-context-date">Actualizando…</span>
+  </div>
+
+  <div id="ia-inputarea">
+    <div id="ia-inputrow">
+      <textarea id="ia-input" rows="1" placeholder="Pregunta por estanques, biomasa, cosechas, crecimiento o costos…"></textarea>
+      <button id="ia-send" onclick="window.iaSend()" title="Enviar">➜</button>
+    </div>
+    <div class="ia-inputhint">Enter para enviar · consultas exactas se calculan localmente · IA solo cuando hace falta</div>
   </div>
 </div>
+
 <script>
 (function(){
-  // >>> CONFIGURA AQUÍ la URL de tu Cloud Function una vez desplegada <<<
+  // Se conserva el mismo backend existente.
   const IA_ENDPOINT = 'https://us-central1-cosechas-santa-fe.cloudfunctions.net/portalAssistant';
+  const IA_MEMORY_KEY = 'cia_memory_v7';
+  const IA_HISTORY_KEY = 'cia_history_v7';
+  const IA_BUILD = 'V7.34 ESTABLE BLINDADA · trycatch regresión';
+  let iaHistory = [];
+  let iaMemory = {lastQuestion:'',lastResolvedQuestion:'',lastKind:'',lastSite:'',lastSection:'',lastThreshold:null,lastGrowth:null};
+  try{
+    const h=JSON.parse(localStorage.getItem(IA_HISTORY_KEY)||'[]');
+    if(Array.isArray(h)) iaHistory=h.slice(-24);
+    const m=JSON.parse(localStorage.getItem(IA_MEMORY_KEY)||'null');
+    if(m && typeof m==='object') iaMemory=Object.assign(iaMemory,m);
+  }catch(e){}
+  function iaSaveMemory(){
+    try{
+      localStorage.setItem(IA_HISTORY_KEY,JSON.stringify(iaHistory.slice(-24)));
+      localStorage.setItem(IA_MEMORY_KEY,JSON.stringify(iaMemory));
+    }catch(e){}
+  }
 
-  function iaAppend(role, text){
+  function iaTime(){
+    return new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  function iaAppend(role, text, opts){
+    opts = opts || {};
     const msgs = document.getElementById('ia-msgs');
+    const wrap = document.createElement('div');
+    wrap.className = 'ia-msg-wrap ' + role;
+
+    const av = document.createElement('div');
+    av.className = 'ia-avatar';
+    av.textContent = role === 'user' ? 'TÚ' : 'IA';
+
+    const col = document.createElement('div');
     const div = document.createElement('div');
-    div.className = 'ia-msg ' + role;
-    div.textContent = text;
-    msgs.appendChild(div);
+    div.className = 'ia-msg ' + role + (opts.loading ? ' loading' : '');
+    if(opts.loading){
+      div.innerHTML = '<span>Analizando producción</span><span class="ia-thinking"><i></i><i></i><i></i></span>';
+    }else{
+      div.textContent = text;
+    }
+    const meta = document.createElement('div');
+    meta.className = 'ia-msg-meta';
+    meta.textContent = opts.meta || iaTime();
+    col.appendChild(div); col.appendChild(meta);
+    wrap.appendChild(av); wrap.appendChild(col);
+    msgs.appendChild(wrap);
     msgs.scrollTop = msgs.scrollHeight;
-    return div;
+    return {wrap:wrap,bubble:div,meta:meta,col:col};
+  }
+
+  function iaWelcome(){
+    iaAppend('bot', 'Hola. Soy el Centro de Inteligencia Acuícola. Puedo consultar datos, programación de cosechas, laboratorios, rankings, biomasa, alimento, crecimiento, costos y proyecciones operativas sin usar IA cuando el dato ya existe en el portal. También recuerdo el contexto de la conversación para preguntas de seguimiento.', {meta:'Listo para analizar'});
+  }
+  function iaRestoreConversation(){
+    const msgs=document.getElementById('ia-msgs');
+    if(!msgs || msgs.dataset.restored) return;
+    msgs.dataset.restored='1';
+    if(!iaHistory.length){ iaWelcome(); return; }
+    iaHistory.slice(-12).forEach(m=>{
+      if(m && (m.role==='user'||m.role==='assistant') && m.content){
+        iaAppend(m.role==='assistant'?'bot':'user',m.content,{meta:'Memoria'});
+      }
+    });
   }
 
   window.iaOpen = function(){
     const panel = document.getElementById('ia-panel');
     panel.classList.add('open');
-    if(!panel.dataset.greeted){
-      iaAppend('bot', 'Hola, soy el asistente del Portal. Puedo responder sobre estanques activos, biometría, cosechas, biomasa y costos con los datos ya cargados en el Portal. ¿Qué necesitas saber?');
-      panel.dataset.greeted = '1';
-    }
+    if(!panel.dataset.greeted){ iaRestoreConversation(); panel.dataset.greeted='1'; }
+    setTimeout(()=>document.getElementById('ia-input').focus(),120);
   };
   window.iaClose = function(){ document.getElementById('ia-panel').classList.remove('open'); };
+  window.iaClear = function(){
+    document.getElementById('ia-msgs').innerHTML='';
+    document.getElementById('ia-msgs').dataset.restored='1';
+    iaHistory=[];
+    iaMemory={lastQuestion:'',lastResolvedQuestion:'',lastKind:'',lastSite:'',lastSection:'',lastThreshold:null,lastGrowth:null};
+    iaSaveMemory();
+    iaWelcome();
+  };
 
-  // Extrae de un reporte embebido (HTML en base64) un array/objeto declarado como
-  // "const VAR = [...]" o "const VAR = {...}", reutilizando extractJSValue del panel admin
-  // si está disponible en el scope global; si no, hace una copia mínima aquí.
   function localExtractJSValue(text, varName){
     const marker = 'const ' + varName + ' = ';
     let idx = text.indexOf(marker);
@@ -1846,50 +2062,36 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     try{ return b64ToUtf8(window.REPORTS_DATA[key]); }catch(err){ return null; }
   }
 
-  // Arma el contexto que se manda al modelo. Se mantiene liviano: solo las tablas y KPIs
-  // que hacen falta para responder preguntas por estanque, no los reportes completos.
   function buildContext(){
     const ctx = { generado: new Date().toISOString() };
 
-    // Estanques activos (export de Power BI "Estanques y Secciones", subido desde el panel admin)
-    // Se filtra automáticamente a la fecha más reciente ("Fecha de reporte"), por si el Excel
-    // trae varias semanas mezcladas — nunca queremos promediar o contar estanques de dos
-    // fechas distintas juntas.
     if(window.REPORTS_DATA && window.REPORTS_DATA['estanques_activos']){
       try{
         const parsed = JSON.parse(b64ToUtf8(window.REPORTS_DATA['estanques_activos']));
         let rows = parsed.rows || [];
         const fechaKey = 'fecha_reporte';
-        const fechasValidas = rows
-          .map(r => r[fechaKey])
-          .filter(v => v)
-          .map(v => new Date(v).getTime())
-          .filter(t => !isNaN(t));
+        const fechasValidas = rows.map(r => r[fechaKey]).filter(v => v).map(v => new Date(v).getTime()).filter(t => !isNaN(t));
         if(fechasValidas.length > 0){
           const maxFecha = Math.max(...fechasValidas);
           const antesDeFiltrar = rows.length;
-          rows = rows.filter(r => {
-            const t = new Date(r[fechaKey]).getTime();
-            return !isNaN(t) && t === maxFecha;
-          });
-          ctx.estanques_activos_nota = 'Filtrado automáticamente a la fecha más reciente disponible en el archivo (' +
-            new Date(maxFecha).toISOString().slice(0,10) + '). Se descartaron ' +
-            (antesDeFiltrar - rows.length) + ' registros de fechas anteriores.';
+          rows = rows.filter(r => { const t = new Date(r[fechaKey]).getTime(); return !isNaN(t) && t === maxFecha; });
+          ctx.estanques_activos_nota = 'Filtrado automáticamente a la fecha más reciente disponible en el archivo (' + new Date(maxFecha).toISOString().slice(0,10) + '). Se descartaron ' + (antesDeFiltrar - rows.length) + ' registros de fechas anteriores.';
+          ctx.fecha_estanques_activos = new Date(maxFecha).toISOString().slice(0,10);
         }
         ctx.estanques_activos = rows;
-      }catch(err){}
+      }catch(err){
+        console.error('[IA context] No se pudo interpretar estanques_activos',err);
+        ctx.estanques_activos=[];
+        ctx.error_estanques_activos=true;
+      }
     }
 
-    // Biometría por estanque, Mapa Biomasa (solo Santa Fe)
     const mapaTxt = decodeReport('mapa_biomasa');
     if(mapaTxt){
       const raw = localExtractJSValue(mapaTxt, 'RAW_DATA') || localExtractJSValue(mapaTxt, 'ESTANQUES_DATA');
       if(raw) ctx.mapa_biomasa_santafe = raw;
     }
 
-    // Cosechas: histórico por estanque ya cosechado (detalle individual, útil para
-    // identificar estanques específicos — no usar esto para promedios por sitio/ciclo,
-    // para eso está cosechas_resumen_por_sitio_ciclo más abajo, ya calculado correctamente).
     const cosechasTxt = decodeReport('cosechas_general');
     let cosechasRaw = null;
     if(cosechasTxt){
@@ -1897,10 +2099,6 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
       if(cosechasRaw) ctx.cosechas = cosechasRaw;
     }
 
-    // Resumen de cosechas PRECALCULADO por sitio y ciclo (y totales por sitio con
-    // ambos ciclos combinados). Se calcula aquí con aritmética normal, igual que las
-    // tarjetas de KPI del propio reporte, para que el asistente no tenga que promediar
-    // 277 registros por su cuenta (eso causaba errores de cálculo).
     if(Array.isArray(cosechasRaw)){
       function agregarGrupo(registros){
         const n = registros.length;
@@ -1908,24 +2106,22 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
         const biomasaTotal = sum('BIOMASA');
         const alimentoTotal = sum('ALIMENTO');
         const hasTotal = sum('HAS');
-        const pesoKey = 'PESO              GR'; // nombre exacto de la columna en el Excel fuente
-        const wAvg = (campo) => biomasaTotal > 0
-          ? registros.reduce((acc,r)=> acc + (Number(r[campo])||0) * (Number(r['BIOMASA'])||0), 0) / biomasaTotal
-          : null;
+        const pesoKey = 'PESO              GR';
+        const wAvg = (campo) => biomasaTotal > 0 ? registros.reduce((acc,r)=> acc + (Number(r[campo])||0) * (Number(r['BIOMASA'])||0), 0) / biomasaTotal : null;
         return {
-          estanques_cosechados: n,
-          biomasa_total_kg: Math.round(biomasaTotal),
-          biomasa_kg_ha: hasTotal > 0 ? Math.round(biomasaTotal / hasTotal) : null,
-          alimento_total_kg: Math.round(alimentoTotal),
-          fca: biomasaTotal > 0 ? +(alimentoTotal / biomasaTotal).toFixed(3) : null,
-          sobrevivencia_pct: wAvg('SOB%') !== null ? +(wAvg('SOB%')*100).toFixed(1) : null,
-          dc_promedio: wAvg('D/C') !== null ? +wAvg('D/C').toFixed(1) : null,
-          peso_promedio_g: wAvg(pesoKey) !== null ? +wAvg(pesoKey).toFixed(2) : null,
-          crec_semanal_promedio: wAvg('CRES POR SEMANA') !== null ? +wAvg('CRES POR SEMANA').toFixed(3) : null
+          estanques_cosechados:n,
+          hectareas_cosechadas:+hasTotal.toFixed(2),
+          biomasa_total_kg:Math.round(biomasaTotal),
+          biomasa_kg_ha:hasTotal > 0 ? Math.round(biomasaTotal / hasTotal) : null,
+          alimento_total_kg:Math.round(alimentoTotal),
+          fca:biomasaTotal > 0 ? +(alimentoTotal / biomasaTotal).toFixed(3) : null,
+          sobrevivencia_pct:wAvg('SOB%') !== null ? +(wAvg('SOB%')*100).toFixed(1) : null,
+          dc_promedio:wAvg('D/C') !== null ? +wAvg('D/C').toFixed(1) : null,
+          peso_promedio_g:wAvg(pesoKey) !== null ? +wAvg(pesoKey).toFixed(2) : null,
+          crec_semanal_promedio:wAvg('CRES POR SEMANA') !== null ? +wAvg('CRES POR SEMANA').toFixed(3) : null
         };
       }
-      const bySitioCiclo = {};
-      const bySitioTotal = {};
+      const bySitioCiclo = {}, bySitioTotal = {};
       cosechasRaw.forEach(r=>{
         const sitio = r.SITIO || 'Sin sitio';
         const ciclo = 'Ciclo ' + (r.CICLO != null ? r.CICLO : '?');
@@ -1934,26 +2130,24 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
       });
       const resumen = {};
       Object.keys(bySitioCiclo).forEach(sitio=>{
-        resumen[sitio] = { por_ciclo: {}, total_ambos_ciclos: agregarGrupo(bySitioTotal[sitio]) };
-        Object.keys(bySitioCiclo[sitio]).forEach(ciclo=>{
-          resumen[sitio].por_ciclo[ciclo] = agregarGrupo(bySitioCiclo[sitio][ciclo]);
-        });
+        resumen[sitio] = { por_ciclo:{}, total_ambos_ciclos:agregarGrupo(bySitioTotal[sitio]) };
+        Object.keys(bySitioCiclo[sitio]).forEach(ciclo=>{ resumen[sitio].por_ciclo[ciclo] = agregarGrupo(bySitioCiclo[sitio][ciclo]); });
       });
       ctx.cosechas_resumen_por_sitio_ciclo = resumen;
       ctx.cosechas_resumen_nota = 'FCA, sobrevivencia, DC, peso y crecimiento semanal aquí YA vienen calculados correctamente (ponderados por biomasa, igual que el dashboard). Úsalos siempre que te pregunten un promedio o agregado por sitio/ciclo — no los recalcules desde el array cosechas.';
     }
 
-    // Costos: se manda un resumen agregado por sitio, NO los miles de renglones crudos
-    // (eso saturaría el contexto). Misma lógica que ya usa la tarjeta de KPIs corporativos.
     const costosTxt = decodeReport('costos');
     if(costosTxt){
       const rawCostos = localExtractJSValue(costosTxt, 'RAW_DATA');
       const kgCosechado = localExtractJSValue(costosTxt, 'KG_COSECHADO');
+      const biomasaActivaCostos = localExtractJSValue(costosTxt, 'BIOMASA_ACTIVA');
+      const biomasaActivaFecha = localExtractJSValue(costosTxt, 'BIOMASA_ACTIVA_FECHA');
       if(Array.isArray(rawCostos)){
         const porSitio = {};
         rawCostos.forEach(r=>{
           const sitio = r.sitio || 'Sin sitio';
-          if(!porSitio[sitio]) porSitio[sitio] = { costo_directo: 0, costo_indirecto: 0 };
+          if(!porSitio[sitio]) porSitio[sitio] = { costo_directo:0, costo_indirecto:0 };
           const imp = Number(r.importe) || 0;
           if(r.tipo === 'Costo Directo') porSitio[sitio].costo_directo += imp;
           else porSitio[sitio].costo_indirecto += imp;
@@ -1961,65 +2155,2578 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
         Object.keys(porSitio).forEach(sitio=>{
           const s = porSitio[sitio];
           s.costo_total = s.costo_directo + s.costo_indirecto;
-          const kg = kgCosechado ? Number(kgCosechado[sitio]) || 0 : 0;
-          if(kg > 0) s.costo_por_kg = s.costo_total / kg;
+
+          // MISMA BASE QUE EL DASHBOARD DE COSTOS:
+          // biomasa general = biomasa activa + biomasa cosechada.
+          const kgC = kgCosechado ? Number(kgCosechado[sitio]) || 0 : 0;
+          const kgA = biomasaActivaCostos ? Number(biomasaActivaCostos[sitio]) || 0 : 0;
+          const kgGeneral = kgA + kgC;
+
+          s.biomasa_activa_kg = kgA;
+          s.biomasa_cosechada_kg = kgC;
+          s.biomasa_general_kg = kgGeneral;
+
+          if(kgGeneral > 0){
+            s.costo_por_kg = s.costo_total / kgGeneral;
+            s.costo_directo_por_kg = s.costo_directo / kgGeneral;
+            s.costo_indirecto_por_kg = s.costo_indirecto / kgGeneral;
+          }
         });
         ctx.costos_resumen_por_sitio = porSitio;
-        ctx.costos_nota = 'Importes acumulados de las semanas cargadas en la tarjeta de Costos (ciclo 1 2026). No incluye el detalle línea por línea, solo el agregado por sitio.';
+
+        // Resumen local de componentes de costo. Se agregan varias dimensiones
+        // para responder "alimento", "larva", "nómina", "diesel", productos,
+        // marcas, etc., sin incluir el detalle línea por línea en el contexto.
+        const costAgg = {};
+        const addCostAgg = (dimension,label,sitio,importe)=>{
+          const clean=String(label||'').trim();
+          if(!clean) return;
+          const key=dimension+'|'+clean;
+          const x=costAgg[key]||(costAgg[key]={dimension,label:clean,total:0,por_sitio:{}});
+          x.total += importe;
+          x.por_sitio[sitio]=(x.por_sitio[sitio]||0)+importe;
+        };
+        rawCostos.forEach(r=>{
+          const sitio=r.sitio||'Sin sitio';
+          const imp=Number(r.importe)||0;
+          addCostAgg('cuenta',r.cuenta,sitio,imp);
+          addCostAgg('subcuenta',r.subcuenta,sitio,imp);
+          addCostAgg('concepto',r.concepto,sitio,imp);
+          addCostAgg('producto',r.producto,sitio,imp);
+          addCostAgg('marca',r.marca,sitio,imp);
+        });
+        ctx.costos_componentes = Object.values(costAgg);
+
+        ctx.costos_biomasa_fecha = biomasaActivaFecha || null;
+        ctx.costos_nota = 'Costo/kg calculado igual que el dashboard de Costos: costo acumulado ÷ biomasa general (biomasa activa + biomasa cosechada a la fecha), por sitio. Los componentes de costo se consultan localmente por cuenta, subcuenta, concepto, producto o marca.';
       }
     }
 
-    // Biomasa/hectárea activa por sitio en la semana más reciente (mismo cálculo que
-    // usa la tarjeta "Resumen General por Sitio 2026" para sus KPIs corporativos).
     const resumenTxt = decodeReport('resumen2026');
     if(resumenTxt){
       const datesData = localExtractJSValue(resumenTxt, 'DATES_DATA');
       if(datesData){
-        const fechas = Object.keys(datesData).sort();
-        const last = fechas[fechas.length-1];
-        if(last && datesData[last] && datesData[last].sites){
-          ctx.biomasa_activa_por_sitio_ultima_semana = { fecha: last, sitios: datesData[last].sites };
+        const fechas = Object.keys(datesData).sort(); const last = fechas[fechas.length-1];
+        if(last && datesData[last] && datesData[last].sites){ ctx.biomasa_activa_por_sitio_ultima_semana = {fecha:last,sitios:datesData[last].sites}; }
+      }
+    }
+    if(window.ciaKpis) ctx.kpis_corporativos = window.ciaKpis;
+    if(window.ciaMeta) ctx.meta = window.ciaMeta;
+    ctx.analisis_local = iaBuildAnalytics(ctx);
+    ctx.instrucciones_analiticas = 'Usa analisis_local como capa calculada y confiable. Distingue desviación estadística de diagnóstico biológico. Para desviaciones, explica contra qué grupo se comparó y evita inventar causas. Si el usuario pide prioridades, cita estanque, sitio, sección y métricas observadas. Mantén continuidad usando history cuando esté disponible.';
+    return ctx;
+  }
+
+  // ==================== Motor analítico local v3 ====================
+  function iaNum(v){
+    if(v===null || v===undefined) return null;
+    if(typeof v==='string' && v.trim()==='') return null;
+    if(typeof v==='boolean') return null;
+    const n=Number(v);
+    return Number.isFinite(n)?n:null;
+  }
+  function iaMedian(arr){
+    const a=arr.filter(v=>Number.isFinite(v)).slice().sort((x,y)=>x-y); if(!a.length) return null;
+    const m=Math.floor(a.length/2); return a.length%2?a[m]:(a[m-1]+a[m])/2;
+  }
+  function iaQuantile(arr,q){
+    const a=arr.filter(v=>Number.isFinite(v)).slice().sort((x,y)=>x-y); if(!a.length) return null;
+    const pos=(a.length-1)*q, base=Math.floor(pos), rest=pos-base;
+    return a[base+1]!==undefined ? a[base]+rest*(a[base+1]-a[base]) : a[base];
+  }
+  function iaStats(arr){
+    const a=arr.filter(v=>Number.isFinite(v));
+    if(!a.length) return {n:0,median:null,q1:null,q3:null,iqr:null,low:null,high:null};
+    const q1=iaQuantile(a,.25), q3=iaQuantile(a,.75), iqr=(q3-q1);
+    return {n:a.length,median:iaMedian(a),q1:q1,q3:q3,iqr:iqr,low:q1-1.5*iqr,high:q3+1.5*iqr};
+  }
+  function iaFmt(n,d){ return Number.isFinite(n)?n.toLocaleString('es-MX',{minimumFractionDigits:d||0,maximumFractionDigits:d||0}):'—'; }
+  function iaFmtByField(key,value,withUnit=true){
+    if(value===null || value===undefined || value==='') return '—';
+    const n=Number(value);
+    if(!Number.isFinite(n)) return String(value);
+    const k=String(key||'').toLowerCase();
+
+    // Formato estándar del Centro de Inteligencia Acuícola
+    if(/fca|factor.*conversion|factor_de_conversion/.test(k))
+      return iaFmt(n,2);
+    if(/peso|talla/.test(k))
+      return iaFmt(n,1)+(withUnit?' g':'');
+    if(/alimento.*ha.*dia|alimento_kg_ha_dia/.test(k))
+      return iaFmt(n,1)+(withUnit?' kg/ha/día':'');
+    if(/biomasa.*ha|kg_ha|kg\/ha/.test(k))
+      return iaFmt(n,0)+(withUnit?' kg/ha':'');
+    if(/biomasa/.test(k))
+      return iaFmt(n,0)+(withUnit?' kg':'');
+    if(/sobreviv|superviv/.test(k))
+      return iaFmt(n,1)+(withUnit?'%':'');
+    if(/org_m2|densidad|c_m2|cam_m2/.test(k))
+      return iaFmt(n,1)+(withUnit?' org/m²':'');
+    if(/crec|incremento|inc_peso/.test(k))
+      return iaFmt(n,2)+(withUnit?' g/sem':'');
+    if(/\bhas\b|hectarea|hectareas/.test(k))
+      return iaFmt(n,1)+(withUnit?' ha':'');
+    if(/costo|importe|precio|venta|ingreso/.test(k))
+      return '$'+iaFmt(n,0);
+    if(/^(estanque|#est)$/.test(k))
+      return iaFmt(n,0);
+    if(/dc|dias_cultivo/.test(k))
+      return iaFmt(n,0);
+    if(/poblacion|organismos|camarones|estanques|cantidad|conteo|count/.test(k))
+      return iaFmt(n,0);
+    return iaFmt(n,2);
+  }
+  function iaPrettyFieldName(key){
+    const k=String(key||'');
+    const map={
+      fecha:'Fecha', sitio:'Sitio', ciclo:'Ciclo', seccion:'Sección', estanque:'#Est',
+      has:'Has/Sup', dc:'D/C',
+      org_m2_actual:'Cm/2 actual', densidad_actual:'Cm/2 actual',
+      sobrevivencia_pct:'Sob %', sobrevivencia_actual_pct:'Sob %',
+      peso_g:'Peso (g)', peso_actual_g:'Peso (g)', peso_proyectado_g:'Peso (g)',
+      incremento_semanal_g:'g/sem', inc_peso_semanal_g:'g/sem', crecimiento_g:'g/sem', crecimiento_ponderado_g:'g/sem', crec_semanal_promedio:'g/sem',
+      biomasa_kg:'Biomasa', biomasa_actual_kg:'Biomasa', biomasa_total_kg:'Biomasa', biomasa_proyectada_kg:'Biomasa',
+      biomasa_ha_actual_kg:'Biomasa kg/ha', biomasa_kg_ha:'Biomasa kg/ha',
+      alimento_kg_ha_dia:'Alim kg/ha', alimento_diario_kg:'Alimento diario', alimento_periodo_kg:'Alimento periodo',
+      fca:'F.C.A', fca_semanal:'F.C.A',
+      poblacion:'Población', poblacion_actual:'Población'
+    };
+    return map[k] || k.replaceAll('_',' ');
+  }
+
+  function iaBuildAnalytics(ctx){
+    const rows=Array.isArray(ctx.estanques_activos)?ctx.estanques_activos:[];
+    const out={metodo:'Desviaciones estadísticas por IQR (1.5× rango intercuartílico) dentro de cada sitio y ciclo.',fecha:ctx.fecha_estanques_activos||null,total_estanques:rows.length};
+    if(!rows.length) return out;
+
+    const groups={};
+    rows.forEach(r=>{
+      const key=(r.sitio||'SIN SITIO')+'|'+(r.ciclo??'?');
+      (groups[key]=groups[key]||[]).push(r);
+    });
+    const metrics={
+      crecimiento:'inc_peso_semanal_g',
+      fca_semanal:'fca_semanal',
+      sobrevivencia:'sobrevivencia_actual_pct',
+      biomasa_ha:'biomasa_ha_actual_kg'
+    };
+    const deviations=[];
+    Object.entries(groups).forEach(([key,g])=>{
+      const st={}; Object.entries(metrics).forEach(([name,k])=>st[name]=iaStats(g.map(r=>iaNum(r[k]))));
+      g.forEach(r=>{
+        const flags=[];
+        const grow=iaNum(r.inc_peso_semanal_g), fca=iaNum(r.fca_semanal), sob=iaNum(r.sobrevivencia_actual_pct), bha=iaNum(r.biomasa_ha_actual_kg);
+        if(st.crecimiento.n>=4 && grow!==null && grow<st.crecimiento.low) flags.push({tipo:'crecimiento_bajo',valor:grow,referencia:st.crecimiento.median});
+        if(st.fca_semanal.n>=4 && fca!==null && fca>st.fca_semanal.high) flags.push({tipo:'fca_semanal_alto',valor:fca,referencia:st.fca_semanal.median});
+        if(st.sobrevivencia.n>=4 && sob!==null && sob<st.sobrevivencia.low) flags.push({tipo:'sobrevivencia_baja',valor:sob,referencia:st.sobrevivencia.median});
+        if(st.biomasa_ha.n>=4 && bha!==null && (bha<st.biomasa_ha.low || bha>st.biomasa_ha.high)) flags.push({tipo:'biomasa_ha_atipica',valor:bha,referencia:st.biomasa_ha.median});
+        if(flags.length){
+          deviations.push({sitio:r.sitio,seccion:r.seccion,estanque:r.estanque,ciclo:r.ciclo,dc:r.dc,peso_actual_g:r.peso_actual_g,biomasa_actual_kg:r.biomasa_actual_kg,biomasa_ha_actual_kg:r.biomasa_ha_actual_kg,inc_peso_semanal_g:r.inc_peso_semanal_g,fca_semanal:r.fca_semanal,sobrevivencia_actual_pct:r.sobrevivencia_actual_pct,flags:flags,score:flags.length});
+        }
+      });
+    });
+    deviations.sort((a,b)=>b.score-a.score || (iaNum(a.inc_peso_semanal_g)||999)-(iaNum(b.inc_peso_semanal_g)||999));
+
+    const sum=(k)=>rows.reduce((a,r)=>a+(iaNum(r[k])||0),0);
+    const wavg=(valueKey,weightKey)=>{ const den=sum(weightKey); return den?rows.reduce((a,r)=>a+(iaNum(r[valueKey])||0)*(iaNum(r[weightKey])||0),0)/den:null; };
+    out.resumen={
+      biomasa_total_kg:sum('biomasa_actual_kg'),
+      hectareas_activas:sum('has'),
+      poblacion_actual:sum('poblacion_actual'),
+      peso_promedio_ponderado_g:wavg('peso_actual_g','biomasa_actual_kg'),
+      crecimiento_mediano_g:iaMedian(rows.map(r=>iaNum(r.inc_peso_semanal_g))),
+      sobrevivencia_mediana_pct:iaMedian(rows.map(r=>iaNum(r.sobrevivencia_actual_pct))),
+      fca_semanal_mediano:iaMedian(rows.map(r=>iaNum(r.fca_semanal))),
+      desviaciones_detectadas:deviations.length
+    };
+    out.desviaciones=deviations.slice(0,30);
+
+    const bySite={};
+    rows.forEach(r=>{ const s=r.sitio||'Sin sitio'; const o=bySite[s]=bySite[s]||{sitio:s,biomasa_kg:0,has:0,estanques:0,crecimientos:[]}; o.biomasa_kg+=iaNum(r.biomasa_actual_kg)||0; o.has+=iaNum(r.has)||0; o.estanques++; const g=iaNum(r.inc_peso_semanal_g); if(g!==null)o.crecimientos.push(g); });
+    out.por_sitio=Object.values(bySite).map(o=>({sitio:o.sitio,biomasa_kg:o.biomasa_kg,has:o.has,estanques:o.estanques,biomasa_ha_kg:o.has?o.biomasa_kg/o.has:null,crecimiento_mediano_g:iaMedian(o.crecimientos)}));
+    return out;
+  }
+
+  function iaQuestionMode(q){
+    const x=(q||'').toLowerCase();
+    if(/desvia|riesgo|alert|crecim|increment/.test(x)) return 'deviation';
+    if(/biomasa|tonel|kg\/ha|hect/.test(x)) return 'biomass';
+    if(/costo|precio|dinero|fca/.test(x)) return 'cost';
+    return 'overview';
+  }
+
+  function iaRenderRich(parent,ctx,question){
+    if(!parent) return;
+    const a=ctx.analisis_local||iaBuildAnalytics(ctx); const r=a.resumen||{}; const mode=iaQuestionMode(question);
+    const box=document.createElement('div'); box.className='ia-rich';
+    let html='<div class="ia-kpi-grid">';
+    html+='<div class="ia-kpi"><b>'+iaFmt((r.biomasa_total_kg||0)/1000,1)+' t</b><span>Biomasa activa</span></div>';
+    html+='<div class="ia-kpi"><b>'+iaFmt(a.total_estanques||0,0)+'</b><span>Estanques activos</span></div>';
+    html+='<div class="ia-kpi"><b>'+iaFmt(r.crecimiento_mediano_g,2)+' g</b><span>Mediana inc. semanal</span></div>';
+    html+='<div class="ia-kpi"><b>'+iaFmt(r.desviaciones_detectadas||0,0)+'</b><span>Con desviación estadística</span></div></div>';
+
+    if(mode==='deviation' && Array.isArray(a.desviaciones) && a.desviaciones.length){
+      html+='<div class="ia-mini-title">Estanques con mayor número de desviaciones</div><table class="ia-mini-table"><thead><tr><th>Est.</th><th>Sitio</th><th>Inc.</th><th>FCA sem.</th><th>Alertas</th></tr></thead><tbody>';
+      a.desviaciones.slice(0,6).forEach(d=>{ html+='<tr><td>'+String(d.estanque??'—')+'</td><td>'+String(d.sitio||'—')+'</td><td>'+iaFmt(iaNum(d.inc_peso_semanal_g),2)+'</td><td>'+iaFmt(iaNum(d.fca_semanal),2)+'</td><td>'+d.score+'</td></tr>'; });
+      html+='</tbody></table>';
+    } else if(mode==='cost' && ctx.costos_resumen_por_sitio){
+      const arr=Object.entries(ctx.costos_resumen_por_sitio).map(([sitio,v])=>({sitio,costo:iaNum(v.costo_total)||0,kg:iaNum(v.costo_por_kg)})).sort((x,y)=>y.costo-x.costo);
+      const max=Math.max(...arr.map(x=>x.costo),1); html+='<div class="ia-mini-title">Costo acumulado por sitio</div>';
+      arr.slice(0,6).forEach(x=>{ html+='<div class="ia-bar-row"><span>'+x.sitio+'</span><div class="ia-bar-track"><div class="ia-bar-fill" style="width:'+(x.costo/max*100).toFixed(1)+'%"></div></div><b>'+iaFmt(x.costo/1e6,2)+' M</b></div>'; });
+    } else {
+      const arr=(a.por_sitio||[]).slice().sort((x,y)=>y.biomasa_kg-x.biomasa_kg); const max=Math.max(...arr.map(x=>x.biomasa_kg),1);
+      html+='<div class="ia-mini-title">Biomasa activa por sitio</div>';
+      arr.slice(0,6).forEach(x=>{ html+='<div class="ia-bar-row"><span>'+x.sitio+'</span><div class="ia-bar-track"><div class="ia-bar-fill" style="width:'+(x.biomasa_kg/max*100).toFixed(1)+'%"></div></div><b>'+iaFmt(x.biomasa_kg/1000,1)+' t</b></div>'; });
+    }
+    html+='<div class="ia-local-note">Panel calculado localmente con los datos cargados en el portal. Las “desviaciones” son estadísticas frente a estanques del mismo sitio/ciclo; no sustituyen una evaluación técnica de campo.</div>';
+    box.innerHTML=html; parent.appendChild(box);
+  }
+
+  function iaLocalFallback(ctx,question){
+    const a=ctx.analisis_local||iaBuildAnalytics(ctx), r=a.resumen||{}; const mode=iaQuestionMode(question);
+    if(!a.total_estanques) return 'No encontré datos de estanques activos para hacer el análisis local.';
+    if(mode==='deviation'){
+      const top=(a.desviaciones||[]).slice(0,5).map(d=>'Estanque '+d.estanque+' ('+d.sitio+', '+d.seccion+'): '+d.flags.map(f=>f.tipo.replaceAll('_',' ')).join(', ')).join('\n');
+      return 'Análisis local: detecté '+(r.desviaciones_detectadas||0)+' estanques con al menos una desviación estadística frente a su grupo de sitio/ciclo.'+(top?'\n\nPrincipales casos:\n'+top:'');
+    }
+    return 'Resumen local: '+iaFmt(a.total_estanques,0)+' estanques activos, '+iaFmt((r.biomasa_total_kg||0)/1000,1)+' t de biomasa y crecimiento semanal mediano de '+iaFmt(r.crecimiento_mediano_g,2)+' g.';
+  }
+
+  function updateContextDate(ctx){
+    const el = document.getElementById('ia-context-date');
+    const date = ctx && (ctx.fecha_estanques_activos || (ctx.biomasa_activa_por_sitio_ultima_semana && ctx.biomasa_activa_por_sitio_ultima_semana.fecha));
+    el.textContent = date ? ('Corte: ' + date) : 'Datos disponibles del portal';
+  }
+
+
+  // ==================== Router local híbrido: ahorra llamadas a Haiku ====================
+  function iaNormText(s){
+    let n=String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+    // Normalizaciones de lenguaje común de granja.
+    n=n.replace(/\bsta\.?\s*fe\b/g,'santa fe')
+       .replace(/\bsobrev\b/g,'sobrevivencia')
+       .replace(/\bsob\s*%\b/g,'sobrevivencia')
+       .replace(/\binc\.?\s*sem(?:anal)?\b/g,'incremento semanal')
+       .replace(/\bcrec\.?\s*sem(?:anal)?\b/g,'crecimiento semanal')
+       .replace(/\balim\.?\s*kg\/ha\b/g,'alimento kg/ha')
+       .replace(/\bf\.?c\.?a\.?\b/g,'fca')
+       .replace(/\bcm\/?2\b/g,'c/m2')
+       .replace(/\borg\/?m2\b/g,'org/m2')
+       .replace(/\bkg por ha\b/g,'kg/ha')
+       .replace(/\bkilos por hectarea\b/g,'kg/ha')
+       .replace(/\bkilos por ha\b/g,'kg/ha')
+       .replace(/\bsegundo ciclo\b/g,'2do ciclo')
+       .replace(/\btercer ciclo\b/g,'3er ciclo')
+       .replace(/\bprimer ciclo\b/g,'1er ciclo');
+    return n;
+  }
+  function iaRows(ctx){
+    const rows=Array.isArray(ctx && ctx.estanques_activos) ? ctx.estanques_activos : [];
+    return rows.filter(r=>r && typeof r==='object' && !Array.isArray(r) && Object.keys(r).length>0);
+  }
+  function iaField(r,names){
+    for(const k of names){ if(r && r[k] !== undefined && r[k] !== null && r[k] !== '') return r[k]; }
+    return null;
+  }
+  function iaSiteFilterFromQuestion(q, rows){
+    const nq=iaNormText(q);
+    const sites=[...new Set(rows.map(r=>String(r.sitio||'').trim()).filter(Boolean))];
+
+    // Alias naturales ↔ nombres reales en los datos.
+    const aliases = {
+      'santa fe':['santafe','santa fe','sta fe','sta. fe'],
+      'owen 1':['owen 1','owen1'],
+      'owen 2':['owen 2','owen2'],
+      '4-h':['4-h','4 h','4h']
+    };
+
+    for(const [canon, forms] of Object.entries(aliases)){
+      if(forms.some(f=>nq.includes(iaNormText(f)))){
+        const hit=sites.find(s=>{
+          const ns=iaNormText(s).replace(/\s+/g,'');
+          return forms.some(f=>ns===iaNormText(f).replace(/\s+/g,''));
+        });
+        if(hit) return hit;
+      }
+    }
+
+    // Coincidencia normal para otros sitios.
+    const found=sites.find(s=>{
+      const ns=iaNormText(s);
+      return ns.length>=4 && nq.includes(ns);
+    });
+    return found || null;
+  }
+  function iaSectionFilterFromQuestion(q, rows){
+    const nq=iaNormText(q);
+    const secs=[...new Set(rows.map(r=>String(r.seccion||'').trim()).filter(Boolean))];
+
+    // Secciones de un solo carácter (A/B/C/D) SOLO se reconocen si el usuario
+    // escribe explícitamente "sección A", "seccion B", etc. Evita que la letra
+    // A dentro de "cuánta", por ejemplo, active accidentalmente la sección A.
+    for(const s of secs){
+      const ns=iaNormText(s);
+      if(ns.length===1){
+        const re=new RegExp('(?:seccion|sección|modulo|módulo)\\s+'+ns+'(?:\\b|$)','i');
+        if(re.test(nq)) return s;
+        continue;
+      }
+
+      // Códigos como A-1, B-2, D-1, MT: requieren límites de palabra/código.
+      const esc=ns.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+      const re=new RegExp('(?:^|\\s|,|;|:|\\(|\\[)'+esc+'(?=$|\\s|,|;|:|\\?|\\.|\\)|\\])','i');
+      if(re.test(nq) || nq.includes('seccion '+ns) || nq.includes('sección '+ns) || nq.includes('modulo '+ns) || nq.includes('módulo '+ns)) return s;
+    }
+    return null;
+  }
+  function iaCycleFilterFromQuestion(q){
+    const nq=iaNormText(q);
+    if(/(?:ciclo\s*1\b|1er\s*ciclo|primer\s*ciclo|primero\s*ciclo|ciclo\s*uno\b)/.test(nq)) return 1;
+    if(/(?:ciclo\s*2\b|2do\s*ciclo|2º\s*ciclo|segundo\s*ciclo|ciclo\s*dos\b)/.test(nq)) return 2;
+    if(/(?:ciclo\s*3\b|3er\s*ciclo|3ro\s*ciclo|3º\s*ciclo|tercer\s*ciclo|tercero\s*ciclo|ciclo\s*tres\b)/.test(nq)) return 3;
+    return null;
+  }
+
+  function iaCycleLabel(c){
+    const n=Number(c);
+    if(n===1) return '1er ciclo';
+    if(n===2) return '2do ciclo';
+    if(n===3) return '3er ciclo';
+    return 'Ciclo '+String(c);
+  }
+
+  function iaRowsByCycle(rows){
+    const by={};
+    rows.forEach(r=>{
+      const c=Number(r.ciclo);
+      if(!Number.isFinite(c)) return;
+      (by[c]=by[c]||[]).push(r);
+    });
+    return by;
+  }
+  function iaApplyFilters(rows,q){
+    const site=iaSiteFilterFromQuestion(q,rows), sec=iaSectionFilterFromQuestion(q,rows), ciclo=iaCycleFilterFromQuestion(q);
+    return rows.filter(r=>
+      (!site || String(r.sitio||'')===site) &&
+      (!sec || String(r.seccion||'')===sec) &&
+      (!ciclo || Number(r.ciclo)===ciclo)
+    );
+  }
+  function iaFilterDescription(q, rows){
+    const site=iaSiteFilterFromQuestion(q,rows), sec=iaSectionFilterFromQuestion(q,rows), ciclo=iaCycleFilterFromQuestion(q);
+    const parts=[];
+    if(site) parts.push(site==='SANTAFE'?'Santa Fe':site);
+    if(ciclo) parts.push(iaCycleLabel(ciclo));
+    if(sec) parts.push('Sección '+sec);
+    return parts.length?parts.join(' · '):'todos los sitios';
+  }
+
+  // ===== Motor unificado de métricas operativas actuales =====
+  function iaGroupModeFromQuestion(q){
+    const n=iaNormText(q);
+    const bySite=/(por sitio|por sitios|sitio o sitios|sitios o sitio|cada sitio|cada uno de los sitios|todos los sitios|sitio por sitio|separado por sitio|por separado por sitio|desglosado por sitio|dividido por sitio|comparado por sitio|comparar sitios|entre sitios|de cada sitio|por granja|cada granja|granja por granja|de cada granja)/.test(n);
+    const byCycle=iaWantsCycleBreakdown(q);
+    const bySection=/(por seccion|por sección|por secciones|cada seccion|cada sección|todas las secciones|seccion por seccion|por modulo|por módulo|por modulos|por módulos|cada modulo|cada módulo|todos los modulos|todos los módulos|modulo por modulo|separado por seccion|separado por modulo|desglosado por seccion|desglosado por modulo|de cada seccion|de cada modulo)/.test(n);
+    const byPond=/(por estanque|por estanques|cada estanque|todos los estanques|estanque por estanque|separado por estanque|desglosado por estanque|de cada estanque)/.test(n);
+
+    if(bySite && byCycle && bySection) return 'site_cycle_section';
+    if(bySite && byCycle) return 'site_cycle';
+    if(byCycle && bySection) return 'cycle_section';
+    if(byCycle) return 'cycle';
+    if(byPond && bySection && bySite) return 'site_section_pond';
+    if(byPond && bySection) return 'section_pond';
+    if(byPond && bySite) return 'site_pond';
+    if(bySite && bySection) return 'site_section';
+    if(byPond) return 'pond';
+    if(bySection) return 'section';
+    if(bySite) return 'site';
+    return 'none';
+  }
+
+  function iaHasBasicDataIntent(q){
+    const n=iaNormText(q);
+    return /(quiero saber|quiero conocer|quiero ver|quiero revisar|quiero checar|quiero consultar|quiero los datos|quiero el dato|quiero informacion|quiero información|necesito saber|necesito conocer|necesito ver|necesito revisar|necesito los datos|dame|dime|muestra|muestrame|mostrar|ensename|enseñame|mandame|mándame|pasame|pásame|sacame|sácame|reportame|repórtame|informame|infórmame|traeme|tráeme|buscame|búscame|consultame|consúltame|checame|chécame|revisame|revísame|ponme|suelta|informacion|información|informacion tecnica|información técnica|datos|dato|datos tecnicos|datos técnicos|detalle|detalles|ficha|resumen|resumen general|resumen tecnico|resumen técnico|cual es|cuál es|cuales son|cuáles son|cual fue|cuál fue|cuanto dio|cuánto dio|cuanto da|cuánto da|cuanto tenemos|cuánto tenemos|cuanto hay|cuánto hay|cuanto llevo|cuánto llevo|cuanto llevamos|cuánto llevamos|que llevamos|qué llevamos|que traemos|qué traemos|cuanto traemos|cuánto traemos|cuanto se tiro|cuánto se tiró|cuanto se esta tirando|cuánto se está tirando|que tenemos|qué tenemos|que hay|qué hay|que dato|qué dato|que trae|qué trae|que tiene|qué tiene|como va|cómo va|como vamos|cómo vamos|como viene|cómo viene|como salio|cómo salió|como estan|cómo están|como andan|cómo andan|como se ve|cómo se ve|estado de|resultado de|resultados de|numero de|número de|cantidad de|total de|acumulado de|promedio de|valor de|indicador de|kpi de|dame el dato|dame los datos|ver datos|consultar datos|revisar datos|datos de biometria|datos de biometría|datos de produccion|datos de producción|biometria|biometría)/.test(n);
+  }
+
+  // Lenguaje local soportado: sitio/sitios, general/por separado, crecimiento/g/sem,
+  // alimento kg/ha, solo Santa Fe, información técnica, datos, ciclos y resúmenes. "cómo va el 3er ciclo", "datos técnicos del segundo ciclo",
+  // "biometría activa de cada sitio", "cómo creció Santa Fe", "resumen de cada ciclo y granja".
+  function iaIsTechnicalProductionQuestion(q){
+    const n=iaNormText(q);
+    const asks=iaHasBasicDataIntent(q) || /(como va|cómo va|como estan|cómo están|como crecio|cómo creció|como crecieron|cómo crecieron|como viene|cómo viene)/.test(n);
+    const domain=/(produccion|producción|biomasa|biometria|biometría|datos tecnicos|datos técnicos|informacion tecnica|información técnica|resumen general|resumen tecnico|resumen técnico|cultivo|estanques activos|activo|activos|granja|granjas|ciclo|sitio|sitios|sitio o sitios|seccion|sección|modulo|módulo|hectareas|hectáreas|has\b)/.test(n);
+    return asks && domain;
+  }
+
+  function iaRequestedTechnicalMetrics(q){
+    const n=iaNormText(q);
+    const metrics=[];
+    if(/biomasa/.test(n)) metrics.push('biomasa');
+    if(/peso|talla/.test(n)) metrics.push('peso');
+    if(/crecimiento|incremento|g\/sem|crecio|creció|crecieron/.test(n)) metrics.push('crecimiento');
+    if(/sobrevivencia|supervivencia|sob\s*%/.test(n)) metrics.push('sobrevivencia');
+    if(/fca|factor de conversion/.test(n)) metrics.push('fca');
+    if(/cm\/2|c\/m2|org\/m2|densidad|organismos por metro|camarones por metro/.test(n)) metrics.push('densidad');
+    if(/alimento|alimentacion|alimentación|racion|ración|kg\/ha|se tiro|se tiró/.test(n)) metrics.push('alimento');
+    if(/hectareas|\bhas\b|superficie/.test(n)) metrics.push('has');
+    if(/poblacion|organismos actuales|camarones actuales/.test(n)) metrics.push('poblacion');
+    return [...new Set(metrics)];
+  }
+
+  function iaWantsCycleBreakdown(q){
+    const n=iaNormText(q);
+    return /(por ciclo|cada ciclo|cada uno de los ciclos|todos los ciclos|ciclo por ciclo|separado por ciclo|desglosado por ciclo|de cada ciclo|primer ciclo.*segundo ciclo|segundo ciclo.*tercer ciclo)/.test(n);
+  }
+
+  function iaWantsGeneralAndSeparated(q){
+    const n=iaNormText(q);
+    return /(general y por separado|general y separado|general o por separado|general o separado|general.*por sitio|general.*por ciclo|general.*por seccion|general.*por modulo|general.*por estanque|resumen general.*por sitio|resumen general.*por ciclo|por separado y general|separame los ciclos|sepárame los ciclos|separa los ciclos|por cada sitio por separado|cada sitio por separado|cada ciclo por separado)/.test(n);
+  }
+
+  function iaTechnicalSummaryLine(rows,label){
+    const s=iaOperationalSummary(rows);
+    if(!s) return null;
+    return {
+      label,
+      estanques:s.estanques,
+      has:s.has,
+      biomasa:s.biomasa_total_kg,
+      biomasaHa:s.biomasa_kg_ha,
+      densidad:s.org_m2_actual,
+      sob:s.sobrevivencia_pct,
+      peso:s.peso_actual_g,
+      crec:s.incremento_semanal_g,
+      alim:s.alimento_kg_ha_dia,
+      fca:s.fca
+    };
+  }
+
+  function iaTechnicalSummaryText(x){
+    if(!x) return '';
+    return '• '+x.label+': '+iaFmt(x.estanques,0)+' est. · '+iaFmt(x.has,1)+' ha · '
+      +iaFmt(x.biomasa/1000,1)+' t · '+iaFmt(x.biomasaHa,0)+' kg/ha · '
+      +iaFmt(x.peso,1)+' g · '+iaFmt(x.crec,2)+' g/sem · '
+      +iaFmt(x.sob,1)+'% sob · '+iaFmt(x.densidad,1)+' org/m² · '
+      +iaFmt(x.alim,1)+' kg/ha · FCA '+iaFmt(x.fca,2);
+  }
+
+  function iaTechnicalProductionAnswer(allRows,q){
+    const site=iaSiteFilterFromQuestion(q,allRows);
+    const sec=iaSectionFilterFromQuestion(q,allRows);
+    const cycle=iaCycleFilterFromQuestion(q);
+
+    let rows=iaApplyFilters(allRows,q);
+    if(!rows.length){
+      if(cycle){
+        return {
+          answer:'No encontré registros activos de '+iaCycleLabel(cycle)+(site?' en '+(site==='SANTAFE'?'Santa Fe':site):'')+' en el corte actual. Si ese ciclo todavía no está cargado en el Excel, aparecerá cuando se actualicen los datos. No se utilizó Haiku.',
+          kind:'technical_overview_no_data'
+        };
+      }
+      return {answer:'No encontré registros activos para los filtros solicitados. No se utilizó Haiku.',kind:'technical_overview_no_data'};
+    }
+
+    const general=iaTechnicalSummaryLine(rows,iaFilterDescription(q,allRows));
+    let answer='Resumen técnico · '+general.label+':\n'+iaTechnicalSummaryText(general);
+
+    const n=iaNormText(q);
+    const wantsGeneralSeparated=iaWantsGeneralAndSeparated(q);
+    const genericFarmRequest=!site && /(datos de la granja|datos tecnicos de la granja|informacion tecnica de la granja|resumen de la granja|como va la granja|como estan las granjas|datos de los sitios|datos de cada granja)/.test(n);
+    const wantsSite=/(por sitio|por sitios|sitio o sitios|cada sitio|todos los sitios|cada granja|por granja|cada granja|granja por granja|de cada sitio|de cada granja|separado por granja)/.test(n)
+      || (wantsGeneralSeparated && !site) || genericFarmRequest;
+    const wantsCycle=iaWantsCycleBreakdown(q) || (!cycle && /ciclo|ciclos/.test(n))
+      || (wantsGeneralSeparated && Object.keys(iaRowsByCycle(rows)).length>1);
+    const wantsSection=/(por seccion|por sección|cada seccion|cada sección|por modulo|por módulo|cada modulo|cada módulo|de cada seccion|de cada modulo)/.test(n);
+    const wantsPond=/(por estanque|cada estanque|estanque por estanque|de cada estanque)/.test(n);
+
+    if(wantsSite){
+      const by=iaGroupRowsBySite(rows);
+      answer+='\n\nPor sitio:\n'+Object.entries(by).map(([s,rr])=>{
+        const label=s==='SANTAFE'?'Santa Fe':s;
+        return iaTechnicalSummaryText(iaTechnicalSummaryLine(rr,label));
+      }).join('\n');
+    }
+
+    if(wantsCycle){
+      const by=iaRowsByCycle(rows);
+      const cycles=Object.keys(by).map(Number).sort((a,b)=>a-b);
+      if(cycles.length){
+        answer+='\n\nPor ciclo:\n'+cycles.map(c=>iaTechnicalSummaryText(iaTechnicalSummaryLine(by[c],iaCycleLabel(c)))).join('\n');
+      }
+    }
+
+    if(wantsSection){
+      const by={};
+      rows.forEach(r=>{
+        const k=String(r.seccion||'Sin sección');
+        (by[k]=by[k]||[]).push(r);
+      });
+      answer+='\n\nPor sección/módulo:\n'+Object.entries(by).map(([s,rr])=>iaTechnicalSummaryText(iaTechnicalSummaryLine(rr,'Sección '+s))).join('\n');
+    }
+
+    if(wantsPond){
+      answer+='\n\nPor estanque:\n'+rows.slice(0,60).map(r=>{
+        const x=iaOperationalRow(r);
+        return '• Est. '+x.estanque+' · '+x.sitio+' · '+x.seccion+' · '
+          +iaFmt(x.peso_actual_g,1)+' g · '+iaFmt(x.incremento_semanal_g,2)+' g/sem · '
+          +iaFmt(x.sobrevivencia_pct,1)+'% sob · '+iaFmt(x.biomasa_kg_ha,0)+' kg/ha · FCA '+iaFmt(x.fca,2);
+      }).join('\n');
+    }
+
+    return {
+      answer,
+      kind:'technical_overview',
+      data:{table:iaOperationalTable(rows,100),summary:iaOperationalSummary(rows)}
+    };
+  }
+
+  function iaIsGenericOperationalDataQuestion(q){
+    const n=iaNormText(q);
+    const wantsData=iaHasBasicDataIntent(q) || /(como va|cómo va|como estan|cómo están|como viene|cómo viene)/.test(n);
+    const scope=/(estanque|estanques|sitio|sitios|granja|granjas|santa fe|santafe|owen|4-h|seccion|sección|secciones|modulo|módulo|modulos|módulos|\bmt\b|ciclo|ciclos|primer ciclo|segundo ciclo|tercer ciclo|1er ciclo|2do ciclo|3er ciclo|general|produccion|producción|cultivo|cultivos|activos?|biometria|biometría|biometrias|biometrías|operacion|operación|indicadores|kpis?|datos tecnicos|datos técnicos)/.test(n);
+    return wantsData && scope;
+  }
+
+  function iaIsDescriptiveExplanationQuestion(q){
+    const n=iaNormText(q);
+    return /(explica|explicame|explícame|interpretame|descríbeme|describeme)/.test(n)
+      && /(datos|estanque|estanques|seccion|sección|modulo|módulo|sitio|ciclo|produccion|producción)/.test(n)
+      && !/(por que|porque|causa|causas|diagnost|recomienda|que harias|riesgo|correlacion|relaciona)/.test(n);
+  }
+
+  function iaGenericOperationalAnswer(allRows,q){
+    const site=iaSiteFilterFromQuestion(q,allRows);
+    const sec=iaSectionFilterFromQuestion(q,allRows);
+    const ciclo=iaCycleFilterFromQuestion(q);
+    let rows=iaApplyFilters(allRows,q);
+    const scope=iaFilterDescription(q,allRows);
+    const requestedCount=iaRequestedPondCount(q);
+
+    if(requestedCount && requestedCount>0) rows=rows.slice(0,requestedCount);
+
+    if(!rows.length){
+      const explicitCycle=iaCycleFilterFromQuestion(q);
+      if(explicitCycle){
+        return {
+          answer:'No encontré estanques activos de '+iaCycleLabel(explicitCycle)+' para '+(site?(site==='SANTAFE'?'Santa Fe':site):'el filtro solicitado')+' en el corte actual. Esto puede significar que ese ciclo todavía no está cargado en el Excel o que ya no tiene estanques activos. No se utilizó Haiku.',
+          kind:'pond_group_no_match'
+        };
+      }
+      return {answer:'No encontré estanques activos para '+scope+' en el corte actual. No se utilizó Haiku.',kind:'pond_group_no_match'};
+    }
+
+    const summary=iaOperationalSummary(rows);
+    const cycles=iaRowsByCycle(rows);
+    const cycleNums=Object.keys(cycles).map(Number).sort((a,b)=>a-b);
+
+    let answer='Datos operativos de '+scope+': '+rows.length+' estanque(s), '+iaFmt(summary.has,1)+' ha y '+iaFmt(summary.biomasa_total_kg/1000,1)+' t de biomasa.';
+
+    // If user did not specify a cycle and the selected scope contains multiple cycles,
+    // never hide the distinction: show each cycle independently.
+    if(!ciclo && cycleNums.length>1){
+      answer+='\n\nPor ciclo:\n'+cycleNums.map(c=>{
+        const s=iaOperationalSummary(cycles[c]);
+        return '• '+iaCycleLabel(c)+': '+iaFmt(s.estanques,0)+' estanques · '+iaFmt(s.has,1)+' ha · '+iaFmt(s.biomasa_total_kg/1000,1)+' t · peso '+iaFmt(s.peso_actual_g,1)+' g · crecimiento '+iaFmt(s.incremento_semanal_g,2)+' g/sem · sob '+iaFmt(s.sobrevivencia_pct,1)+'% · FCA '+iaFmt(s.fca,2);
+      }).join('\n');
+      answer+='\n\nLos datos no se mezclaron entre ciclos.';
+    }
+
+    if(iaIsDescriptiveExplanationQuestion(q)){
+      answer+='\n\nLectura descriptiva: peso promedio '+iaFmt(summary.peso_actual_g,1)+' g, crecimiento '+iaFmt(summary.incremento_semanal_g,2)+' g/sem, sobrevivencia '+iaFmt(summary.sobrevivencia_pct,1)+'%, '+iaFmt(summary.org_m2_actual,1)+' org/m², alimento '+iaFmt(summary.alimento_kg_ha_dia,1)+' kg/ha/día y FCA '+iaFmt(summary.fca,2)+'. Esta descripción resume los datos; no atribuye causas.';
+    }
+
+    return {answer,kind:'operational_overview',data:{table:iaOperationalTable(rows,100),summary,cycles:cycleNums}};
+  }
+
+  function iaPondNumberFromQuestion(q){
+    const n=iaNormText(q);
+    if(/\bestanques\b/.test(n)) return null;
+
+    // Solo acepta un identificador cuando la palabra "estanque" está explícita.
+    // Así "datos del MT" no se interpreta como "estanque MT".
+    let m=n.match(/(?:estanque\b|est\.?\b|pond\b)\s*#?\s*([a-z0-9-]+)/i);
+    if(!m) m=n.match(/datos(?: basicos)?(?: del| de)?\s+estanque\b\s*#?\s*([a-z0-9-]+)/i);
+    return m?m[1].toUpperCase():null;
+  }
+
+  function iaIsPondGroupDetailQuestion(q){
+    const n=iaNormText(q);
+    const hasMetricWord=/(crecimiento|crecieron|crecen|incremento|g\/sem|fca|factor de conversion|biomasa|sobrevivencia|supervivencia|peso|talla|pesan|alimento|alimentacion|alimentación|densidad|org\/m2|c\/m2)/.test(n);
+    const implicitWeight=/\bestanques?\b/.test(n) && /\d+(?:\.\d+)?\s*(?:g|gramos?)\b/.test(n) && !/g\/sem|por semana|crecimiento|incremento|crecieron|crecen/.test(n);
+    const hasCondition=/(arriba de|mayor(?:es)? de|mas de|superior(?:es)? a|por encima de|abajo de|menor(?:es)? de|menos de|inferior(?:es)? a|por debajo de|entre|hacia arriba|para arriba|en adelante|hacia abajo|para abajo|o menos|o mas|bajo|baja|alto|alta|>=?|<=?|\d+(?:[\.,]\d+)?\s*(?:g|gramos?|kg\/ha|%|org\/m2))/.test(n);
+    const operationalCondition=(hasMetricWord || implicitWeight) && hasCondition;
+
+    if(operationalCondition) return false;
+
+    return /\bestanques\b/.test(n)
+      && /(datos|detalle|ficha|informacion|información|dame|muestra|muestrame|quiero saber|quiero ver|ensename|enseñame|como estan|cómo están|estado)/.test(n)
+      && /(seccion|sección|modulo|módulo|sitio|ciclo|estanques|general)/.test(n);
+  }
+
+  function iaRequestedPondCount(q){
+    const n=iaNormText(q);
+    const m=n.match(/(?:los\s+)?(\d+)\s+estanques\b/);
+    return m ? Number(m[1]) : null;
+  }
+
+  function iaPondGroupDetailAnswer(allRows,q){
+    let rows=iaApplyFilters(allRows,q);
+    const requestedCount=iaRequestedPondCount(q);
+    const scope=iaFilterDescription(q,allRows);
+    const ciclo=iaCycleFilterFromQuestion(q);
+
+    if(!rows.length){
+      if(ciclo){
+        return {answer:'No encontré estanques activos de '+iaCycleLabel(ciclo)+' para '+scope+' en el corte actual. Si el '+iaCycleLabel(ciclo)+' todavía no está agregado al Excel, aparecerá automáticamente cuando se carguen esos registros. No se utilizó Haiku.',kind:'pond_group_no_match'};
+      }
+      return {answer:'No encontré estanques activos para '+scope+' en el corte actual. No se utilizó Haiku.',kind:'pond_group_no_match'};
+    }
+
+    rows=rows.slice().sort((a,b)=>{
+      const ca=Number(a.ciclo)||0, cb=Number(b.ciclo)||0;
+      if(ca!==cb) return ca-cb;
+      return String(a.estanque??'').localeCompare(String(b.estanque??''),undefined,{numeric:true});
+    });
+
+    const totalFound=rows.length;
+    const selected=requestedCount && requestedCount>0 ? rows.slice(0,requestedCount) : rows;
+    const summary=iaOperationalSummary(selected);
+    const cycles=iaRowsByCycle(selected);
+    const cycleNums=Object.keys(cycles).map(Number).sort((a,b)=>a-b);
+
+    let answer='Encontré '+selected.length+' estanque(s) para '+scope+'. Abajo tienes el detalle y el resumen general.';
+    if(!ciclo && cycleNums.length>1){
+      answer+='\n\nCiclos presentes: '+cycleNums.map(c=>iaCycleLabel(c)+' ('+cycles[c].length+' estanques)').join(' · ')+'. Los ciclos se mantienen separados.';
+    }
+    if(requestedCount && totalFound!==requestedCount){
+      answer+=' Pediste '+requestedCount+' y existen '+totalFound+' registros con ese filtro; se muestran '+selected.length+'.';
+    }
+    return {answer,kind:'pond_group_detail',data:{table:iaOperationalTable(selected,100),summary,totalFound,requestedCount,cycles:cycleNums}};
+  }
+
+  function iaIsPondDetailQuestion(q){
+    const n=iaNormText(q);
+    if(/\bestanques\b/.test(n)) return false;
+    return /(datos basicos|datos del estanque|datos de estanque|informacion del estanque|informacion de estanque|detalle del estanque|detalle de estanque|ficha del estanque|dame los datos|muestrame los datos)/.test(n)
+      && /(estanque|seccion|sitio|ciclo)/.test(n);
+  }
+
+  function iaPondDetailAnswer(allRows,q){
+    const pond=iaPondNumberFromQuestion(q);
+    const site=iaSiteFilterFromQuestion(q,allRows);
+    const sec=iaSectionFilterFromQuestion(q,allRows);
+    const ciclo=iaCycleFilterFromQuestion(q);
+    if(!pond) return null;
+    let rows=allRows.filter(r=>String(r.estanque??'').trim().toUpperCase()===pond);
+    if(site) rows=rows.filter(r=>String(r.sitio||'')===site);
+    if(sec) rows=rows.filter(r=>String(r.seccion||'')===sec);
+    if(ciclo) rows=rows.filter(r=>Number(r.ciclo)===ciclo);
+    if(!rows.length) return {answer:'No encontré el estanque '+pond+' con los filtros indicados en el corte actual. No se utilizó Haiku.',kind:'pond_detail_no_match'};
+    const table=iaOperationalTable(rows,20);
+    const summary=iaOperationalSummary(rows);
+    let answer='Datos del estanque '+pond+': encontré '+rows.length+' registro(s) en el corte actual. La tabla muestra los indicadores operativos principales.';
+    if(iaIsDescriptiveExplanationQuestion(q)){
+      answer+='\n\nLectura descriptiva: peso '+iaFmt(summary.peso_actual_g,1)+' g, incremento '+iaFmt(summary.incremento_semanal_g,2)+' g/sem, sobrevivencia '+iaFmt(summary.sobrevivencia_pct,1)+'%, biomasa '+iaFmt(summary.biomasa_kg_ha,0)+' kg/ha, alimento '+iaFmt(summary.alimento_kg_ha_dia,1)+' kg/ha/día y FCA '+iaFmt(summary.fca,2)+'. Para explicar causas necesitaría un análisis interpretativo.';
+    }
+    return {answer,kind:'pond_detail',data:{table,summary}};
+  }
+
+  function iaCurrentMetricFromQuestion(q){
+    const n=iaNormText(q);
+    if(/cosech|programa|proyect|ranking|top\b|laboratorio|laboratorios|\blab\b|biomarina|aquapacific|genesis/.test(n)) return null;
+
+    if(/(?:cuantas?|cuantos?|dime|dame|muestra|quiero saber|total).*(?:hectareas|hectáreas|\bhas\b|superficie)|(?:hectareas|hectáreas|\bhas\b|superficie).*(?:activas?|tenemos|hay|son|sitio|granja|ciclo|seccion|modulo)/.test(n))
+      return {kind:'hectares',label:'Hectáreas activas',unit:'ha',dec:1,type:'sum',fields:['has']};
+
+    if(/(?:cuantos?|cantidad|numero|número|total).*(?:estanques activos|estanques)|(?:estanques activos).*(?:tenemos|hay|son|sitio|granja|ciclo|seccion|modulo)/.test(n))
+      return {kind:'active_ponds',label:'Estanques activos',unit:'estanques',dec:0,type:'count_rows',fields:[]};
+
+    if(/sobrevivencia|supervivencia|sob\s*%|porcentaje de sobrevivencia|porcentaje sobrevivencia/.test(n))
+      return {kind:'survival',label:'Sobrevivencia actual',unit:'%',dec:1,type:'wavg',fields:['sobrevivencia_actual_pct'],weights:['biomasa_actual_kg','biomasa_kg']};
+
+    if(/(?:peso|talla)(?: promedio| actual| en gramos| g)?|gramos actuales|talla actual/.test(n) && !/incremento|crecimiento/.test(n))
+      return {kind:'weight',label:'Peso promedio actual',unit:'g',dec:1,type:'wavg',fields:['peso_actual_g','peso_g'],weights:['biomasa_actual_kg','biomasa_kg']};
+
+
+    if(/(?:alimento|alimentacion|alimentación|racion|ración).*(?:kg\/ha|por ha|por hectarea|por hectárea)|(?:kg\/ha).*(?:alimento|alimentacion|racion)|cuanto se tiro.*alimento|cuánto se tiró.*alimento/.test(n))
+      return {kind:'feed_ha',label:'Alimento actual por hectárea',unit:'kg/ha/día',dec:1,type:'wavg_ha',fields:['alimento_ha_dia_kg']};
+
+    if(/(?:org(?:anismos)?\s*\/?\s*m2|orgm2|org\/m2|c\/m2|cm\/2|cam(?:arones)?\/m2|densidad actual|densidad.*m2|organismos por metro|camarones por metro)/.test(n))
+      return {kind:'density',label:'Densidad actual',unit:'org/m²',dec:1,type:'wavg_ha',fields:['org_m2_actual']};
+
+    if(/incremento de peso|incremento semanal|inc semanal|incremento actual|crecimiento semanal|crecimiento actual|ganancia semanal|ganancia de peso|gramos por semana|g\/sem|como crecio|cómo creció|como crecieron|cómo crecieron|cuanto crecio|cuánto creció/.test(n))
+      return {kind:'growth',label:'Crecimiento semanal',unit:'g/sem',dec:2,type:'wavg',fields:['inc_peso_semanal_g','incremento_semanal_g','incremento_semanal_ciclo_g'],weights:['biomasa_actual_kg','biomasa_kg']};
+
+    if(/biomasa\s*(?:\/|por)\s*(?:ha|hectarea)|biomasa.*kg\/ha|kg\/ha.*biomasa|biomasa por hectarea|biomasa hectarea/.test(n))
+      return {kind:'biomass_ha',label:'Biomasa actual por hectárea',unit:'kg/ha',dec:0,type:'ratio',numerator:['biomasa_actual_kg','biomasa_kg'],denominator:['has']};
+
+    if(/biomasa total/.test(n) && !/cosech/.test(n))
+      return {kind:'biomass_total',label:'Biomasa total',unit:'kg',dec:0,type:'sum',fields:['biomasa_total_kg','biomasa_actual_kg','biomasa_kg']};
+
+    if(/biomasa/.test(n) && !/cosech|cosechada|cosechado|historica|histórica/.test(n))
+      return {kind:'biomass',label:'Biomasa activa',unit:'kg',dec:0,type:'sum',fields:['biomasa_actual_kg','biomasa_kg']};
+
+    if(/produccion|producción/.test(n) && /(activa|actual|tenemos|hay|llevamos|traemos|cuanta|cuánta|cuanto|cuánto|total)/.test(n) && !/cosech|histor/.test(n))
+      return {kind:'biomass',label:'Producción activa',unit:'kg',dec:0,type:'sum',fields:['biomasa_actual_kg','biomasa_kg']};
+
+    return null;
+  }
+
+  function iaMetricValue(rows,def){
+    if(!rows.length) return null;
+    const firstVal=(r,fields)=>{for(const f of fields||[]){const v=iaNum(r[f]);if(v!==null)return v;}return null;};
+    if(def.type==='count_rows') return rows.length;
+    if(def.type==='sum'){let seen=0,total=0;rows.forEach(r=>{const v=firstVal(r,def.fields);if(v!==null){seen++;total+=v;}});return seen?total:null;}
+    if(def.type==='ratio'){let num=0,den=0,seen=0;rows.forEach(r=>{const n=firstVal(r,def.numerator),d=firstVal(r,def.denominator);if(n!==null&&d!==null&&d>0){num+=n;den+=d;seen++;}});return seen&&den>0?num/den:null;}
+    if(def.type==='wavg'){let num=0,den=0,simple=[];rows.forEach(r=>{const v=firstVal(r,def.fields),w=firstVal(r,def.weights);if(v!==null){simple.push(v);if(w!==null&&w>0){num+=v*w;den+=w;}}});return den>0?num/den:(simple.length?simple.reduce((a,b)=>a+b,0)/simple.length:null);}
+    if(def.type==='wavg_ha'){let num=0,den=0,simple=[];rows.forEach(r=>{const v=firstVal(r,def.fields),ha=iaNum(r.has);if(v!==null){simple.push(v);if(ha!==null&&ha>0){num+=v*ha;den+=ha;}}});return den>0?num/den:(simple.length?simple.reduce((a,b)=>a+b,0)/simple.length:null);}
+    return null;
+  }
+
+  function iaMetricDisplay(def,v){
+    if(v===null) return 'sin dato';
+    if(def.kind==='biomass'||def.kind==='biomass_total') return iaFmt(v/1000,1)+' t ('+iaFmt(v,0)+' kg)';
+    if(def.kind==='hectares') return iaFmt(v,1)+' ha';
+    if(def.kind==='active_ponds') return iaFmt(v,0)+' estanques';
+    return iaFmt(v,def.dec)+' '+def.unit;
+  }
+
+  function iaMetricGroups(rows,mode){
+    const groups={};
+    rows.forEach(r=>{
+      const site=(r.sitio==='SANTAFE'?'Santa Fe':(r.sitio||'Sin sitio'));
+      const cycle=Number(r.ciclo);
+      const cycleLabel=Number.isFinite(cycle)?iaCycleLabel(cycle):'Sin ciclo';
+      const sec=r.seccion||'Sin sección';
+      const pond=String(r.estanque??'—').replace(/\.0+$/,'');
+      let key,label;
+
+      if(mode==='site_cycle_section'){key=site+'|'+cycleLabel+'|'+sec;label=site+' · '+cycleLabel+' · Sección '+sec;}
+      else if(mode==='site_cycle'){key=site+'|'+cycleLabel;label=site+' · '+cycleLabel;}
+      else if(mode==='cycle_section'){key=cycleLabel+'|'+sec;label=cycleLabel+' · Sección '+sec;}
+      else if(mode==='cycle'){key=cycleLabel;label=cycleLabel;}
+      else if(mode==='site_section_pond'){key=site+'|'+sec+'|'+pond;label=site+' · '+sec+' · Est. '+pond;}
+      else if(mode==='section_pond'){key=sec+'|'+pond;label='Sección '+sec+' · Est. '+pond;}
+      else if(mode==='site_pond'){key=site+'|'+pond;label=site+' · Est. '+pond;}
+      else if(mode==='pond'){key=site+'|'+sec+'|'+pond;label='Est. '+pond+' · '+site+' · '+sec;}
+      else if(mode==='site_section'){key=site+'|'+sec;label=site+' · Sección '+sec;}
+      else if(mode==='section'){key=sec;label='Sección '+sec;}
+      else {key=site;label=site;}
+
+      const g=groups[key]||(groups[key]={label,rows:[]});
+      g.rows.push(r);
+    });
+    return Object.values(groups);
+  }
+
+  function iaCurrentMetricAnswer(rows,allRows,q,def){
+    const scope=iaFilterDescription(q,allRows);
+    const mode=iaGroupModeFromQuestion(q);
+    const value=iaMetricValue(rows,def);
+    if(value===null) return {answer:'No encontré valores válidos de '+def.label.toLowerCase()+' para '+scope+' en el corte actual. No se utilizó Haiku.',kind:'metric_no_data'};
+
+    let answer=def.label+' general de '+scope+': '+iaMetricDisplay(def,value)+'.';
+    let table=[];
+
+    const explicitCycle=iaCycleFilterFromQuestion(q);
+    const cycleGroups=iaRowsByCycle(rows);
+    const cycleNums=Object.keys(cycleGroups).map(Number).sort((a,b)=>a-b);
+    if(!explicitCycle && cycleNums.length>1){
+      answer+='\n\nPor ciclo:\n'+cycleNums.map(c=>'• '+iaCycleLabel(c)+': '+iaMetricDisplay(def,iaMetricValue(cycleGroups[c],def))+' · '+cycleGroups[c].length+' estanques').join('\n');
+    }
+
+    const n=iaNormText(q);
+    const asksSite=/(por sitio|por sitios|sitio o sitios|cada sitio|cada uno de los sitios|todos los sitios|sitio por sitio|de cada sitio|desglosado por sitio|separado por sitio|cada sitio por separado)/.test(n);
+    const asksSection=/(por seccion|por sección|por secciones|por modulo|por módulo|por modulos|cada seccion|cada sección|cada modulo|cada módulo|de cada seccion|de cada modulo|todas las secciones|todos los modulos)/.test(n);
+    const asksPond=/(por estanque|por estanques|cada estanque|todos los estanques|estanque por estanque|de cada estanque)/.test(n);
+    const asksCycle=iaWantsCycleBreakdown(q);
+
+    const addBreakdown=(groupMode,title)=>{
+      const groups=iaMetricGroups(rows,groupMode)
+        .map(g=>({grupo:g.label,valor:iaMetricValue(g.rows,def),estanques:g.rows.length}))
+        .filter(x=>x.valor!==null);
+      if(!groups.length) return;
+      answer+='\n\n'+title+':\n'+groups.map(g=>'• '+g.grupo+': '+iaMetricDisplay(def,g.valor)+(g.estanques>1?' · '+g.estanques+' estanques':'')).join('\n');
+      if(groupMode==='pond' || groupMode==='site_pond' || groupMode==='section_pond' || groupMode==='site_section_pond'){
+        table=groups.map(g=>({grupo:g.grupo,resultado:iaMetricDisplay(def,g.valor)}));
+      }else if(!table.length){
+        table=groups.map(g=>({grupo:g.grupo,resultado:iaMetricDisplay(def,g.valor),estanques:g.estanques}));
+      }
+    };
+
+    if(asksSite) addBreakdown('site','Por sitio');
+    if(asksCycle) addBreakdown('cycle','Por ciclo');
+    if(asksSite && asksCycle) addBreakdown('site_cycle','Por sitio y ciclo');
+    if(asksSection) addBreakdown('section','Por sección/módulo');
+    if(asksPond) addBreakdown('pond','Por estanque');
+
+    // Si no pidió desglose y tampoco filtró un sitio/sección, mostramos por sitio.
+    const hasSite=!!iaSiteFilterFromQuestion(q,allRows),hasSection=!!iaSectionFilterFromQuestion(q,allRows);
+    if(!asksSite&&!asksCycle&&!asksSection&&!asksPond&&!hasSite&&!hasSection) addBreakdown('site','Por sitio');
+
+    return {answer,kind:'current_metric',data:{metric:def.kind,label:def.label,value,unit:def.unit,table}};
+  }
+
+  function iaExtractLowGrowthThreshold(q){
+    const n=iaNormText(q);
+    const patterns=[
+      /(?:abajo de|menor(?:es)? de|menos de|inferior(?:es)? a|<)\s*(\d+(?:\.\d+)?)\s*(?:g|gramos?)(?:\/sem)?/,
+      /(?:no crecieron|crecieron poco|bajo crecimiento).*?(\d+(?:\.\d+)?)\s*(?:g|gramos?)/,
+      /crecimiento.*?(?:abajo de|menor de|menos de)\s*(\d+(?:\.\d+)?)/
+    ];
+    for(const p of patterns){ const m=n.match(p); if(m) return Number(m[1]); }
+    if(/no crecieron|sin crecimiento|crecimiento cero/.test(n)) return 0.01;
+    if(/crecimiento bajo|bajo crecimiento|crecimientos bajos|menor crecimiento|crecimiento mas bajo|crecimiento más bajo|crecieron poco|crecen poco|poco crecimiento|peor crecimiento/.test(n)) return 1.0;
+    return null;
+  }
+
+  function iaIsLowGrowthListQuestion(q){
+    const n=iaNormText(q);
+    const asks=/(que|qué|cuales|cuáles|cual|cuál|dame|dime|muestra|muestrame|muéstrame|lista|listame|lístame|quiero saber|quiero ver|estanques|cuales son|cuáles son)/.test(n);
+    const low=/(no crecieron|crecimiento bajo|bajo crecimiento|crecimiento mas bajo|crecimiento más bajo|menor crecimiento|crecimientos bajos|bajos de crecimiento|bajo de|abajo de|menos de|menor de|crecieron poco|crecen poco|poco crecimiento|sin crecimiento|peor crecimiento)/.test(n);
+    return asks && low && /(crec|incremento|gramo|g\/sem)/.test(n);
+  }
+
+  function iaIsLargePondWeightQuestion(q){
+    const n=iaNormText(q);
+    return /(estanques)/.test(n) &&
+           /(peso mas grande|mayor peso|mas pesados|peso mayor|talla mas grande|talla mayor|estanques grandes)/.test(n);
+  }
+
+  function iaOperationalRow(r){
+    const firstNum=(keys)=>{for(const k of keys){const v=iaNum(r[k]);if(v!==null)return v;}return null;};
+    return {
+      sitio:r.sitio==='SANTAFE'?'Santa Fe':(r.sitio||'—'),
+      ciclo:iaNum(r.ciclo),
+      seccion:r.seccion||'—',
+      estanque:r.estanque,
+      peso_actual_g:firstNum(['peso_actual_g','peso_g']),
+      incremento_semanal_g:firstNum(['inc_peso_semanal_g','incremento_semanal_g','incremento_semanal_ciclo_g']),
+      sobrevivencia_pct:firstNum(['sobrevivencia_actual_pct']),
+      org_m2_actual:firstNum(['org_m2_actual']),
+      biomasa_total_kg:firstNum(['biomasa_total_kg','biomasa_actual_kg']),
+      biomasa_kg_ha:firstNum(['biomasa_total_ha_kg','biomasa_ha_actual_kg']),
+      alimento_kg_ha_dia:firstNum(['alimento_ha_dia_kg']),
+      alimento_diario_kg:firstNum(['alimento_diario_kg']),
+      fca:firstNum(['fca','fca_semanal']),
+      dc:firstNum(['dc']),
+      has:firstNum(['has'])
+    };
+  }
+
+  function iaOperationalTable(rows,limit=30){
+    return rows.slice(0,limit).map(iaOperationalRow);
+  }
+
+  function iaOperationalSummary(rows){
+    if(!Array.isArray(rows) || !rows.length) return null;
+    const ops=rows.map(iaOperationalRow);
+
+    const sum=(key)=>ops.reduce((a,x)=>a+(iaNum(x[key])||0),0);
+    const avg=(key,weightKey=null)=>{
+      const vals=ops.filter(x=>iaNum(x[key])!==null);
+      if(!vals.length) return null;
+      if(weightKey){
+        let num=0, den=0;
+        vals.forEach(x=>{
+          const v=iaNum(x[key]), w=iaNum(x[weightKey]);
+          if(v!==null && w!==null && w>0){ num+=v*w; den+=w; }
+        });
+        if(den>0) return num/den;
+      }
+      return vals.reduce((a,x)=>a+iaNum(x[key]),0)/vals.length;
+    };
+
+    const has=sum('has');
+    const biomasa=sum('biomasa_total_kg');
+
+    return {
+      estanques:ops.length,
+      has,
+      biomasa_total_kg:biomasa,
+      biomasa_kg_ha:has>0 ? biomasa/has : avg('biomasa_kg_ha'),
+      org_m2_actual:avg('org_m2_actual','has'),
+      sobrevivencia_pct:avg('sobrevivencia_pct','biomasa_total_kg'),
+      peso_actual_g:avg('peso_actual_g','biomasa_total_kg'),
+      incremento_semanal_g:avg('incremento_semanal_g','biomasa_total_kg'),
+      alimento_kg_ha_dia:avg('alimento_kg_ha_dia','has'),
+      fca:avg('fca','biomasa_total_kg')
+    };
+  }
+
+  function iaOperationalSummaryText(rows,title){
+    const s=iaOperationalSummary(rows);
+    if(!s) return title+': no encontré estanques que cumplan la condición.';
+    return title+':\n\n'
+      +'• Estanques: '+iaFmt(s.estanques,0)+'\n'
+      +'• Has: '+iaFmt(s.has,1)+' ha\n'
+      +'• Biomasa total: '+iaFmt(s.biomasa_total_kg,0)+' kg ('+iaFmt(s.biomasa_total_kg/1000,1)+' t)\n'
+      +'• Biomasa promedio: '+iaFmt(s.biomasa_kg_ha,0)+' kg/ha\n'
+      +'• Org/m² actuales: '+iaFmt(s.org_m2_actual,1)+'\n'
+      +'• Sobrevivencia: '+iaFmt(s.sobrevivencia_pct,1)+'%\n'
+      +'• Peso promedio: '+iaFmt(s.peso_actual_g,1)+' g\n'
+      +'• Incremento promedio: '+iaFmt(s.incremento_semanal_g,2)+' g/sem\n'
+      +'• Alimento promedio: '+iaFmt(s.alimento_kg_ha_dia,1)+' kg/ha/día\n'
+      +'• FCA promedio: '+iaFmt(s.fca,2);
+  }
+
+  function iaOperationalGroupedSummary(rows,q){
+    const mode=iaGroupModeFromQuestion(q);
+    if(mode==='none') return '';
+    const groups=iaGroupOperationalRows(rows,q) || [];
+    if(!groups.length) return '';
+    const label=mode==='site'?'Por sitio':mode==='section'?'Por sección':'Por sitio y sección';
+    return '\n\n'+label+':\n'+groups.map(g=>{
+      const s=iaOperationalSummary(g.rows);
+      return '• '+g.label+': '+iaFmt(s.estanques,0)+' est. · '+iaFmt(s.has,1)+' ha · '
+        +iaFmt(s.biomasa_total_kg/1000,1)+' t · '
+        +iaFmt(s.biomasa_kg_ha,0)+' kg/ha · '
+        +iaFmt(s.org_m2_actual,1)+' org/m² · '
+        +iaFmt(s.sobrevivencia_pct,1)+'% sob · '
+        +iaFmt(s.incremento_semanal_g,2)+' g/sem · '
+        +iaFmt(s.alimento_kg_ha_dia,1)+' kg/ha/día · FCA '+iaFmt(s.fca,2);
+    }).join('\n');
+  }
+
+  function iaGroupOperationalRows(rows,q){
+    const mode=iaGroupModeFromQuestion(q);
+    if(mode==='none') return null;
+    const groups={};
+    rows.forEach(r=>{
+      const site=r.sitio==='SANTAFE'?'Santa Fe':(r.sitio||'Sin sitio');
+      const sec=r.seccion||'Sin sección';
+      let key,label;
+      if(mode==='site_section'){ key=site+'|'+sec; label=site+' · Sección '+sec; }
+      else if(mode==='section'){ key=sec; label='Sección '+sec; }
+      else { key=site; label=site; }
+      (groups[key]=groups[key]||{label,rows:[]}).rows.push(r);
+    });
+    return Object.values(groups);
+  }
+
+  function iaBodyWeightLocalAnswer(rows,q){
+    const n=iaNormText(q);
+    if(!/body\s*weight|bodyweight/.test(n)) return null;
+    const op=iaOperationalTable(rows,30);
+    const currentFeed=op.reduce((a,x)=>a+(x.alimento_diario_kg||0),0);
+    const feedHaVals=op.map(x=>x.alimento_kg_ha_dia).filter(v=>v!==null);
+    const avgFeedHa=feedHaVals.length?feedHaVals.reduce((a,b)=>a+b,0)/feedHaVals.length:null;
+
+    let answer='La tabla BodyWeight no está cargada en este portal, así que no puedo calcular de forma exacta cuánto alimento “debió tocar” según BodyWeight sin inventar una tasa.\n\n';
+    answer+='Sí puedo mostrar la alimentación real del corte actual para los estanques seleccionados';
+    if(currentFeed>0) answer+=': '+iaFmt(currentFeed,0)+' kg/día en total';
+    if(avgFeedHa!==null) answer+=' · promedio '+iaFmt(avgFeedHa,1)+' kg/ha/día';
+    answer+='.\n\nSi cargas la tabla BodyWeight (peso/talla → % de biomasa o ración correspondiente), este cálculo puede quedar 100% local y sin Haiku.';
+    return {answer,kind:'bodyweight_missing',data:{table:op}};
+  }
+
+  function iaExtractPercentThreshold(q){
+    const n=iaNormText(q);
+    const pats=[
+      /(?:abajo de|menor(?:es)? de|menos de|inferior(?:es)? a|<)\s*(\d+(?:\.\d+)?)\s*%/,
+      /sobrevivencia.*?(\d+(?:\.\d+)?)\s*%/
+    ];
+    for(const p of pats){const m=n.match(p);if(m)return Number(m[1]);}
+    return null;
+  }
+
+  function iaGrowthBandFromQuestion(q){
+    const n=iaNormText(q);
+    const growthContext=/(crecimiento|crecieron|crecen|incremento|ganancia semanal|g\/sem)/.test(n);
+    if(!growthContext) return null;
+
+    const num=s=>Number(String(s).replace(',','.'));
+    const N='(\\d+(?:[\\.,]\\d+)?)';
+
+    // 1) Rango explícito: de X a Y / entre X y Y / X a Y.
+    let m=n.match(new RegExp('(?:entre|de)?\\s*'+N+'\\s*(?:g|gramos?)?(?:\\s*\\/\\s*sem(?:ana)?)?\\s*(?:y|a|-)\\s*'+N+'\\s*(?:g|gramos?)?(?:\\s*\\/\\s*sem(?:ana)?)?'));
+    if(m){
+      const a=num(m[1]), b=num(m[2]), lo=Math.min(a,b), hi=Math.max(a,b);
+      return {min:lo,max:hi,minExclusive:false,maxExclusive:false,exactRange:true,label:iaFmt(lo,2)+' a '+iaFmt(hi,2)+' g/sem'};
+    }
+
+    // 2) Comparador antes del número.
+    m=n.match(new RegExp('(?:arriba de|mayor(?:es)? de|mas de|más de|superior(?:es)? a|por encima de|>)\\s*'+N));
+    if(m){
+      const v=num(m[1]);
+      return {min:v,max:Infinity,minExclusive:true,label:'> '+iaFmt(v,2)+' g/sem'};
+    }
+    m=n.match(new RegExp('(?:abajo de|menor(?:es)? de|menos de|inferior(?:es)? a|por debajo de|<)\\s*'+N));
+    if(m){
+      const v=num(m[1]);
+      return {min:-Infinity,max:v,maxExclusive:true,label:'< '+iaFmt(v,2)+' g/sem'};
+    }
+
+    // 3) Comparador después del número.
+    m=n.match(new RegExp(N+'\\s*(?:g|gramos?)?(?:\\s*\\/\\s*sem(?:ana)?)?\\s*(?:hacia arriba|para arriba|en adelante|o mas|o más)'));
+    if(m){
+      const v=num(m[1]);
+      return {min:v,max:Infinity,label:'≥ '+iaFmt(v,2)+' g/sem'};
+    }
+    m=n.match(new RegExp(N+'\\s*(?:g|gramos?)?(?:\\s*\\/\\s*sem(?:ana)?)?\\s*(?:hacia abajo|para abajo|o menos)'));
+    if(m){
+      const v=num(m[1]);
+      return {min:-Infinity,max:v,label:'≤ '+iaFmt(v,2)+' g/sem'};
+    }
+
+    // 4) Bandas operativas estándar.
+    if(/crecimiento bajo|bajo crecimiento|crecimientos bajos|inc\.?\s*<\s*1/.test(n))
+      return {min:-Infinity,max:1.00,label:'≤ 1.00 g/sem'};
+
+    if(/1[\.,]01.*1[\.,]49/.test(n))
+      return {min:1.01,max:1.49,label:'1.01 a 1.49 g/sem'};
+
+    if(/1[\.,]50.*1[\.,]99|1[\.,]5.*1[\.,]99/.test(n))
+      return {min:1.50,max:1.99,label:'1.50 a 1.99 g/sem'};
+
+    if(/crecimiento alto|incremento alto/.test(n))
+      return {min:2.00,max:Infinity,label:'≥ 2.00 g/sem'};
+
+    return null;
+  }
+  function iaWeightBandFromQuestion(q){
+    const n=iaNormText(q);
+    if(!/(peso|talla|gramos|\bg\b|estanques)/.test(n)) return null;
+
+    if(/(?:0?\.5|0?\.50|0?\.500).*1\.99|(?:de\s*)?0?\.5\s*(?:a|y|-)\s*1\.99/.test(n))
+      return {kind:'weight_filter',label:'Peso',unit:'g',dec:2,fields:['peso_actual_g','peso_g'],min:0.50,max:1.99,labelCondition:'0.50 a 1.99 g'};
+
+    if(/2(?:\.0+)?\s*(?:a|y|-)\s*5\.99|2(?:\.0+)? .*5\.99/.test(n))
+      return {kind:'weight_filter',label:'Peso',unit:'g',dec:2,fields:['peso_actual_g','peso_g'],min:2.00,max:5.99,labelCondition:'2.00 a 5.99 g'};
+
+    if(/6(?:\.0+)?\s*(?:a|y|-)\s*10\.99|6(?:\.0+)? .*10\.99/.test(n))
+      return {kind:'weight_filter',label:'Peso',unit:'g',dec:2,fields:['peso_actual_g','peso_g'],min:6.00,max:10.99,labelCondition:'6.00 a 10.99 g'};
+
+    if(/11(?:\.0+)?\s*(?:a|y|-)\s*14\.99|11(?:\.0+)? .*14\.99/.test(n))
+      return {kind:'weight_filter',label:'Peso',unit:'g',dec:2,fields:['peso_actual_g','peso_g'],min:11.00,max:14.99,labelCondition:'11.00 a 14.99 g'};
+
+    if(/15(?:\.0+)?\s*(?:a|y|-)\s*18\.99|15(?:\.0+)? .*18\.99/.test(n))
+      return {kind:'weight_filter',label:'Peso',unit:'g',dec:2,fields:['peso_actual_g','peso_g'],min:15.00,max:18.99,labelCondition:'15.00 a 18.99 g'};
+
+    // Se normaliza a 19.00–23.99 para evitar traslape con 15.00–18.99.
+    if(/19(?:\.0+)?\s*(?:a|y|-)\s*23\.99|19(?:\.0+)? .*23\.99/.test(n))
+      return {kind:'weight_filter',label:'Peso',unit:'g',dec:2,fields:['peso_actual_g','peso_g'],min:19.00,max:23.99,labelCondition:'19.00 a 23.99 g'};
+
+    if(/24(?:\.0+)?\s*(?:g|gramos?)?\s*(?:en adelante|hacia arriba|o mas|o más)|peso.*24.*(?:arriba|adelante|mas|más)/.test(n))
+      return {kind:'weight_filter',label:'Peso',unit:'g',dec:2,fields:['peso_actual_g','peso_g'],min:24.00,max:Infinity,labelCondition:'≥ 24.00 g'};
+
+    return null;
+  }
+
+  function iaBiomassHaOperationalBandFromQuestion(q){
+    const n=iaNormText(q);
+    if(!/biomasa/.test(n) || !/(kg\/ha|por ha|por hectarea|por hectárea)/.test(n)) return null;
+
+    if(/(?:abajo de|menos de|menor de|<)\s*499|499.*(?:hacia abajo|o menos)/.test(n))
+      return {kind:'biomass_ha_filter',label:'Biomasa',unit:'kg/ha',dec:0,fields:['biomasa_total_ha_kg','biomasa_ha_actual_kg'],min:-Infinity,max:499,labelCondition:'≤ 499 kg/ha'};
+
+    if(/500\s*(?:a|y|-)\s*899|500.*899/.test(n))
+      return {kind:'biomass_ha_filter',label:'Biomasa',unit:'kg/ha',dec:0,fields:['biomasa_total_ha_kg','biomasa_ha_actual_kg'],min:500,max:899,labelCondition:'500 a 899 kg/ha'};
+
+    if(/900\s*(?:a|y|-)\s*(?:1299|1,?299)|900.*(?:1299|1,?299)/.test(n))
+      return {kind:'biomass_ha_filter',label:'Biomasa',unit:'kg/ha',dec:0,fields:['biomasa_total_ha_kg','biomasa_ha_actual_kg'],min:900,max:1299,labelCondition:'900 a 1,299 kg/ha'};
+
+    if(/(?:1300|1,?300)\s*(?:a|y|-)\s*(?:1599|1,?599)|(?:1300|1,?300).*(?:1599|1,?599)/.test(n))
+      return {kind:'biomass_ha_filter',label:'Biomasa',unit:'kg/ha',dec:0,fields:['biomasa_total_ha_kg','biomasa_ha_actual_kg'],min:1300,max:1599,labelCondition:'1,300 a 1,599 kg/ha'};
+
+    if(/(?:1600|1,?600)\s*(?:a|y|-)\s*(?:1999|1,?999)|(?:1600|1,?600).*(?:1999|1,?999)/.test(n))
+      return {kind:'biomass_ha_filter',label:'Biomasa',unit:'kg/ha',dec:0,fields:['biomasa_total_ha_kg','biomasa_ha_actual_kg'],min:1600,max:1999,labelCondition:'1,600 a 1,999 kg/ha'};
+
+    if(/(?:2000|2,?000)\s*(?:kg\/ha)?\s*(?:hacia arriba|en adelante|o mas|o más)|biomasa.*(?:2000|2,?000).*(?:arriba|adelante|mas|más)/.test(n))
+      return {kind:'biomass_ha_filter',label:'Biomasa',unit:'kg/ha',dec:0,fields:['biomasa_total_ha_kg','biomasa_ha_actual_kg'],min:2000,max:Infinity,labelCondition:'≥ 2,000 kg/ha'};
+
+    return null;
+  }
+
+  function iaOperationalNumericFilterFromQuestion(q){
+    const n=iaNormText(q);
+
+    // No interceptar escenarios futuros, cosechas históricas ni proyecciones.
+    if(/proyect|proxima semana|siguiente semana|en \d+ semanas?|dentro de|llegar|llegaran|cosech|histor/.test(n)) return null;
+
+    const weightBand=iaWeightBandFromQuestion(q);
+    if(weightBand) return weightBand;
+
+    const bioBand=iaBiomassHaOperationalBandFromQuestion(q);
+    if(bioBand) return bioBand;
+
+    let def=null;
+
+    if(/peso|talla|pesan|pesa\b/.test(n) ||
+       (/\bestanques?\b/.test(n) && /\d+(?:[\.,]\d+)?\s*(?:g|gramos?)\b/.test(n) && !/g\/sem|por semana|crecimiento|incremento|crecieron|crecen/.test(n))){
+      def={kind:'weight_filter',label:'Peso',unit:'g',dec:2,fields:['peso_actual_g','peso_g']};
+    }
+
+    if(/biomasa/.test(n) && /(kg\/ha|por ha|por hectarea|biomasa\/ha)/.test(n)){
+      def={kind:'biomass_ha_filter',label:'Biomasa',unit:'kg/ha',dec:0,fields:['biomasa_total_ha_kg','biomasa_ha_actual_kg']};
+    }
+
+    if(/sobrevivencia|supervivencia|sob\s*%/.test(n)){
+      def={kind:'survival_filter',label:'Sobrevivencia',unit:'%',dec:1,fields:['sobrevivencia_actual_pct']};
+    }
+
+    if(/f\.?c\.?a|fca|factor de conversion/.test(n)){
+      def={kind:'fca_filter',label:'FCA',unit:'',dec:2,fields:['fca','fca_semanal']};
+    }
+
+    if(/alimento|alimentacion|racion/.test(n) && /(kg\/ha|por ha|por hectarea)/.test(n)){
+      def={kind:'feed_ha_filter',label:'Alimento',unit:'kg/ha/día',dec:1,fields:['alimento_ha_dia_kg']};
+    }
+
+    if(/densidad|org\/m2|orgm2|c\/m2|cm\/2|camarones por metro|organismos por metro/.test(n)){
+      def={kind:'density_filter',label:'Densidad',unit:'org/m²',dec:1,fields:['org_m2_actual']};
+    }
+
+    if(!def) return null;
+
+    const parseToken=token=>{
+      let s=String(token||'').trim();
+      if(def.kind==='biomass_ha_filter'){
+        // En biomasa una coma con tres dígitos se interpreta como miles.
+        if(/^\d{1,3}(?:,\d{3})+$/.test(s)) s=s.replace(/,/g,'');
+        else if(s.includes(',') && !s.includes('.')) s=s.replace(',','.');
+      }else{
+        if(s.includes(',') && !s.includes('.')) s=s.replace(',','.');
+        else if(s.includes(',') && s.includes('.')) s=s.replace(/,/g,'');
+      }
+      const v=Number(s);
+      return Number.isFinite(v)?v:null;
+    };
+
+    const token='(\\d+(?:[\\.,]\\d+)?)';
+
+    // Rango explícito: "entre X y Y", "de X a Y", o "X a Y".
+    let m=n.match(new RegExp('(?:entre|de)?\\s*'+token+'\\s*(?:g|gramos?|kg\\/ha|%|org\\/m2)?\\s*(?:y|a|-)\\s*'+token));
+    if(m){
+      const a=parseToken(m[1]), b=parseToken(m[2]);
+      if(a!==null && b!==null){
+        return {...def,min:Math.min(a,b),max:Math.max(a,b),labelCondition:iaFmt(Math.min(a,b),def.dec)+' a '+iaFmt(Math.max(a,b),def.dec)+(def.unit?' '+def.unit:'')};
+      }
+    }
+
+    // Comparador antes del valor = estricto.
+    m=n.match(new RegExp('(?:arriba de|mayor(?:es)? de|mas de|superior(?:es)? a|por encima de|>)\\s*'+token));
+    if(m){
+      const v=parseToken(m[1]);
+      if(v!==null) return {...def,min:v,max:Infinity,minExclusive:true,labelCondition:'> '+iaFmt(v,def.dec)+(def.unit?' '+def.unit:'')};
+    }
+
+    m=n.match(new RegExp('(?:abajo de|menor(?:es)? de|menos de|inferior(?:es)? a|por debajo de|<)\\s*'+token));
+    if(m){
+      const v=parseToken(m[1]);
+      if(v!==null) return {...def,min:-Infinity,max:v,maxExclusive:true,labelCondition:'< '+iaFmt(v,def.dec)+(def.unit?' '+def.unit:'')};
+    }
+
+    // Comparador después del valor = inclusivo.
+    m=n.match(new RegExp(token+'\\s*(?:g|gramos?|kg\\/ha|%|org\\/m2)?\\s*(?:hacia arriba|para arriba|en adelante|o mas)'));
+    if(m){
+      const v=parseToken(m[1]);
+      if(v!==null) return {...def,min:v,max:Infinity,labelCondition:'≥ '+iaFmt(v,def.dec)+(def.unit?' '+def.unit:'')};
+    }
+
+    m=n.match(new RegExp(token+'\\s*(?:g|gramos?|kg\\/ha|%|org\\/m2)?\\s*(?:hacia abajo|para abajo|o menos)'));
+    if(m){
+      const v=parseToken(m[1]);
+      if(v!==null) return {...def,min:-Infinity,max:v,labelCondition:'≤ '+iaFmt(v,def.dec)+(def.unit?' '+def.unit:'')};
+    }
+
+    return null;
+  }
+  function iaValidateNumericFilterDefinition(def){
+    if(!def || typeof def!=='object') return false;
+    if(!Array.isArray(def.fields) || !def.fields.length) return false;
+    if(typeof def.kind!=='string' || typeof def.label!=='string') return false;
+    if(typeof def.min!=='number' || Number.isNaN(def.min)) return false;
+    if(typeof def.max!=='number' || Number.isNaN(def.max)) return false;
+    if(def.min>def.max) return false;
+    return true;
+  }
+
+  function iaOperationalNumericFilterAnswer(rows,allRows,q,def){
+    if(!iaValidateNumericFilterDefinition(def)){
+      console.error('[IA local] Definición de filtro inválida',def,q);
+      return {
+        answer:'Detecté una condición de filtro inválida y preferí no calcular un resultado incorrecto. Revisa el rango solicitado.',
+        kind:'local_filter_error',
+        data:{filter:def||null,table:[],summary:null,count:0}
+      };
+    }
+    rows=(Array.isArray(rows)?rows:[]).filter(r=>r && typeof r==='object' && !Array.isArray(r) && Object.keys(r).length>0);
+    allRows=(Array.isArray(allRows)?allRows:rows).filter(r=>r && typeof r==='object' && !Array.isArray(r) && Object.keys(r).length>0);
+    const scope=iaFilterDescription(q,allRows);
+    const valueOf=r=>iaNum(iaField(r||{},def.fields));
+    const hit=rows.filter(r=>{
+      const v=valueOf(r);
+      if(v===null) return false;
+      const minOk=def.minExclusive ? v>def.min : v>=def.min;
+      const maxOk=def.maxExclusive ? v<def.max : v<=def.max;
+      return minOk && maxOk;
+    }).sort((a,b)=>{
+      const va=valueOf(a), vb=valueOf(b);
+      if(def.max!==Infinity && def.min===-Infinity) return (va??Infinity)-(vb??Infinity);
+      return (vb??-Infinity)-(va??-Infinity);
+    });
+
+    const title=def.label+' '+def.labelCondition;
+    let answer=iaOperationalSummaryText(hit,title+' · '+scope);
+    answer+=iaOperationalGroupedSummary(hit,q);
+
+
+    return {
+      answer,
+      kind:def.kind,
+      data:{filter:def,table:iaOperationalTable(hit,100),summary:iaOperationalSummary(hit),count:hit.length}
+    };
+  }
+
+  function iaBiomassHaBandFromQuestion(q){
+    const n=iaNormText(q);
+    if(/(?:1200|1,200).*?(?:1599|1,599)|entre\s*(?:1200|1,200)\s*(?:y|a|-)\s*(?:1599|1,599)/.test(n)) return {min:1200,max:1599,label:'1,200 a 1,599 kg/ha'};
+    if(/(?:1600|1,600).*?(?:para arriba|o mas|en adelante)|arriba de\s*(?:1600|1,600)|mayor(?:es)? de\s*(?:1600|1,600)|>=?\s*(?:1600|1,600)/.test(n)) return {min:1600,max:Infinity,label:'≥ 1,600 kg/ha'};
+    return null;
+  }
+
+  function iaFcaBandFromQuestion(q){
+    const n=iaNormText(q);
+    if(/f\.?c\.?a|fca|factor de conversion/.test(n) && /(?:arriba de|mayor(?:es)? de|mas de|superior(?:es)? a|>=?)\s*1\.5(?:0)?/.test(n)) return {min:1.50,label:'> 1.50'};
+    return null;
+  }
+
+  function iaRenderBucketAnswer(title,rows,scopeLabel,metricField,formatter,question){
+    const groups=iaGroupOperationalRows(rows,question);
+    let answer=title+' en '+scopeLabel+': '+rows.length+' estanques.';
+    if(groups){
+      answer+='\n\n'+groups.map(g=>g.label+': '+g.rows.length+' estanques\n'+g.rows.slice(0,15).map(r=>'• Est. '+r.estanque+' · '+formatter(iaNum(iaField(r,metricField)))).join('\n')).join('\n\n');
+    }else if(rows.length){
+      answer+='\n\n'+rows.slice(0,25).map(r=>'• Est. '+r.estanque+' · '+(r.sitio==='SANTAFE'?'Santa Fe':r.sitio)+' · '+(r.seccion||'—')+' · '+formatter(iaNum(iaField(r,metricField)))).join('\n');
+    }
+    return answer;
+  }
+
+  function iaExtractGramThreshold(q){
+    const nq=iaNormText(q);
+    const pats=[
+      /(?:mas de|mayor(?:es)? de|arriba de|superior(?:es)? a|>=?)\s*(\d+(?:\.\d+)?)\s*(?:g|gramos?)/,
+      /(\d+(?:\.\d+)?)\s*(?:g|gramos?)\s*(?:o mas|en adelante)/,
+      /(?:peso|talla).*?(?:arriba de|mas de|mayor de)\s*(\d+(?:\.\d+)?)/
+    ];
+    for(const p of pats){ const m=nq.match(p); if(m) return Number(m[1]); }
+    return null;
+  }
+  function iaExtractGrowthScenario(q){
+    const nq=iaNormText(q);
+    let m=nq.match(/(?:crecimiento|incremento)(?:\s+(?:de|a))?\s*(\d+(?:\.\d+)?)\s*(?:g|gramos?)(?:\s*\/\s*sem(?:ana)?|\s+por\s+semana|\s+semanal)?/);
+    if(!m) m=nq.match(/(?:doy|dar|suben|subir|crecen|crecer)\s*(\d+(?:\.\d+)?)\s*(?:g|gramos?)(?:\s*\/\s*sem(?:ana)?|\s+por\s+semana)?/);
+    return m?Number(m[1]):null;
+  }
+  function iaIsNextWeek(q){ const n=iaNormText(q); return /proxima semana|siguiente semana|en una semana|7 dias/.test(n); }
+  function iaCountByBands(values){
+    const bands=[{a:0,b:10,l:'< 10 g'},{a:10,b:12,l:'10–<12 g'},{a:12,b:14,l:'12–<14 g'},{a:14,b:16,l:'14–<16 g'},{a:16,b:18,l:'16–<18 g'},{a:18,b:20,l:'18–<20 g'},{a:20,b:1e9,l:'≥ 20 g'}];
+    return bands.map(x=>({label:x.l,count:values.filter(v=>Number.isFinite(v)&&v>=x.a&&v<x.b).length})).filter(x=>x.count>0);
+  }
+  function iaWeightedAvg(rows,valueKeys,weightKeys){
+    let sw=0, sx=0;
+    rows.forEach(r=>{
+      const v=iaNum(iaField(r,valueKeys)), w=iaNum(iaField(r,weightKeys));
+      if(v!==null && w!==null && w>0){ sx+=v*w; sw+=w; }
+    });
+    return sw>0 ? sx/sw : null;
+  }
+  function iaSimpleAvg(values){
+    const a=values.map(iaNum).filter(v=>v!==null); return a.length ? a.reduce((x,y)=>x+y,0)/a.length : null;
+  }
+  function iaGroupRowsBySite(rows){
+    const by={}; rows.forEach(r=>{ const s=String(r.sitio||'Sin sitio'); (by[s]=by[s]||[]).push(r); }); return by;
+  }
+  function iaHarvestSummary(ctx,question){
+    const src=ctx && ctx.cosechas_resumen_por_sitio_ciclo;
+    if(!src) return null;
+
+    const nq=iaNormText(question);
+    const names=Object.keys(src);
+
+    const normNoSpace=s=>iaNormText(s).replace(/\s+/g,'');
+    const requested=names.find(s=>{
+      const ns=iaNormText(s);
+      if(nq.includes(ns)) return true;
+      if(ns==='santafe' && /(santa fe|sta fe|santafe)/.test(nq)) return true;
+      return nq.replace(/\s+/g,'').includes(normNoSpace(s));
+    }) || null;
+
+    const ciclo=iaCycleFilterFromQuestion(question);
+
+    const rows=[];
+    const selected=requested?[requested]:names;
+
+    selected.forEach(s=>{
+      const obj=src[s];
+      if(!obj) return;
+
+      let d=null;
+      if(ciclo){
+        d=obj.por_ciclo && obj.por_ciclo['Ciclo '+ciclo];
+      }else if(obj.por_ciclo && Object.keys(obj.por_ciclo).length){
+        const parts=Object.values(obj.por_ciclo).filter(Boolean);
+        const bio=parts.reduce((a,x)=>a+(iaNum(x.biomasa_total_kg)||0),0);
+        const ha=parts.reduce((a,x)=>a+(iaNum(x.hectareas_cosechadas)||0),0);
+        const weightAvg=(field)=>bio>0 ? parts.reduce((a,x)=>a+(iaNum(x[field])||0)*(iaNum(x.biomasa_total_kg)||0),0)/bio : null;
+        d={estanques_cosechados:parts.reduce((a,x)=>a+(Number(x.estanques_cosechados)||0),0),hectareas_cosechadas:ha,biomasa_total_kg:bio,biomasa_kg_ha:ha>0?bio/ha:null,alimento_total_kg:parts.reduce((a,x)=>a+(iaNum(x.alimento_total_kg)||0),0),fca:weightAvg('fca'),sobrevivencia_pct:weightAvg('sobrevivencia_pct'),dc_promedio:weightAvg('dc_promedio'),peso_promedio_g:weightAvg('peso_promedio_g'),crec_semanal_promedio:weightAvg('crec_semanal_promedio')};
+      }else{
+        d=obj.total_ambos_ciclos;
+      }
+      if(!d) return;
+
+      rows.push({
+        sitio:s,
+        ciclo:ciclo || null,
+        estanques:d.estanques_cosechados||0,
+        hectareas_cosechadas:iaNum(d.hectareas_cosechadas)||0,
+        biomasa_kg:iaNum(d.biomasa_total_kg)||0,
+        biomasa_kg_ha:iaNum(d.biomasa_kg_ha),
+        alimento_total_kg:iaNum(d.alimento_total_kg)||0,
+        fca:iaNum(d.fca),
+        sobrevivencia_pct:iaNum(d.sobrevivencia_pct),
+        dc_promedio:iaNum(d.dc_promedio),
+        peso_promedio_g:iaNum(d.peso_promedio_g),
+        crec_semanal_promedio:iaNum(d.crec_semanal_promedio)
+      });
+    });
+
+    if(!rows.length) return null;
+
+    const totalBio=rows.reduce((a,r)=>a+r.biomasa_kg,0);
+    const totalN=rows.reduce((a,r)=>a+r.estanques,0);
+    const totalHa=rows.reduce((a,r)=>a+r.hectareas_cosechadas,0);
+    const totalAlimento=rows.reduce((a,r)=>a+r.alimento_total_kg,0);
+
+    return {
+      requested,
+      ciclo,
+      rows,
+      totalBio,
+      totalN,
+      totalHa,
+      totalAlimento
+    };
+  }
+
+  function iaHarvestRowsBySiteCycle(ctx,question){
+    const src=ctx && ctx.cosechas_resumen_por_sitio_ciclo;
+    if(!src) return [];
+    const nq=iaNormText(question), names=Object.keys(src);
+    const asksSpecific=/(santa fe|santafe|owen 1|owen1|owen 2|owen2|4-h)/.test(nq);
+    const selected=names.filter(s=>{
+      if(!asksSpecific) return true;
+      const ns=iaNormText(s), compact=ns.replace(/\s+/g,'');
+      if(nq.includes(ns)||nq.replace(/\s+/g,'').includes(compact)) return true;
+      if(compact==='santafe' && /(santa fe|santafe)/.test(nq)) return true;
+      if(compact==='owen1' && /(owen 1|owen1)/.test(nq)) return true;
+      if(compact==='owen2' && /(owen 2|owen2)/.test(nq)) return true;
+      return false;
+    });
+    const explicit=iaCycleFilterFromQuestion(question);
+    const out=[];
+    selected.forEach(s=>{
+      const pc=src[s] && src[s].por_ciclo;
+      if(!pc) return;
+      Object.entries(pc).forEach(([key,d])=>{
+        const m=String(key).match(/(\d+)/);
+        const c=m?Number(m[1]):null;
+        if(explicit && c!==explicit) return;
+        if(!d) return;
+        out.push({
+          sitio:s,ciclo:c,
+          estanques:d.estanques_cosechados||0,
+          hectareas_cosechadas:iaNum(d.hectareas_cosechadas)||0,
+          biomasa_kg:iaNum(d.biomasa_total_kg)||0,
+          biomasa_kg_ha:iaNum(d.biomasa_kg_ha),
+          alimento_total_kg:iaNum(d.alimento_total_kg)||0,
+          fca:iaNum(d.fca),
+          sobrevivencia_pct:iaNum(d.sobrevivencia_pct),
+          peso_promedio_g:iaNum(d.peso_promedio_g),
+          crec_semanal_promedio:iaNum(d.crec_semanal_promedio)
+        });
+      });
+    });
+    return out.sort((a,b)=>String(a.sitio).localeCompare(String(b.sitio)) || (a.ciclo||0)-(b.ciclo||0));
+  }
+
+  function iaHarvestTechnicalAnswer(ctx,q){
+    const rows=iaHarvestRowsBySiteCycle(ctx,q);
+    if(!rows.length) return null;
+    const totalBio=rows.reduce((a,r)=>a+r.biomasa_kg,0);
+    const totalHa=rows.reduce((a,r)=>a+r.hectareas_cosechadas,0);
+    const totalN=rows.reduce((a,r)=>a+r.estanques,0);
+    const den=totalBio||0;
+    const fca=den?rows.reduce((a,r)=>a+(r.fca||0)*r.biomasa_kg,0)/den:null;
+    const peso=den?rows.reduce((a,r)=>a+(r.peso_promedio_g||0)*r.biomasa_kg,0)/den:null;
+    const sob=den?rows.reduce((a,r)=>a+(r.sobrevivencia_pct||0)*r.biomasa_kg,0)/den:null;
+    const crec=den?rows.reduce((a,r)=>a+(r.crec_semanal_promedio||0)*r.biomasa_kg,0)/den:null;
+    let answer='Resumen técnico de cosechas realizadas: '+iaFmt(totalN,0)+' estanques · '+iaFmt(totalHa,2)+' ha · '+iaFmt(totalBio/1000,1)+' t · FCA '+iaFmt(fca,2)+' · peso '+iaFmt(peso,1)+' g · sob '+iaFmt(sob,1)+'% · crec. '+iaFmt(crec,2)+' g/sem.';
+    answer+='\n\nPor sitio y ciclo:\n'+rows.map(r=>
+      '• '+r.sitio+' · '+iaCycleLabel(r.ciclo)+': '+iaFmt(r.estanques,0)+' est. · '+iaFmt(r.hectareas_cosechadas,2)+' ha · '+iaFmt(r.biomasa_kg/1000,1)+' t · '+iaFmt(r.biomasa_kg_ha,0)+' kg/ha · FCA '+iaFmt(r.fca,2)
+    ).join('\n');
+    return {answer,kind:'harvest_summary',data:{bySite:rows,totalBiomassKg:totalBio,totalHa,totalPonds:totalN,fca,peso,sob,crec}};
+  }
+
+  function iaCostSiteFromQuestion(q,ctx){
+    const n=iaNormText(q);
+    const src=ctx&&ctx.costos_resumen_por_sitio?Object.keys(ctx.costos_resumen_por_sitio):[];
+    const compact=s=>iaNormText(s).replace(/\s+/g,'');
+    for(const s of src){
+      const ns=iaNormText(s), cs=compact(s);
+      if(n.includes(ns) || n.replace(/\s+/g,'').includes(cs)) return s;
+      if(cs==='santafe' && /(santa fe|santafe|sta fe)/.test(n)) return s;
+      if(cs==='owen1' && /(owen 1|owen1)/.test(n)) return s;
+      if(cs==='owen2' && /(owen 2|owen2)/.test(n)) return s;
+      if((cs==='4h'||cs==='4-h') && /\b4[\s-]?h\b/.test(n)) return s;
+    }
+    return null;
+  }
+
+  function iaIsTopCostQuestion(q){
+    const n=iaNormText(q);
+    return /(costo|costos|gasto|gastos).*(mas fuerte|más fuerte|mas alto|más alto|mayor|principal|mas grande|más grande|pesa mas|pesa más|representa mas|representa más|el que mas|el que más)|(?:cual|cuál|que|qué).*(costo|gasto).*(mas fuerte|más fuerte|mayor|principal|mas alto|más alto)/.test(n);
+  }
+
+  function iaCostComponentAlias(q){
+    const n=iaNormText(q);
+    // Casos operativos comunes. "Alimento" se mantiene separado de
+    // "Alimentación" (comedor) para no mezclar ambos conceptos.
+    if(/\balimento\b|costo de alimento|gasto de alimento|alimento que llevamos/.test(n)) return {dimension:'cuenta',label:'Alimento'};
+    if(/\blarva\b|\blarvas\b|post larva|postlarva/.test(n)) return {dimension:'cuenta',label:'Larva'};
+    if(/\bnomina\b|\bnómina\b|sueldos?|pago a trabajadores/.test(n)) return {dimension:'subcuenta',label:'Nomina'};
+    if(/\bdiesel\b/.test(n)) return {dimension:'cuenta',contains:'diesel'};
+    if(/\bgasolina\b/.test(n)) return {dimension:'cuenta',contains:'gasolina'};
+    if(/\benergia electrica\b|\benergía eléctrica\b|\belectricidad\b|\bluz\b/.test(n)) return {dimension:'cuenta',contains:'energia electrica'};
+    if(/\bfletes?\b/.test(n)) return {dimension:'subcuenta',contains:'flete'};
+    if(/\bferreteria\b|\bferretería\b/.test(n)) return {dimension:'subcuenta',contains:'ferreter'};
+    if(/\bcomedor\b|\balimentacion de campo\b|\balimentación de campo\b/.test(n)) return {dimension:'subcuenta',contains:'aliment'};
+    return null;
+  }
+
+  function iaFindCostComponent(ctx,q){
+    const arr=Array.isArray(ctx&&ctx.costos_componentes)?ctx.costos_componentes:[];
+    if(!arr.length) return null;
+    const alias=iaCostComponentAlias(q);
+    const n=iaNormText(q);
+
+    if(alias){
+      const hits=arr.filter(x=>{
+        if(alias.dimension && x.dimension!==alias.dimension) return false;
+        const label=iaNormText(x.label);
+        if(alias.label) return label===iaNormText(alias.label);
+        if(alias.contains) return label.includes(iaNormText(alias.contains));
+        return false;
+      });
+      if(hits.length) return hits.sort((a,b)=>b.total-a.total)[0];
+    }
+
+    // Búsqueda natural en las dimensiones agregadas.
+    // Priorizamos cuenta > subcuenta > concepto > producto > marca.
+    const order={cuenta:0,subcuenta:1,concepto:2,producto:3,marca:4};
+    const candidates=arr.filter(x=>{
+      const label=iaNormText(x.label);
+      return label.length>=4 && (n.includes(label) || label.split(/\s+/).filter(w=>w.length>=5).some(w=>n.includes(w)));
+    }).sort((a,b)=>(order[a.dimension]??9)-(order[b.dimension]??9) || b.total-a.total);
+    return candidates[0]||null;
+  }
+
+  function iaTopCostAccounts(ctx,site=null){
+    const arr=Array.isArray(ctx&&ctx.costos_componentes)?ctx.costos_componentes:[];
+    return arr.filter(x=>x.dimension==='cuenta').map(x=>({
+      label:x.label,
+      total:site?(Number(x.por_sitio&&x.por_sitio[site])||0):(Number(x.total)||0),
+      por_sitio:x.por_sitio||{}
+    })).filter(x=>x.total>0).sort((a,b)=>b.total-a.total);
+  }
+
+  function iaCostComponentAnswer(ctx,q){
+    const site=iaCostSiteFromQuestion(q,ctx);
+    const n=iaNormText(q);
+
+    if(iaIsTopCostQuestion(q)){
+      const top=iaTopCostAccounts(ctx,site);
+      if(!top.length) return null;
+      const first=top[0];
+      let answer=(site?'El costo más fuerte de '+site:'El costo más fuerte general')+' es '+first.label+': $'+iaFmt(first.total,0)+'.';
+      if(!site){
+        const sites=Object.keys(ctx.costos_resumen_por_sitio||{});
+        answer+='\n\nPor sitio:\n'+sites.map(s=>{
+          const st=iaTopCostAccounts(ctx,s)[0];
+          return st?'• '+s+': '+st.label+' · $'+iaFmt(st.total,0):'• '+s+': sin datos';
+        }).join('\n');
+        answer+='\n\nPrincipales costos generales:\n'+top.slice(0,5).map((x,i)=>(i+1)+'. '+x.label+' · $'+iaFmt(x.total,0)).join('\n');
+      }
+      return {answer,kind:'cost_component_top',data:{top:top.slice(0,10),site}};
+    }
+
+    const comp=iaFindCostComponent(ctx,q);
+    if(!comp) return null;
+
+    const siteValue=site?(Number(comp.por_sitio&&comp.por_sitio[site])||0):null;
+    let answer=site
+      ? 'Costo acumulado de '+comp.label+' en '+site+': $'+iaFmt(siteValue,0)+'.'
+      : 'Costo acumulado de '+comp.label+': $'+iaFmt(Number(comp.total)||0,0)+'.';
+
+    // Sin sitio explícito, mostramos automáticamente general + por sitio.
+    if(!site){
+      const rows=Object.entries(comp.por_sitio||{}).filter(([,v])=>Number(v)>0).sort((a,b)=>Number(b[1])-Number(a[1]));
+      if(rows.length){
+        answer+='\n\nPor sitio:\n'+rows.map(([s,v])=>'• '+s+': $'+iaFmt(Number(v),0)).join('\n');
+      }
+    }
+
+    answer+='\nFuente: '+(comp.dimension==='cuenta'?'cuenta de costo':comp.dimension)+'.';
+    return {answer,kind:'cost_component',data:{component:comp,site,value:site?siteValue:comp.total}};
+  }
+
+  function iaCostsSummary(ctx,question){
+    const src=ctx && ctx.costos_resumen_por_sitio; if(!src) return null;
+    const nq=iaNormText(question), names=Object.keys(src);
+    const requested=names.find(s=>{
+      const ns=iaNormText(s), compact=ns.replace(/\s+/g,'');
+      if(nq.includes(ns) || nq.replace(/\s+/g,'').includes(compact)) return true;
+      if(compact==='santafe' && /(santa fe|sta fe|santafe)/.test(nq)) return true;
+      if(compact==='owen1' && /(owen 1|owen1)/.test(nq)) return true;
+      if(compact==='owen2' && /(owen 2|owen2)/.test(nq)) return true;
+      return false;
+    })||null;
+    const entries=(requested?[requested]:names).map(s=>[s,src[s]]).filter(x=>x[1]);
+    const rows=entries.map(([sitio,v])=>({
+      sitio,
+      costo_directo:iaNum(v.costo_directo)||0,
+      costo_indirecto:iaNum(v.costo_indirecto)||0,
+      costo_total:iaNum(v.costo_total)||0,
+      costo_por_kg:iaNum(v.costo_por_kg),
+      costo_directo_por_kg:iaNum(v.costo_directo_por_kg),
+      costo_indirecto_por_kg:iaNum(v.costo_indirecto_por_kg),
+      biomasa_activa_kg:iaNum(v.biomasa_activa_kg)||0,
+      biomasa_cosechada_kg:iaNum(v.biomasa_cosechada_kg)||0,
+      biomasa_general_kg:iaNum(v.biomasa_general_kg)||0
+    }));
+    const total=rows.reduce((a,r)=>a+r.costo_total,0),
+          direct=rows.reduce((a,r)=>a+r.costo_directo,0),
+          indirect=rows.reduce((a,r)=>a+r.costo_indirecto,0),
+          kgGeneral=rows.reduce((a,r)=>a+r.biomasa_general_kg,0);
+    const costoKg=kgGeneral>0?total/kgGeneral:null,
+          directoKg=kgGeneral>0?direct/kgGeneral:null,
+          indirectoKg=kgGeneral>0?indirect/kgGeneral:null;
+    return {requested,rows,total,direct,indirect,kgGeneral,costoKg,directoKg,indirectoKg};
+  }
+
+
+  // ==================== Memoria contextual + consultas locales v7 ====================
+  function iaRememberQuestion(original,resolved,result){
+    const all=(result&&result.data&&result.data.table)||[];
+    const siteMatch=(resolved||'').match(/\b(santa\s*fe|santafe|owen\s*1|owen1|owen\s*2|owen2|4-h)\b/i);
+    const secMatch=(resolved||'').match(/\b([A-D]-[12]|H|MT)\b/i);
+    const thr=iaExtractGramThreshold(resolved||'');
+    const gr=iaExtractGrowthScenario(resolved||'');
+    iaMemory.lastQuestion=original||'';
+    iaMemory.lastResolvedQuestion=resolved||original||'';
+    iaMemory.lastKind=(result&&result.kind)||'';
+    if(siteMatch) iaMemory.lastSite=siteMatch[1];
+    if(secMatch) iaMemory.lastSection=secMatch[1];
+    if(thr!==null) iaMemory.lastThreshold=thr;
+    if(gr!==null) iaMemory.lastGrowth=gr;
+    iaSaveMemory();
+  }
+  function iaResolveFollowup(question){
+    const q=(question||'').trim(), nq=iaNormText(q);
+    if(!q || !iaMemory.lastResolvedQuestion) return q;
+    const follow=/^(y\b|y de\b|y en\b|y solo\b|solo\b|de esos\b|de esas\b|ahora\b|tambien\b|igual\b|cuantos de esos\b|cuales de esos\b|por sitio\b|por seccion\b|este sitio\b|esta granja\b|este ciclo\b|estos estanques\b|esas secciones\b)/.test(nq)
+      || q.length<48 && /(solo|de esos|de esas|ahi|ellos|esas|esos|este sitio|esta granja|este ciclo|estos estanques)/.test(nq);
+    if(!follow) return q;
+    return iaMemory.lastResolvedQuestion+'; seguimiento del usuario: '+q;
+  }
+
+  function iaExtractRange(question){
+    const q=iaNormText(question);
+    let m=q.match(/(?:entre|de)\s*(\d+(?:\.\d+)?)\s*(?:g|gramos?)?\s*(?:y|a|-)\s*(\d+(?:\.\d+)?)\s*(?:g|gramos?)?/);
+    if(!m) return null;
+    const a=Number(m[1]),b=Number(m[2]); if(!isFinite(a)||!isFinite(b)) return null;
+    return {min:Math.min(a,b),max:Math.max(a,b)};
+  }
+
+  function iaSectionSummary(rows,fieldNames,weightNames){
+    const by={}; rows.forEach(r=>{const s=r.seccion||'Sin sección'; (by[s]=by[s]||[]).push(r);});
+    return Object.entries(by).map(([seccion,rr])=>({seccion,valor:iaWeightedAvg(rr,fieldNames,weightNames),estanques:rr.length}));
+  }
+
+  const IA_HARVEST_DB='https://cosechas-santa-fe-default-rtdb.firebaseio.com/cosechasState.json';
+  let iaHarvestProgramCache={ts:0,data:null,error:null};
+  function iaIsHarvestProgramQuestion(q){
+    const n=iaNormText(q);
+    const hablaCosecha = /(cosecha|cosechas|cosechar)/.test(n);
+    if(!hablaCosecha) return false;
+
+    // Intención explícita de programación.
+    if(/(programacion|programa|programad|agenda|calendario|proximas?|pendientes?)/.test(n)) return true;
+
+    // Preguntas naturales que normalmente se refieren al programa:
+    // "¿qué cosechas tenemos esta semana?", "cosechas de mañana",
+    // "¿qué vamos a cosechar en Santa Fe?", etc.
+    const referenciaTiempo = /(hoy|manana|esta semana|semana actual|proxima semana|semana que viene|semana pasada|ayer|20\d{2}-\d{2}-\d{2}|\b\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?\b)/.test(n);
+    const preguntaAgenda = /(que .*cosech|cuales .*cosech|tenemos .*cosech|hay .*cosech|vamos a cosech|se va a cosech|tocan .*cosech|cosechas? .*santa|cosechas? .*owen)/.test(n);
+
+    const peticionBasica=iaHasBasicDataIntent(q) && /(programa|programacion|agenda|calendario|plan de cosecha|planificacion de cosecha|cosechas? programad|que toca cosechar|que vamos a cosechar|que se cosecha|que hay para cosechar)/.test(n);
+    return referenciaTiempo || preguntaAgenda || peticionBasica;
+  }
+  async function iaFetchHarvestProgram(){
+    const now=Date.now();
+    if(iaHarvestProgramCache.data && now-iaHarvestProgramCache.ts<300000) return iaHarvestProgramCache.data;
+    const res=await fetch(IA_HARVEST_DB,{method:'GET',cache:'no-store'});
+    if(!res.ok) throw new Error('Firebase RTDB HTTP '+res.status);
+    const raw=await res.json();
+    iaHarvestProgramCache={ts:now,data:raw,error:null};
+    return raw;
+  }
+  function iaLocalDateISO(d){ return d.toISOString().slice(0,10); }
+  function iaMonday(d){ const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()),day=(x.getDay()+6)%7; x.setDate(x.getDate()-day); return x; }
+  function iaHarvestWindow(question){
+    const n=iaNormText(question), today=new Date(); today.setHours(12,0,0,0);
+    if(/\bhoy\b/.test(n)){const s=iaLocalDateISO(today);return {from:s,to:s,label:'hoy'};}
+    if(/\bmanana\b/.test(n)){const d=new Date(today);d.setDate(d.getDate()+1);const s=iaLocalDateISO(d);return {from:s,to:s,label:'mañana'};}
+    if(/ayer/.test(n)){const d=new Date(today);d.setDate(d.getDate()-1);const s=iaLocalDateISO(d);return {from:s,to:s,label:'ayer'};}
+    if(/esta semana|semana actual/.test(n)){const a=iaMonday(today),b=new Date(a);b.setDate(b.getDate()+6);return {from:iaLocalDateISO(a),to:iaLocalDateISO(b),label:'esta semana'};}
+    if(/semana pasada|semana anterior/.test(n)){const a=iaMonday(today);a.setDate(a.getDate()-7);const b=new Date(a);b.setDate(b.getDate()+6);return {from:iaLocalDateISO(a),to:iaLocalDateISO(b),label:'la semana pasada'};}
+    if(/proxima semana|semana que viene/.test(n)){const a=iaMonday(today);a.setDate(a.getDate()+7);const b=new Date(a);b.setDate(b.getDate()+6);return {from:iaLocalDateISO(a),to:iaLocalDateISO(b),label:'la próxima semana'};}
+    let m=n.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/); if(m){const s=m[0];return {from:s,to:s,label:s};}
+    return {from:iaLocalDateISO(today),to:'9999-12-31',label:'próximas cosechas'};
+  }
+  function iaProgramSiteFilter(question){
+    const n=iaNormText(question);
+    if(/santa\s*fe|santafe/.test(n)) return 'SANTAFE';
+    if(/owen\s*1|owen1/.test(n)) return 'OWEN1';
+    if(/owen\s*2|owen2/.test(n)) return 'OWEN2';
+    return null;
+  }
+  async function iaHarvestProgramAnswer(question){
+    let raw;
+    try{ raw=await iaFetchHarvestProgram(); }catch(e){
+      return {answer:'No pude leer en este momento la programación de cosechas desde Firebase ('+e.message+'). No usé Haiku para esta consulta.',kind:'harvest_program_error'};
+    }
+    const state=raw&&raw.sites?raw.sites:{SANTAFE:raw||{}};
+    const labels={SANTAFE:'Santa Fe',OWEN1:'Owen 1',OWEN2:'Owen 2'};
+    const wanted=iaProgramSiteFilter(question), win=iaHarvestWindow(question);
+    const rows=[];
+    Object.keys(state||{}).forEach(site=>{
+      if(wanted&&site!==wanted) return;
+      const s=state[site]||{}, days=s.days||{};
+      Object.keys(days).forEach(date=>{
+        if(date<win.from||date>win.to) return;
+        const day=days[date]||{};
+        (Array.isArray(day.rows)?day.rows:[]).forEach(r=>{
+          rows.push({fecha:date,sitio:labels[site]||site,estanque:r.est||'',has:iaNum(r.has),peso_g:iaNum(r.peso),biomasa_kg:iaNum(r.biomasa),tipo:r.tipo||'',observacion:r.obs||'',estado:day.status||''});
+        });
+      });
+    });
+    rows.sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.sitio.localeCompare(b.sitio));
+    if(!rows.length) return {answer:'Consulté directamente el Programa de Cosechas en Firebase y no encontré registros para '+win.label+(wanted?' en '+(labels[wanted]||wanted):'')+'. Esta respuesta no usó Haiku.',kind:'harvest_program',data:{table:[]}};
+    const bio=rows.reduce((a,r)=>a+(r.biomasa_kg||0),0), ha=rows.reduce((a,r)=>a+(r.has||0),0);
+    const bySite={}; rows.forEach(r=>{const x=bySite[r.sitio]||(bySite[r.sitio]={sitio:r.sitio,estanques:0,biomasa_kg:0,has:0});x.estanques++;x.biomasa_kg+=r.biomasa_kg||0;x.has+=r.has||0;});
+    let answer='Programación de cosechas para '+win.label+': '+rows.length+' registros'+(bio?(', '+iaFmt(bio/1000,1)+' t de biomasa programada'):'')+(ha?(' en '+iaFmt(ha,1)+' ha'):'')+'.';
+    answer+='\n\nPor sitio:\n'+Object.values(bySite).map(x=>'• '+x.sitio+': '+x.estanques+' estanques'+(x.biomasa_kg?' · '+iaFmt(x.biomasa_kg/1000,1)+' t':'')).join('\n');
+    answer+='\n\nPróximos registros:\n'+rows.slice(0,12).map(r=>'• '+r.fecha+' · '+r.sitio+' · Est. '+(r.estanque||'—')+(r.peso_g!==null?' · '+iaFmt(r.peso_g,1)+' g':'')+(r.biomasa_kg!==null?' · '+iaFmt(r.biomasa_kg,0)+' kg':'')).join('\n');
+    return {answer,kind:'harvest_program',data:{table:rows.slice(0,20),bySite:Object.values(bySite),totalBiomasa:bio,totalHas:ha,window:win}};
+  }
+
+
+  // ==================== V7: laboratorios, rankings y proyecciones operativas ====================
+  function iaExtractWeeksAhead(q){
+    const n=iaNormText(q);
+    let m=n.match(/(?:en|dentro de|a)\s*(\d+(?:\.\d+)?)\s*semanas?/);
+    if(m) return Math.max(1,Number(m[1]));
+    m=n.match(/(?:en|dentro de|a)\s*(\d+)\s*dias?/);
+    if(m) return Math.max(1,Number(m[1])/7);
+    if(/proxima semana|siguiente semana|en una semana|7 dias/.test(n)) return 1;
+    if(/dos semanas|2 semanas|14 dias/.test(n)) return 2;
+    if(/tres semanas|3 semanas|21 dias/.test(n)) return 3;
+    if(/cuatro semanas|4 semanas|28 dias/.test(n)) return 4;
+    return null;
+  }
+  function iaCurrentGrowthForRows(rows){
+    const w=iaWeightedAvg(rows,['inc_peso_semanal_g','incremento_semanal_g'],['biomasa_actual_kg','biomasa_kg']);
+    if(w!==null && isFinite(w)) return w;
+    return iaMedian(rows.map(r=>iaNum(iaField(r,['inc_peso_semanal_g','incremento_semanal_g'])))) || null;
+  }
+  function iaLabSummary(rows){
+    const by={};
+    rows.forEach(r=>{
+      const lab=String(iaField(r,['laboratorio','LAB.','lab'])||'').trim();
+      if(!lab) return;
+      (by[lab]=by[lab]||[]).push(r);
+    });
+    const arr=Object.entries(by).map(([laboratorio,rr])=>({
+      laboratorio,
+      estanques:rr.length,
+      biomasa_kg:rr.reduce((a,r)=>a+(iaNum(iaField(r,['biomasa_actual_kg','biomasa_kg']))||0),0),
+      crecimiento_g:iaWeightedAvg(rr,['inc_peso_semanal_g','incremento_semanal_g'],['biomasa_actual_kg','biomasa_kg']),
+      sobrevivencia_pct:iaWeightedAvg(rr,['sobrevivencia_actual_pct'],['biomasa_actual_kg','biomasa_kg']),
+      fca_semanal:iaWeightedAvg(rr,['fca_semanal'],['biomasa_actual_kg','biomasa_kg']),
+      peso_g:iaWeightedAvg(rr,['peso_actual_g','peso_g'],['biomasa_actual_kg','biomasa_kg'])
+    })).filter(x=>x.estanques>0);
+    function percentile(vals,v,lowBetter){
+      const a=vals.filter(x=>x!==null&&isFinite(x)).sort((x,y)=>x-y); if(!a.length||v===null||!isFinite(v)) return null;
+      let below=a.filter(x=>x<v).length, equal=a.filter(x=>x===v).length;
+      let p=(below+0.5*equal)/a.length; if(lowBetter) p=1-p; return p*100;
+    }
+    const gs=arr.map(x=>x.crecimiento_g), ss=arr.map(x=>x.sobrevivencia_pct), fs=arr.map(x=>x.fca_semanal);
+    arr.forEach(x=>{
+      const pg=percentile(gs,x.crecimiento_g,false), ps=percentile(ss,x.sobrevivencia_pct,false), pf=percentile(fs,x.fca_semanal,true);
+      const comps=[[pg,.4],[ps,.35],[pf,.25]].filter(z=>z[0]!==null); const den=comps.reduce((a,z)=>a+z[1],0);
+      x.indice_rendimiento=den?comps.reduce((a,z)=>a+z[0]*z[1],0)/den:null;
+    });
+    return arr;
+  }
+  function iaPercentileRanks(vals,lowBetter){
+    const valid=vals.map((v,i)=>({v:iaNum(v),i})).filter(x=>x.v!==null).sort((a,b)=>a.v-b.v), out={};
+    valid.forEach((x,pos)=>{let p=valid.length>1?pos/(valid.length-1):1; if(lowBetter)p=1-p; out[x.i]=p*100;}); return out;
+  }
+  function iaPondRanking(rows,metric){
+    const list=rows.map((r,i)=>({r,i,
+      crecimiento:iaNum(iaField(r,['inc_peso_semanal_g','incremento_semanal_g'])),
+      sobrevivencia:iaNum(iaField(r,['sobrevivencia_actual_pct'])),
+      fca:iaNum(iaField(r,['fca_semanal'])),
+      biomasa_ha:iaNum(iaField(r,['biomasa_ha_actual_kg'])),
+      peso:iaNum(iaField(r,['peso_actual_g','peso_g']))
+    }));
+    if(metric && metric!=='general'){
+      const key=metric, low=key==='fca';
+      return list.filter(x=>x[key]!==null).sort((a,b)=>low?a[key]-b[key]:b[key]-a[key]);
+    }
+    const pg=iaPercentileRanks(list.map(x=>x.crecimiento),false), ps=iaPercentileRanks(list.map(x=>x.sobrevivencia),false), pf=iaPercentileRanks(list.map(x=>x.fca),true);
+    list.forEach(x=>{
+      const comps=[[pg[x.i],.4],[ps[x.i],.3],[pf[x.i],.3]].filter(z=>z[0]!==undefined&&z[0]!==null); const den=comps.reduce((a,z)=>a+z[1],0);
+      x.score=den?comps.reduce((a,z)=>a+z[0]*z[1],0)/den:null;
+    });
+    return list.filter(x=>x.score!==null).sort((a,b)=>b.score-a.score);
+  }
+  function iaRankingMetric(q){
+    const n=iaNormText(q);
+    if(/fca|conversion/.test(n)) return 'fca';
+    if(/sobrevivencia|supervivencia/.test(n)) return 'sobrevivencia';
+    if(/biomasa.*ha|kg\/ha|biomasa por hectarea/.test(n)) return 'biomasa_ha';
+    if(/peso|talla/.test(n)) return 'peso';
+    if(/crecimiento|incremento/.test(n)) return 'crecimiento';
+    return 'general';
+  }
+  function iaIsRankingQuestion(q){ const n=iaNormText(q); return /(ranking|top\s*\d*|mejores? estanques|peores? estanques|ordenar.*estanques|clasifica.*estanques)/.test(n); }
+  function iaIsLabQuestion(q){
+    const n=iaNormText(q);
+    const mentions=/(laboratorio|laboratorios|lab\b|biomarina|aquapacific|genesis)/.test(n);
+    const intent=iaHasBasicDataIntent(q) || /(rendimiento|compar|mejor|crecimiento|sobrevivencia|supervivencia|fca|peso|biomasa|datos|resumen|por sitio|por ciclo|cada sitio|cada ciclo)/.test(n);
+    return mentions && intent;
+  }
+
+  function iaRequestedLabName(q,rows){
+    const n=iaNormText(q);
+    const labs=[...new Set((rows||[]).map(r=>String(iaField(r,['laboratorio','LAB.','lab'])||'').trim()).filter(Boolean))];
+    return labs.find(l=>n.includes(iaNormText(l))) || null;
+  }
+
+  function iaLabTechnicalAnswer(rows,q){
+    const requestedLab=iaRequestedLabName(q,rows);
+    const filtered=requestedLab ? rows.filter(r=>iaNormText(String(iaField(r,['laboratorio','LAB.','lab'])||''))===iaNormText(requestedLab)) : rows;
+    const labs=iaLabSummary(filtered);
+    if(!labs.length) return {answer:'No encontré datos de laboratorio para los filtros solicitados en el corte actual. No se utilizó Haiku.',kind:'labs'};
+    const n=iaNormText(q);
+    const bySite=/(por sitio|cada sitio|por granja|cada granja|sitio por sitio|granja por granja)/.test(n);
+    const byCycle=iaWantsCycleBreakdown(q) || /por ciclo|cada ciclo|sitio y ciclo|por sitio y ciclo/.test(n);
+    const crossSiteCycle=/(sitio y ciclo|por sitio y ciclo|granja y ciclo|por granja y ciclo)/.test(n) || (bySite&&byCycle);
+    let answer=(requestedLab?'Datos de '+requestedLab:'Datos de laboratorio')+' del corte actual: '+labs.length+' laboratorio(s) con '+filtered.length+' estanques activos.';
+    answer+='\n\nPor laboratorio:\n'+labs.map(x=>'• '+x.laboratorio+': '+x.estanques+' est. · '+iaFmt(x.biomasa_kg/1000,1)+' t · peso '+iaFmt(x.peso_g,1)+' g · crec. '+iaFmt(x.crecimiento_g,2)+' g/sem · sob '+iaFmt(x.sobrevivencia_pct,1)+'% · FCA '+iaFmt(x.fca_semanal,2)).join('\n');
+    if(crossSiteCycle){
+      const groups={};
+      filtered.forEach(r=>{const site=r.sitio==='SANTAFE'?'Santa Fe':String(r.sitio||'Sin sitio');const c=Number(r.ciclo),cl=Number.isFinite(c)?iaCycleLabel(c):'Sin ciclo';const k=site+'|'+cl;(groups[k]=groups[k]||{site,cl,rows:[]}).rows.push(r);});
+      answer+='\n\nPor sitio y ciclo:\n'+Object.values(groups).map(g=>{const ls=iaLabSummary(g.rows);return '• '+g.site+' · '+g.cl+': '+ls.map(x=>x.laboratorio+' '+x.estanques+' est. · crec. '+iaFmt(x.crecimiento_g,2)+' · sob '+iaFmt(x.sobrevivencia_pct,1)+'% · FCA '+iaFmt(x.fca_semanal,2)).join(' | ');}).join('\n');
+    }else{
+      if(bySite){const sites=iaGroupRowsBySite(filtered);answer+='\n\nPor sitio:\n'+Object.entries(sites).map(([s,rr])=>{const label=s==='SANTAFE'?'Santa Fe':s;const ls=iaLabSummary(rr);return label+': '+ls.map(x=>x.laboratorio+' '+x.estanques+' est.').join(' · ');}).join('\n');}
+      if(byCycle){const cy=iaRowsByCycle(filtered);const keys=Object.keys(cy).map(Number).sort((a,b)=>a-b);if(keys.length){answer+='\n\nPor ciclo:\n'+keys.map(c=>{const ls=iaLabSummary(cy[c]);return iaCycleLabel(c)+': '+ls.map(x=>x.laboratorio+' '+x.estanques+' est.').join(' · ');}).join('\n');}}
+    }
+    return {answer,kind:'labs',data:{byLab:labs,metric:'general',requestedLab}};
+  }
+  function iaIsFeedProjectionQuestion(q){ const n=iaNormText(q); return /(alimento|alimentacion|racion)/.test(n) && /(proyect|necesit|proxima|siguiente|futuro|semana que viene)/.test(n); }
+  function iaProjectionRows(rows,growth,weeks){
+    return rows.map(r=>{
+      const w=iaNum(iaField(r,['peso_actual_g','peso_g'])), bio=iaNum(iaField(r,['biomasa_actual_kg','biomasa_kg'])), pop=iaNum(iaField(r,['poblacion_actual','organismos_actuales','org_actuales'])), feed=iaNum(iaField(r,['alimento_diario_kg']));
+      if(w===null||w<=0) return null;
+      const pw=w+growth*weeks;
+      let pb=null;
+      if(pop!==null&&pop>0) pb=pop*pw/1000;
+      else if(bio!==null&&bio>0) pb=bio*(pw/w);
+      const rate=(feed!==null&&feed>=0&&bio!==null&&bio>0)?feed/bio:null;
+      const pfeed=(pb!==null&&rate!==null)?pb*rate:null;
+      return {r,peso_actual:w,peso_proyectado:pw,biomasa_actual:bio,biomasa_proyectada:pb,alimento_diario_actual:feed,tasa_alimento:rate,alimento_diario_proyectado:pfeed};
+    }).filter(Boolean);
+  }
+
+  async function iaLocalRouteAsync(ctx,question){
+    if(iaIsHarvestProgramQuestion(question)) return await iaHarvestProgramAnswer(question);
+    return iaLocalRoute(ctx,question);
+  }
+
+  function iaLocalRoute(ctx,question){
+    const nq=iaNormText(question); const all=iaRows(ctx); const hasActive=all.length>0;
+    const rows=hasActive?iaApplyFilters(all,question):[]; const scopeLabel=hasActive?iaFilterDescription(question,all):'sin datos';
+    const growth=iaExtractGrowthScenario(question), nextWeek=iaIsNextWeek(question), threshold=iaExtractGramThreshold(question);
+    const asksAnalysis=iaIsClearlyInterpretive(question);
+
+    const explicitSite=iaSiteFilterFromQuestion(question,all);
+    const explicitSection=iaSectionFilterFromQuestion(question,all);
+    const explicitCycle=iaCycleFilterFromQuestion(question);
+    if(hasActive && (explicitSite||explicitSection||explicitCycle) && rows.length===0 && !asksAnalysis){
+      return {
+        answer:'No encontré registros con la combinación exacta solicitada ('+iaFilterDescription(question,all)+') en el corte actual. No devolví cero como dato productivo porque podría indicar un problema de filtro o ausencia real de registros.',
+        kind:'filter_no_match',
+        data:{site:explicitSite,section:explicitSection,cycle:explicitCycle}
+      };
+    }
+
+    // BANDAS OPERATIVAS DE CRECIMIENTO
+    const growthBand=iaGrowthBandFromQuestion(question);
+    if(hasActive && growthBand && !asksAnalysis){
+      const hit=rows.filter(r=>{
+        const g=iaNum(iaField(r||{},['inc_peso_semanal_g','incremento_semanal_g','incremento_semanal_ciclo_g']));
+        if(g===null) return false;
+        const minOk=growthBand.minExclusive ? g>growthBand.min : g>=growthBand.min;
+        const maxOk=growthBand.maxExclusive ? g<growthBand.max : g<=growthBand.max;
+        return minOk && maxOk;
+      }).sort((a,b)=>(iaNum(iaField(b,['inc_peso_semanal_g','incremento_semanal_g','incremento_semanal_ciclo_g']))||0)-(iaNum(iaField(a,['inc_peso_semanal_g','incremento_semanal_g','incremento_semanal_ciclo_g']))||0));
+      const title='Crecimiento '+growthBand.label+' en '+scopeLabel;
+      let answer=iaOperationalSummaryText(hit,title) + iaOperationalGroupedSummary(hit,question);
+      return {answer,kind:'growth_band',data:{band:growthBand,table:iaOperationalTable(hit,50),summary:iaOperationalSummary(hit)}};
+    }
+
+    // FILTROS NUMÉRICOS OPERATIVOS PRIORITARIOS.
+    // Se ejecutan antes que detalle genérico y antes que métricas promedio.
+    const numericFilter=iaOperationalNumericFilterFromQuestion(question);
+    if(hasActive && numericFilter && !asksAnalysis){
+      return iaOperationalNumericFilterAnswer(rows,all,question,numericFilter);
+    }
+
+    if(hasActive && iaIsPondGroupDetailQuestion(question) && !asksAnalysis){
+      const groupDetail=iaPondGroupDetailAnswer(all,question);
+      if(groupDetail) return groupDetail;
+    }
+
+    if(hasActive && iaIsPondDetailQuestion(question) && !asksAnalysis){
+      const detail=iaPondDetailAnswer(all,question);
+      if(detail) return detail;
+    }
+
+    // BANDAS DE BIOMASA KG/HA
+    const bioHaBand=iaBiomassHaBandFromQuestion(question);
+    if(hasActive && bioHaBand && !asksAnalysis){
+      const hit=rows.filter(r=>{const v=iaNum(iaField(r,['biomasa_total_ha_kg','biomasa_ha_actual_kg']));return v!==null&&v>=bioHaBand.min&&v<=bioHaBand.max;})
+        .sort((a,b)=>(iaNum(iaField(b,['biomasa_total_ha_kg','biomasa_ha_actual_kg']))||0)-(iaNum(iaField(a,['biomasa_total_ha_kg','biomasa_ha_actual_kg']))||0));
+      const title='Biomasa '+bioHaBand.label+' en '+scopeLabel;
+      let answer=iaOperationalSummaryText(hit,title) + iaOperationalGroupedSummary(hit,question);
+      return {answer,kind:'biomass_ha_band',data:{band:bioHaBand,table:iaOperationalTable(hit,50),summary:iaOperationalSummary(hit)}};
+    }
+
+    // FCA ARRIBA DE 1.50
+    const fcaBand=iaFcaBandFromQuestion(question);
+    if(hasActive && fcaBand && !asksAnalysis){
+      const hit=rows.filter(r=>{const v=iaNum(iaField(r,['fca','fca_semanal']));return v!==null&&v>fcaBand.min;})
+        .sort((a,b)=>(iaNum(iaField(b,['fca','fca_semanal']))||0)-(iaNum(iaField(a,['fca','fca_semanal']))||0));
+      const title='FCA '+fcaBand.label+' en '+scopeLabel;
+      let answer=iaOperationalSummaryText(hit,title) + iaOperationalGroupedSummary(hit,question);
+      return {answer,kind:'fca_band',data:{band:fcaBand,table:iaOperationalTable(hit,50),summary:iaOperationalSummary(hit)}};
+    }
+
+    // SOBREVIVENCIA BAJA: umbral explícito o desviación estadística si no se da porcentaje.
+    const survThreshold=iaExtractPercentThreshold(question);
+    if(hasActive && /sobrevivencia|supervivencia/.test(nq) && /(baja|bajo|abajo de|menor de|menos de|inferior)/.test(nq) && !asksAnalysis){
+      let hit=[]; let title='Sobrevivencia baja';
+      if(survThreshold!==null){
+        hit=rows.filter(r=>{const v=iaNum(r.sobrevivencia_actual_pct);return v!==null&&v<survThreshold;});
+        title='Sobrevivencia < '+iaFmt(survThreshold,1)+'%';
+      }else{
+        const dev=(ctx.analisis_local||iaBuildAnalytics(ctx)).desviaciones||[];
+        const keys=new Set(dev.filter(d=>(d.flags||[]).some(f=>f.tipo==='sobrevivencia_baja')).map(d=>String(d.sitio)+'|'+String(d.seccion)+'|'+String(d.estanque)+'|'+String(d.ciclo)));
+        hit=rows.filter(r=>keys.has(String(r.sitio)+'|'+String(r.seccion)+'|'+String(r.estanque)+'|'+String(r.ciclo)));
+        title='Sobrevivencia estadísticamente baja frente a su sitio/ciclo';
+      }
+      hit.sort((a,b)=>(iaNum(a.sobrevivencia_actual_pct)||999)-(iaNum(b.sobrevivencia_actual_pct)||999));
+      let answer=iaOperationalSummaryText(hit,title+' · '+scopeLabel);
+      answer+=iaOperationalGroupedSummary(hit,question);
+      if(survThreshold===null) answer+='\n\nCriterio: desviación estadística IQR dentro de cada sitio/ciclo.';
+      return {answer,kind:'survival_low',data:{threshold:survThreshold,table:iaOperationalTable(hit,50),summary:iaOperationalSummary(hit)}};
+    }
+
+    // BodyWeight: nunca se manda a Haiku si la tabla no está cargada.
+    const bwLocal=iaBodyWeightLocalAnswer(rows,question);
+    if(hasActive && bwLocal && !asksAnalysis) return bwLocal;
+
+    // Estanques con crecimiento bajo / debajo de un umbral: consulta local operativa.
+    const lowGrowth=iaExtractLowGrowthThreshold(question);
+    if(hasActive && iaIsLowGrowthListQuestion(question) && !asksAnalysis){
+      const limit=lowGrowth!==null?lowGrowth:1.0;
+      const hit=rows.filter(r=>{
+        const g=iaNum(iaField(r,['inc_peso_semanal_g','incremento_semanal_g','incremento_semanal_ciclo_g']));
+        return g!==null && g<limit;
+      }).sort((a,b)=>{
+        const ga=iaNum(iaField(a,['inc_peso_semanal_g','incremento_semanal_g']))??999;
+        const gb=iaNum(iaField(b,['inc_peso_semanal_g','incremento_semanal_g']))??999;
+        return ga-gb;
+      });
+      let answer=iaOperationalSummaryText(hit,'Crecimiento < '+iaFmt(limit,2)+' g/sem · '+scopeLabel);
+      answer+=iaOperationalGroupedSummary(hit,question);
+      if(hit.length){
+        answer+='\n\nLa tabla muestra la alimentación real cargada en el portal. Para calcular la ración teórica BodyWeight hace falta cargar esa tabla.';
+      }
+      return {answer,kind:'low_growth_list',data:{threshold:limit,table:iaOperationalTable(hit,40),summary:iaOperationalSummary(hit)}};
+    }
+
+    // Estanques más grandes por peso: local, con filtros y agrupación opcional.
+    if(hasActive && iaIsLargePondWeightQuestion(question) && !asksAnalysis){
+      const sorted=rows.slice().filter(r=>iaNum(r.peso_actual_g)!==null)
+        .sort((a,b)=>(iaNum(b.peso_actual_g)||0)-(iaNum(a.peso_actual_g)||0));
+      const groups=iaGroupOperationalRows(sorted,question);
+      let answer='';
+      let table=[];
+      if(groups){
+        answer='Estanques con mayor peso ('+scopeLabel+'):\n\n';
+        groups.forEach(g=>{
+          const top=g.rows.slice(0,10);
+          answer+=g.label+':\n'+top.map(r=>'• Est. '+r.estanque+' · '+iaFmt(iaNum(r.peso_actual_g),1)+' g').join('\n')+'\n\n';
+          table.push(...iaOperationalTable(top,10));
+        });
+      }else{
+        const top=sorted.slice(0,20);
+        answer='Estanques con mayor peso ('+scopeLabel+'):\n\n'+
+          top.map((r,i)=>(i+1)+'. Est. '+r.estanque+' · '+(r.sitio==='SANTAFE'?'Santa Fe':r.sitio)+' · '+(r.seccion||'—')+' · '+iaFmt(iaNum(r.peso_actual_g),1)+' g').join('\n');
+        table=iaOperationalTable(top,20);
+      }
+      return {answer:answer.trim(),kind:'weight_top_local',data:{table}};
+    }
+
+    // Métricas operativas exactas: sitio, ciclo y sección; siempre local y sin Haiku.
+    const currentMetric=iaCurrentMetricFromQuestion(question);
+    if(hasActive && currentMetric && !asksAnalysis){
+      return iaCurrentMetricAnswer(rows,all,question,currentMetric);
+    }
+
+    // V7: comparación/ranking de laboratorios (local, sin IA).
+    if(hasActive && iaIsLabQuestion(question) && !asksAnalysis){
+      const nLab=iaNormText(question);
+      const isComparison=/(compar|mejor|peor|ranking|rendimiento superior|rendimiento inferior|ordena|clasifica)/.test(nLab);
+      const namedLab=iaRequestedLabName(question,rows);
+      const basicLab=!isComparison && (iaHasBasicDataIntent(question) || !!namedLab || /(crecimiento|sobrevivencia|supervivencia|fca|peso|biomasa|datos|resumen)/.test(nLab));
+      if(basicLab) return iaLabTechnicalAnswer(rows,question);
+      const labs=iaLabSummary(rows);
+      if(!labs.length) return {answer:'No encontré el campo de laboratorio en los estanques activos del corte actual.',kind:'labs'};
+      const metric=iaRankingMetric(question);
+      let sorted=[...labs], metricLabel='índice de rendimiento';
+      if(metric==='crecimiento'){sorted.sort((a,b)=>(b.crecimiento_g??-999)-(a.crecimiento_g??-999));metricLabel='crecimiento semanal';}
+      else if(metric==='sobrevivencia'){sorted.sort((a,b)=>(b.sobrevivencia_pct??-999)-(a.sobrevivencia_pct??-999));metricLabel='sobrevivencia';}
+      else if(metric==='fca'){sorted=sorted.filter(x=>x.fca_semanal!==null).sort((a,b)=>a.fca_semanal-b.fca_semanal);metricLabel='FCA semanal (menor es mejor)';}
+      else if(metric==='peso'){sorted.sort((a,b)=>(b.peso_g??-999)-(a.peso_g??-999));metricLabel='peso promedio';}
+      else sorted.sort((a,b)=>(b.indice_rendimiento??-999)-(a.indice_rendimiento??-999));
+      let answer='Comparativo de laboratorios del corte actual por '+metricLabel+':';
+      answer+='\n\n'+sorted.map((x,i)=>`${i+1}. ${x.laboratorio} · ${x.estanques} estanques · crec. ${iaFmt(x.crecimiento_g,2)} g/sem · sob. ${iaFmt(x.sobrevivencia_pct,1)}% · FCA ${iaFmt(x.fca_semanal,2)} · índice ${iaFmt(x.indice_rendimiento,1)}`).join('\n');
+      if(metric==='general') answer+='\n\nÍndice local transparente: 40% crecimiento, 35% sobrevivencia y 25% FCA inverso. Sirve para comparar desempeño operativo; no sustituye una evaluación biológica integral.';
+      return {answer,kind:'labs',data:{byLab:sorted,metric}};
+    }
+
+    // V7: ranking de estanques por una métrica o índice general.
+    if(hasActive && iaIsRankingQuestion(question) && !asksAnalysis){
+      const metric=iaRankingMetric(question), rank=iaPondRanking(rows,metric); const nTop=Math.min(20,Math.max(5,Number((nq.match(/top\s*(\d+)/)||[])[1])||10));
+      const reverse=/peores?|mas bajo|menor/.test(nq); const ordered=reverse?[...rank].reverse():rank; const top=ordered.slice(0,nTop);
+      if(!top.length) return {answer:'No encontré datos suficientes para construir ese ranking.',kind:'pond_ranking'};
+      const label={general:'desempeño general',crecimiento:'crecimiento',sobrevivencia:'sobrevivencia',fca:'FCA semanal',biomasa_ha:'biomasa/ha',peso:'peso'}[metric];
+      let answer=(reverse?'Ranking inferior':'Ranking superior')+' de estanques por '+label+' ('+scopeLabel+'):';
+      answer+='\n\n'+top.map((x,i)=>{const val=metric==='general'?iaFmt(x.score,1):(metric==='crecimiento'?iaFmt(x.crecimiento,2)+' g/sem':metric==='sobrevivencia'?iaFmt(x.sobrevivencia,1)+'%':metric==='fca'?iaFmt(x.fca,2):metric==='biomasa_ha'?iaFmt(x.biomasa_ha,0)+' kg/ha':iaFmt(x.peso,1)+' g');return `${i+1}. Est. ${x.r.estanque} · ${x.r.sitio||''} ${x.r.seccion||''} · ${val}`;}).join('\n');
+      if(metric==='general') answer+='\n\nÍndice local: 40% crecimiento, 30% sobrevivencia y 30% FCA inverso, calculado solo con datos disponibles del corte actual.';
+      return {answer,kind:'pond_ranking',data:{metric,table:top.map((x,i)=>({posicion:i+1,estanque:x.r.estanque,sitio:x.r.sitio,seccion:x.r.seccion,crecimiento_g:x.crecimiento,sobrevivencia_pct:x.sobrevivencia,fca_semanal:x.fca,peso_g:x.peso,score:x.score}))}};
+    }
+
+    // V7: alimento necesario proyectado, manteniendo la tasa actual alimento/biomasa.
+    if(hasActive && iaIsFeedProjectionQuestion(question) && !asksAnalysis){
+      const weeks=iaExtractWeeksAhead(question)||1; const assumedGrowth=growth!==null?growth:iaCurrentGrowthForRows(rows);
+      if(assumedGrowth===null) return {answer:'No encontré crecimiento actual ni un crecimiento supuesto para proyectar alimento.',kind:'feed_projection'};
+      const p=iaProjectionRows(rows,assumedGrowth,weeks).filter(x=>x.alimento_diario_proyectado!==null);
+      if(!p.length) return {answer:'No encontré biomasa y alimento diario suficientes para proyectar la ración.',kind:'feed_projection'};
+      const daily=p.reduce((a,x)=>a+x.alimento_diario_proyectado,0), period=daily*7*weeks, sacks=period/25;
+      const by={}; p.forEach(x=>{const sitio=x.r.sitio||'Sin sitio';const z=by[sitio]||(by[sitio]={sitio,alimento_diario_kg:0,alimento_periodo_kg:0,biomasa_proyectada_kg:0,estanques:0});z.estanques++;z.alimento_diario_kg+=x.alimento_diario_proyectado||0;z.alimento_periodo_kg+=(x.alimento_diario_proyectado||0)*7*weeks;z.biomasa_proyectada_kg+=x.biomasa_proyectada||0;});
+      let answer=`Proyección local de alimento a ${iaFmt(weeks,1)} semana(s), usando crecimiento de ${iaFmt(assumedGrowth,2)} g/sem y manteniendo la tasa actual de alimento/biomasa:\n\n• Ración diaria proyectada: ${iaFmt(daily,0)} kg/día\n• Alimento del periodo: ${iaFmt(period,0)} kg (${iaFmt(period/1000,1)} t)\n• Equivalente: ${iaFmt(sacks,0)} costales de 25 kg.`;
+      answer+='\n\nPor sitio:\n'+Object.values(by).sort((a,b)=>b.alimento_periodo_kg-a.alimento_periodo_kg).map(x=>`• ${x.sitio}: ${iaFmt(x.alimento_periodo_kg/1000,1)} t · ${iaFmt(x.alimento_diario_kg,0)} kg/día`).join('\n');
+      answer+='\n\nSupuestos: población/sobrevivencia constantes y misma tasa de alimento por kg de biomasa que en el corte actual.';
+      return {answer,kind:'feed_projection',data:{bySite:Object.values(by),weeks,growth:assumedGrowth,totalKg:period,dailyKg:daily,sacks25:sacks}};
+    }
+
+    // V7: escenarios de talla/biomasa a N semanas y disponibilidad potencial para cosecha.
+    if(hasActive && /(proyect|llegar|tendremos|estaran|estarán|disponibles?|potencial.*cosecha)/.test(nq) && /(semana|dias|talla|peso|cosecha|g\b)/.test(nq) && !asksAnalysis){
+      const weeks=iaExtractWeeksAhead(question); const assumedGrowth=growth!==null?growth:iaCurrentGrowthForRows(rows);
+      if(weeks && assumedGrowth!==null){
+        const p=iaProjectionRows(rows,assumedGrowth,weeks); const th=threshold;
+        const hit=th!==null?p.filter(x=>x.peso_proyectado>=th):p;
+        const bio=hit.reduce((a,x)=>a+(x.biomasa_proyectada||0),0); const avg=hit.length?hit.reduce((a,x)=>a+x.peso_proyectado,0)/hit.length:null;
+        let answer=`Escenario local a ${iaFmt(weeks,1)} semana(s) con crecimiento supuesto de ${iaFmt(assumedGrowth,2)} g/sem: ${p.length} estanques proyectados.`;
+        if(th!==null) answer+=`\n\nEstanques que alcanzarían ≥ ${iaFmt(th,1)} g: ${hit.length}. Biomasa potencial de ese grupo: ${iaFmt(bio/1000,1)} t.`;
+        else answer+=`\nPeso promedio proyectado: ${iaFmt(avg,2)} g.`;
+        answer+='\n\nSupuesto: sobrevivencia/población constante; la biomasa se escala por el aumento de peso.';
+        return {answer,kind:'scenario_projection',data:{weeks,growth:assumedGrowth,threshold:th,totalProjected:p.length,hitCount:hit.length,biomassKg:bio,table:hit.sort((a,b)=>b.peso_proyectado-a.peso_proyectado).slice(0,20).map(x=>({estanque:x.r.estanque,sitio:x.r.sitio,seccion:x.r.seccion,peso_actual_g:x.peso_actual,peso_proyectado_g:x.peso_proyectado,biomasa_proyectada_kg:x.biomasa_proyectada}))}};
+      }
+    }
+
+    // Proyección simple de talla a una semana: cálculo determinista, no IA.
+    if(hasActive && nextWeek && growth!==null){
+      const projected=rows.map(r=>({r,w:iaNum(iaField(r,['peso_actual_g','peso_g','peso_actual']))})).filter(x=>x.w!==null).map(x=>({r:x.r,w:x.w+growth}));
+      if(!projected.length) return {answer:'No encontré pesos actuales válidos para hacer la proyección.',kind:'local'};
+      const avg=projected.reduce((a,x)=>a+x.w,0)/projected.length;
+      const bands=iaCountByBands(projected.map(x=>x.w));
+      let answer='Proyección local a 1 semana usando un crecimiento supuesto de '+iaFmt(growth,2)+' g/sem. Se proyectaron '+projected.length+' estanques de '+scopeLabel+'.\n\nPeso promedio proyectado: '+iaFmt(avg,2)+' g.';
+      let table=[];
+      if(threshold!==null){
+        const hit=projected.filter(x=>x.w>=threshold);
+        answer+='\nEstanques proyectados en ≥ '+iaFmt(threshold,1)+' g: '+hit.length+'.';
+        table=hit.sort((a,b)=>b.w-a.w).slice(0,15).map(x=>({estanque:x.r.estanque,sitio:x.r.sitio,seccion:x.r.seccion,peso_proyectado_g:x.w}));
+      }else answer+='\n\nDistribución proyectada por talla:\n'+bands.map(b=>'• '+b.label+': '+b.count+' estanques').join('\n');
+      answer+='\n\nSupuesto: cada estanque gana exactamente '+iaFmt(growth,2)+' g durante la semana; no incorpora mortalidad, cambios de manejo ni variación individual.';
+      return {answer,kind:'projection',data:{growth,threshold,bands,table,projectedCount:projected.length,avg}};
+    }
+
+    // PETICIONES BÁSICAS DE DATOS DE COSECHAS REALIZADAS (sin palabras técnicas obligatorias)
+    if(iaHasBasicDataIntent(question) && /(cosecha|cosechas|cosechado|cosechadas)/.test(nq)
+       && !/(programa|programacion|agenda|calendario|hoy|manana|esta semana|proxima semana)/.test(nq)
+       && !asksAnalysis){
+      if(/por ciclo|cada ciclo|sitio y ciclo|por sitio y ciclo|cada granja|cada sitio|general.*ciclo|resumen.*ciclo|por separado/.test(nq)){
+        const ht=iaHarvestTechnicalAnswer(ctx,question);
+        if(ht) return ht;
+      }
+      const h=iaHarvestSummary(ctx,question);
+      if(h){
+        const rr=h.rows,denBio=rr.reduce((a,r)=>a+r.biomasa_kg,0);
+        const fca=denBio?rr.reduce((a,r)=>a+(r.fca||0)*r.biomasa_kg,0)/denBio:null;
+        const peso=denBio?rr.reduce((a,r)=>a+(r.peso_promedio_g||0)*r.biomasa_kg,0)/denBio:null;
+        const sob=denBio?rr.reduce((a,r)=>a+(r.sobrevivencia_pct||0)*r.biomasa_kg,0)/denBio:null;
+        const crec=denBio?rr.reduce((a,r)=>a+(r.crec_semanal_promedio||0)*r.biomasa_kg,0)/denBio:null;
+        const bha=h.totalHa>0?h.totalBio/h.totalHa:null;
+        let answer='Datos de cosechas realizadas'+(h.requested?' · '+h.requested:'')+(h.ciclo?' · Ciclo '+h.ciclo:'')+':\n'
+          +'• Estanques: '+iaFmt(h.totalN,0)+'\n'
+          +'• Has cosechadas: '+iaFmt(h.totalHa,2)+' ha\n'
+          +'• Biomasa: '+iaFmt(h.totalBio/1000,1)+' t ('+iaFmt(h.totalBio,0)+' kg)\n'
+          +'• Biomasa kg/ha: '+iaFmt(bha,0)+'\n'
+          +'• Peso: '+iaFmt(peso,1)+' g\n'
+          +'• Sobrevivencia: '+iaFmt(sob,1)+'%\n'
+          +'• Crecimiento: '+iaFmt(crec,2)+' g/sem\n'
+          +'• FCA: '+iaFmt(fca,2);
+        if(!h.requested&&rr.length>1) answer+='\n\nPor sitio:\n'+rr.map(r=>'• '+r.sitio+': '+r.estanques+' est. · '+iaFmt(r.hectareas_cosechadas,2)+' ha · '+iaFmt(r.biomasa_kg/1000,1)+' t · FCA '+iaFmt(r.fca,2)).join('\n');
+        return {answer,kind:'harvest_summary',data:{bySite:rr,totalBiomassKg:h.totalBio,totalHa:h.totalHa,totalPonds:h.totalN,fca,peso,sob,crec}};
+      }
+    }
+
+    // RESUMEN LOCAL COMPLETO DE COSECHAS REALIZADAS
+    if(/resumen/.test(nq) && /(cosecha|cosechas|cosechado|cosechadas)/.test(nq) && !asksAnalysis){
+      const h=iaHarvestSummary(ctx,question);
+      if(h){
+        const rr=h.rows;
+        const denBio=rr.reduce((a,r)=>a+r.biomasa_kg,0);
+        const fca=denBio?rr.reduce((a,r)=>a+(r.fca||0)*r.biomasa_kg,0)/denBio:null;
+        const peso=denBio?rr.reduce((a,r)=>a+(r.peso_promedio_g||0)*r.biomasa_kg,0)/denBio:null;
+        const sob=denBio?rr.reduce((a,r)=>a+(r.sobrevivencia_pct||0)*r.biomasa_kg,0)/denBio:null;
+        const crec=denBio?rr.reduce((a,r)=>a+(r.crec_semanal_promedio||0)*r.biomasa_kg,0)/denBio:null;
+        const bha=h.totalHa>0?h.totalBio/h.totalHa:null;
+
+        const scope=(h.requested?h.requested:'todos los sitios')+(h.ciclo?' · Ciclo '+h.ciclo:'');
+        let answer='Resumen de cosechas realizadas · '+scope+':\n\n'
+          +'• Estanques cosechados: '+iaFmt(h.totalN,0)+'\n'
+          +'• Hectáreas cosechadas: '+iaFmt(h.totalHa,2)+' ha\n'
+          +'• Biomasa cosechada: '+iaFmt(h.totalBio/1000,1)+' t ('+iaFmt(h.totalBio,0)+' kg)\n'
+          +'• Biomasa promedio: '+(bha!==null?iaFmt(bha,0)+' kg/ha':'—')+'\n'
+          +'• FCA: '+(fca!==null?iaFmt(fca,2):'—')+'\n'
+          +'• Peso promedio: '+(peso!==null?iaFmt(peso,1)+' g':'—')+'\n'
+          +'• Sobrevivencia: '+(sob!==null?iaFmt(sob,1)+'%':'—')+'\n'
+          +'• Crecimiento semanal: '+(crec!==null?iaFmt(crec,2)+' g/sem':'—');
+
+        if(!h.requested && rr.length>1){
+          answer+='\n\nPor sitio:\n'+rr.map(r=>
+            '• '+r.sitio+': '+iaFmt(r.estanques,0)+' cosechas · '
+            +iaFmt(r.hectareas_cosechadas,2)+' ha · '
+            +iaFmt(r.biomasa_kg/1000,1)+' t · FCA '+iaFmt(r.fca,2)
+          ).join('\n');
+        }
+
+        return {answer,kind:'harvest_summary',data:{bySite:rr,totalBiomassKg:h.totalBio,totalHa:h.totalHa,totalPonds:h.totalN,fca,peso,sob,crec}};
+      }
+    }
+
+    // HECTÁREAS COSECHADAS: general / sitio / ciclo
+    if(/hectareas|hectáreas|\\bhas\\b/.test(nq) && /(cosech|cosecha)/.test(nq) && !asksAnalysis){
+      const h=iaHarvestSummary(ctx,question);
+      if(h){
+        let answer='Hectáreas cosechadas'+(h.requested?' de '+h.requested:'')+(h.ciclo?' · Ciclo '+h.ciclo:'')+': '+iaFmt(h.totalHa,2)+' ha.';
+        if(!h.requested && h.rows.length>1){
+          answer+='\n\nPor sitio:\n'+h.rows.map(r=>'• '+r.sitio+': '+iaFmt(r.hectareas_cosechadas,2)+' ha').join('\n');
+        }
+        return {answer,kind:'harvest_hectares',data:{bySite:h.rows,totalHa:h.totalHa}};
+      }
+    }
+
+    // NÚMERO DE ESTANQUES COSECHADOS: general / sitio / ciclo
+    if(/cuantos?|numero|número|cantidad|total/.test(nq) && /estanques?/.test(nq) && /(cosechados?|cosecha)/.test(nq) && !asksAnalysis){
+      const h=iaHarvestSummary(ctx,question);
+      if(h){
+        let answer='Estanques cosechados'+(h.requested?' de '+h.requested:'')+(h.ciclo?' · Ciclo '+h.ciclo:'')+': '+iaFmt(h.totalN,0)+'.';
+        if(!h.requested && h.rows.length>1){
+          answer+='\n\nPor sitio:\n'+h.rows.map(r=>'• '+r.sitio+': '+iaFmt(r.estanques,0)).join('\n');
+        }
+        return {answer,kind:'harvest_ponds',data:{bySite:h.rows,total:h.totalN}};
+      }
+    }
+
+    // BIOMASA COSECHADA: debe evaluarse antes de biomasa activa.
+    if(/biomasa|produccion|producción/.test(nq) && /(cosech|cosecha|cosechada|cosechado|producid|levantad|historica|histórica)/.test(nq) && !asksAnalysis){
+      const h=iaHarvestSummary(ctx,question); if(h){
+        const title=h.requested?'Biomasa cosechada de '+h.requested:'Biomasa cosechada acumulada';
+        let answer=title+': '+iaFmt(h.totalBio/1000,1)+' t ('+iaFmt(h.totalBio,0)+' kg), en '+iaFmt(h.totalN,0)+' registros de estanques cosechados.';
+        if(!h.requested && h.rows.length>1) answer+='\n\nPor sitio:\n'+h.rows.sort((a,b)=>b.biomasa_kg-a.biomasa_kg).map(r=>'• '+r.sitio+': '+iaFmt(r.biomasa_kg/1000,1)+' t · '+iaFmt(r.estanques,0)+' cosechas').join('\n');
+        return {answer,kind:'harvest_biomass',data:{bySite:h.rows,total:h.totalBio}};
+      }
+    }
+
+    // COSECHA ACUMULADA expresada de forma natural, aunque no diga "biomasa".
+    if(/(cuanto|cuanta|cuantas|total|toneladas|kilos|kg|llevamos|hemos)/.test(nq) && /(cosechado|cosechada|cosechamos|hemos cosechado|llevamos cosechado|produccion cosechada)/.test(nq) && !asksAnalysis){
+      const h=iaHarvestSummary(ctx,question); if(h){
+        let answer=(h.requested?'Cosecha acumulada de '+h.requested:'Cosecha acumulada')+': '+iaFmt(h.totalBio/1000,1)+' t ('+iaFmt(h.totalBio,0)+' kg), en '+iaFmt(h.totalN,0)+' registros de estanques cosechados.';
+        if(!h.requested && h.rows.length>1) answer+='\n\nPor sitio:\n'+h.rows.slice().sort((a,b)=>b.biomasa_kg-a.biomasa_kg).map(r=>'• '+r.sitio+': '+iaFmt(r.biomasa_kg/1000,1)+' t · '+iaFmt(r.estanques,0)+' cosechas').join('\n');
+        return {answer,kind:'harvest_biomass',data:{bySite:h.rows,total:h.totalBio}};
+      }
+    }
+
+    // COMPONENTES DE COSTO: alimento, larva, nómina, diesel, etc.
+    // También identifica automáticamente cuál cuenta representa el mayor costo.
+    if(/costo|costos|gasto|gastos|gastado|gastamos|llevamos|traemos/.test(nq) && !asksAnalysis){
+      const costComponent=iaCostComponentAnswer(ctx,question);
+      if(costComponent) return costComponent;
+    }
+
+    // COSTOS: general, por sitio, directos, indirectos y costo/kg.
+    if(/costo|costos|gasto|gastos|importe|costeo|que costo llevamos|qué costo llevamos|costo que llevamos|que costos llevamos|qué costos llevamos|como vamos de costo|cómo vamos de costo|costo actual|costo hasta hoy|costo de produccion|costo produccion|costo operativo|costo total|costo general|costos generales|costo directo|costo indirecto|costo por kg|costo\/kg|costo kg|costo kilo|costo por kilo|cuanto cuesta producir|cuánto cuesta producir|cuanto sale producir|cuánto sale producir|cuanto cuesta el kilo|cuánto cuesta el kilo|precio de produccion por kg|precio de producción por kg/.test(nq) && !asksAnalysis){
+      const c=iaCostsSummary(ctx,question); if(c){
+        const asksCostKg=/(costo por kg|costo\/kg|costo kg|costo kilo|costo por kilo|cuanto cuesta el kilo|cuánto cuesta el kilo|precio de produccion por kg|precio de producción por kg)/.test(nq);
+        let answer=(c.requested?'Costos acumulados de '+c.requested:'Costos acumulados del portal')+': $'+iaFmt(c.total,0)+'.\nCosto directo: $'+iaFmt(c.direct,0)+' · costo indirecto: $'+iaFmt(c.indirect,0)+'.';
+
+        if(c.requested && c.rows[0]){
+          const r=c.rows[0];
+          if(r.costo_por_kg!==null){
+            answer+='\nCosto por kg: $'+iaFmt(r.costo_por_kg,2)+'/kg.';
+            if(asksCostKg){
+              answer+='\nDirecto/kg: $'+iaFmt(r.costo_directo_por_kg,2)+' · Indirecto/kg: $'+iaFmt(r.costo_indirecto_por_kg,2)+'.';
+              answer+='\nBiomasa general usada: '+iaFmt(r.biomasa_general_kg,0)+' kg (activa '+iaFmt(r.biomasa_activa_kg,0)+' + cosechada '+iaFmt(r.biomasa_cosechada_kg,0)+').';
+            }
+          }
+        }
+
+        if(!c.requested && c.rows.length>1){
+          if(asksCostKg && c.costoKg!==null){
+            answer+='\nCosto/kg general: $'+iaFmt(c.costoKg,2)+'/kg · Directo/kg $'+iaFmt(c.directoKg,2)+' · Indirecto/kg $'+iaFmt(c.indirectoKg,2)+'.';
+            answer+='\nBiomasa general usada: '+iaFmt(c.kgGeneral,0)+' kg.';
+          }
+          answer+='\n\nPor sitio:\n'+c.rows.slice().sort((a,b)=>b.costo_total-a.costo_total).map(r=>
+            '• '+r.sitio+': $'+iaFmt(r.costo_total,0)
+            +(r.costo_por_kg!==null?' · $'+iaFmt(r.costo_por_kg,2)+'/kg':'')
+          ).join('\n');
+        }
+        return {answer,kind:'costs',data:{bySite:c.rows,total:c.total,direct:c.direct,indirect:c.indirect,kgGeneral:c.kgGeneral,costoKg:c.costoKg,directoKg:c.directoKg,indirectoKg:c.indirectoKg}};
+      }
+    }
+
+
+    // MÉTRICAS DE COSECHAS HISTÓRICAS: FCA, peso, sobrevivencia y crecimiento cosechado.
+    if(/(fca|factor de conversion|peso promedio|talla promedio|sobrevivencia|supervivencia|crecimiento)/.test(nq) && /(cosech|cosechado|cosechas realizadas|historico)/.test(nq) && !asksAnalysis){
+      const h=iaHarvestSummary(ctx,question); if(h){
+        const rr=h.rows;
+        if(/fca|factor de conversion/.test(nq)){
+          const num=rr.reduce((a,r)=>a+(r.fca||0)*r.biomasa_kg,0),den=rr.reduce((a,r)=>a+r.biomasa_kg,0),v=den?num/den:null;
+          let answer='FCA de cosechas realizadas: '+iaFmt(v,2)+'.'; if(!h.requested&&rr.length>1) answer+='\n\nPor sitio:\n'+rr.map(r=>'• '+r.sitio+': '+iaFmt(r.fca,2)).join('\n');
+          return {answer,kind:'harvest_fca',data:{bySite:rr,value:v}};
+        }
+        if(/peso promedio|talla promedio/.test(nq)){
+          const den=rr.reduce((a,r)=>a+r.biomasa_kg,0),v=den?rr.reduce((a,r)=>a+(r.peso_promedio_g||0)*r.biomasa_kg,0)/den:null;
+          let answer='Peso promedio cosechado: '+iaFmt(v,1)+' g.'; if(!h.requested&&rr.length>1) answer+='\n\nPor sitio:\n'+rr.map(r=>'• '+r.sitio+': '+iaFmt(r.peso_promedio_g,1)+' g').join('\n');
+          return {answer,kind:'harvest_weight',data:{bySite:rr,value:v}};
+        }
+        if(/sobrevivencia|supervivencia/.test(nq)){
+          const den=rr.reduce((a,r)=>a+r.biomasa_kg,0),v=den?rr.reduce((a,r)=>a+(r.sobrevivencia_pct||0)*r.biomasa_kg,0)/den:null;
+          let answer='Sobrevivencia promedio de cosechas: '+iaFmt(v,1)+'%.'; if(!h.requested&&rr.length>1) answer+='\n\nPor sitio:\n'+rr.map(r=>'• '+r.sitio+': '+iaFmt(r.sobrevivencia_pct,1)+'%').join('\n');
+          return {answer,kind:'harvest_survival',data:{bySite:rr,value:v}};
+        }
+        if(/crecimiento/.test(nq)){
+          const den=rr.reduce((a,r)=>a+r.biomasa_kg,0),v=den?rr.reduce((a,r)=>a+(r.crec_semanal_promedio||0)*r.biomasa_kg,0)/den:null;
+          let answer='Crecimiento semanal promedio en cosechas realizadas: '+iaFmt(v,2)+' g/sem.'; if(!h.requested&&rr.length>1) answer+='\n\nPor sitio:\n'+rr.map(r=>'• '+r.sitio+': '+iaFmt(r.crec_semanal_promedio,2)+' g/sem').join('\n');
+          return {answer,kind:'harvest_growth',data:{bySite:rr,value:v}};
         }
       }
     }
 
-    // KPIs corporativos y meta del portal
-    if(window.ciaKpis) ctx.kpis_corporativos = window.ciaKpis;
-    if(window.ciaMeta) ctx.meta = window.ciaMeta;
+    if(!hasActive) return null;
 
-    return ctx;
+    // Conteos exactos por talla.
+    if(threshold!==null && /(cuantos?|numero|cantidad|estanques|arriba|mayores?|superiores?)/.test(nq) && !asksAnalysis){
+      const hit=rows.filter(r=>{const w=iaNum(iaField(r,['peso_actual_g','peso_g','peso_actual'])); return w!==null&&w>=threshold;})
+        .sort((a,b)=>(iaNum(b.peso_actual_g)||0)-(iaNum(a.peso_actual_g)||0));
+      const biomass=hit.reduce((a,r)=>a+(iaNum(iaField(r,['biomasa_total_kg','biomasa_actual_kg','biomasa_kg']))||0),0);
+      let answer='Hay '+hit.length+' estanques con peso actual ≥ '+iaFmt(threshold,1)+' g en '+scopeLabel+'.'+(biomass>0?' Representan '+iaFmt(biomass/1000,1)+' t ('+iaFmt(biomass,0)+' kg) de biomasa.':'');
+      const groups=iaGroupOperationalRows(hit,question);
+      if(groups){
+        answer+='\n\n'+groups.map(g=>g.label+': '+g.rows.length+' estanques\n'+g.rows.slice(0,12).map(r=>'• Est. '+r.estanque+' · '+iaFmt(iaNum(r.peso_actual_g),1)+' g').join('\n')).join('\n\n');
+      }else if(hit.length){
+        answer+='\n\nEstanques:\n'+hit.slice(0,20).map(r=>'• Est. '+r.estanque+' · '+(r.sitio==='SANTAFE'?'Santa Fe':r.sitio)+' · '+(r.seccion||'—')+' · '+iaFmt(iaNum(r.peso_actual_g),1)+' g').join('\n');
+      }
+      return {answer,kind:'count',data:{table:iaOperationalTable(hit,40),summary:iaOperationalSummary(hit)}};
+    }
+
+    // Biomasa ACTIVA total y por sitio.
+    if(/biomasa|produccion|producción/.test(nq) && /(total|actual|activa|por sitio|cuanta|cuánta|cuanto|cuánto|tenemos|hay|llevamos|traemos|mayor|menor|mas alta|mas baja|sitio.*biomasa|biomasa.*sitio|produccion.*sitio|producción.*sitio)/.test(nq) && !/(cosech|histor|proyect)/.test(nq) && !asksAnalysis){
+      const total=rows.reduce((a,r)=>a+(iaNum(iaField(r,['biomasa_actual_kg','biomasa_kg']))||0),0);
+      const by={}; rows.forEach(r=>{const s=r.sitio||'Sin sitio'; by[s]=(by[s]||0)+(iaNum(iaField(r,['biomasa_actual_kg','biomasa_kg']))||0);});
+      const arr=Object.entries(by).sort((a,b)=>b[1]-a[1]);
+      let answer='Biomasa activa: '+iaFmt(total/1000,1)+' t ('+iaFmt(total,0)+' kg) en '+rows.length+' estanques.';
+      if(arr.length>1) answer+='\n\nPor sitio:\n'+arr.map(([s,v])=>'• '+s+': '+iaFmt(v/1000,1)+' t').join('\n');
+      return {answer,kind:'biomass',data:{bySite:arr,total}};
+    }
+
+    // CRECIMIENTO activo: general y por sitio. Reporta promedio ponderado por biomasa y mediana.
+    if(/crecimiento|incremento semanal|inc semanal|ganancia semanal/.test(nq) && !/(bajo|desviacion|atipic|proyect)/.test(nq) && !asksAnalysis){
+      const by=iaGroupRowsBySite(rows);
+      const weighted=iaWeightedAvg(rows,['inc_peso_semanal_g','incremento_semanal_g'],['biomasa_actual_kg','biomasa_kg']);
+      const med=iaMedian(rows.map(r=>iaNum(iaField(r,['inc_peso_semanal_g','incremento_semanal_g']))));
+      const simple=iaSimpleAvg(rows.map(r=>iaField(r,['inc_peso_semanal_g','incremento_semanal_g'])));
+      const siteRows=Object.entries(by).map(([sitio,rr])=>({sitio,crecimiento_ponderado_g:iaWeightedAvg(rr,['inc_peso_semanal_g','incremento_semanal_g'],['biomasa_actual_kg','biomasa_kg']),crecimiento_mediano_g:iaMedian(rr.map(r=>iaNum(iaField(r,['inc_peso_semanal_g','incremento_semanal_g'])))),estanques:rr.length}));
+      let answer='Crecimiento semanal actual de '+scopeLabel+': '+(weighted!==null?iaFmt(weighted,2)+' g/sem ponderado por biomasa':'sin promedio ponderado disponible')+'. Mediana: '+iaFmt(med,2)+' g/sem'+(simple!==null?' · promedio simple: '+iaFmt(simple,2)+' g/sem':'')+'.';
+      if(siteRows.length>1) answer+='\n\nPor sitio:\n'+siteRows.sort((a,b)=>(b.crecimiento_ponderado_g||-99)-(a.crecimiento_ponderado_g||-99)).map(r=>'• '+r.sitio+': '+iaFmt(r.crecimiento_ponderado_g,2)+' g/sem · mediana '+iaFmt(r.crecimiento_mediano_g,2)+' · '+r.estanques+' estanques').join('\n');
+      return {answer,kind:'growth',data:{bySite:siteRows,weighted,median:med,simple}};
+    }
+
+    // Peso actual promedio general y por sitio.
+    if(/peso promedio|talla promedio|peso actual/.test(nq) && !asksAnalysis){
+      const by=iaGroupRowsBySite(rows); const w=iaWeightedAvg(rows,['peso_actual_g','peso_g'],['biomasa_actual_kg','biomasa_kg']);
+      const siteRows=Object.entries(by).map(([sitio,rr])=>({sitio,peso_promedio_g:iaWeightedAvg(rr,['peso_actual_g','peso_g'],['biomasa_actual_kg','biomasa_kg']),estanques:rr.length}));
+      let answer='Peso promedio actual ponderado por biomasa: '+iaFmt(w,2)+' g.';
+      if(siteRows.length>1) answer+='\n\nPor sitio:\n'+siteRows.map(r=>'• '+r.sitio+': '+iaFmt(r.peso_promedio_g,1)+' g').join('\n');
+      return {answer,kind:'weight',data:{bySite:siteRows,value:w}};
+    }
+
+    // Sobrevivencia actual general y por sitio.
+    if(/sobrevivencia|supervivencia/.test(nq) && !/(baja|desviacion|atipic)/.test(nq) && !asksAnalysis){
+      const by=iaGroupRowsBySite(rows); const v=iaWeightedAvg(rows,['sobrevivencia_actual_pct'],['biomasa_actual_kg','biomasa_kg']);
+      const siteRows=Object.entries(by).map(([sitio,rr])=>({sitio,sobrevivencia_pct:iaWeightedAvg(rr,['sobrevivencia_actual_pct'],['biomasa_actual_kg','biomasa_kg']),estanques:rr.length}));
+      let answer='Sobrevivencia actual ponderada por biomasa: '+iaFmt(v,1)+'%.';
+      if(siteRows.length>1) answer+='\n\nPor sitio:\n'+siteRows.map(r=>'• '+r.sitio+': '+iaFmt(r.sobrevivencia_pct,1)+'%').join('\n');
+      return {answer,kind:'survival',data:{bySite:siteRows,value:v}};
+    }
+
+    // FCA semanal general y por sitio.
+    if(/fca|factor de conversion/.test(nq) && !/(alto|desviacion|atipic)/.test(nq) && !asksAnalysis){
+      const by=iaGroupRowsBySite(rows); const v=iaWeightedAvg(rows,['fca_semanal'],['biomasa_actual_kg','biomasa_kg']);
+      const siteRows=Object.entries(by).map(([sitio,rr])=>({sitio,fca_semanal:iaWeightedAvg(rr,['fca_semanal'],['biomasa_actual_kg','biomasa_kg']),estanques:rr.length}));
+      let answer='FCA semanal ponderado por biomasa: '+iaFmt(v,2)+'.';
+      if(siteRows.length>1) answer+='\n\nPor sitio:\n'+siteRows.map(r=>'• '+r.sitio+': '+iaFmt(r.fca_semanal,2)).join('\n');
+      return {answer,kind:'fca',data:{bySite:siteRows,value:v}};
+    }
+
+    // Número de estanques activos y hectáreas.
+    if(/cuantos? estanques activos|numero de estanques activos|estanques tenemos|hectareas activas|cuantas hectareas/.test(nq) && !asksAnalysis){
+      const ha=rows.reduce((a,r)=>a+(iaNum(r.has)||0),0), by=iaGroupRowsBySite(rows);
+      const siteRows=Object.entries(by).map(([sitio,rr])=>({sitio,estanques:rr.length,has:rr.reduce((a,r)=>a+(iaNum(r.has)||0),0)}));
+      let answer='Activos: '+rows.length+' estanques y '+iaFmt(ha,1)+' ha en '+scopeLabel+'.';
+      if(siteRows.length>1) answer+='\n\nPor sitio:\n'+siteRows.map(r=>'• '+r.sitio+': '+r.estanques+' estanques · '+iaFmt(r.has,1)+' ha').join('\n');
+      return {answer,kind:'active_count',data:{bySite:siteRows,total:rows.length,has:ha}};
+    }
+
+
+    // Alimento diario, semanal y acumulado: general y por sitio.
+    if(/alimento|alimentacion|racion/.test(nq) && !asksAnalysis){
+      const by=iaGroupRowsBySite(rows);
+      const calc=rr=>({diario:rr.reduce((a,r)=>a+(iaNum(iaField(r,['alimento_diario_kg']))||0),0),semanal:rr.reduce((a,r)=>a+(iaNum(iaField(r,['alimento_semanal_total_kg','alimento_semanal_kg']))||0),0),acumulado:rr.reduce((a,r)=>a+(iaNum(iaField(r,['alimento_acumulado_kg']))||0),0)});
+      const t=calc(rows), siteRows=Object.entries(by).map(([sitio,rr])=>Object.assign({sitio},calc(rr)));
+      let metric=/acumulad/.test(nq)?'acumulado':(/semanal|semana/.test(nq)?'semanal':'diario');
+      let answer='Alimento '+metric+' de '+scopeLabel+': '+iaFmt(t[metric],0)+' kg'+(metric==='diario'?' por día':'')+'.';
+      if(siteRows.length>1) answer+='\n\nPor sitio:\n'+siteRows.map(r=>'• '+r.sitio+': '+iaFmt(r[metric],0)+' kg').join('\n');
+      return {answer,kind:'feed',data:{bySite:siteRows,metric,total:t[metric]}};
+    }
+
+    // Población actual / organismos y densidad.
+    if(/poblacion|organismos actuales|camarones actuales|cuantos camarones|organismos tenemos/.test(nq) && !asksAnalysis){
+      const by=iaGroupRowsBySite(rows);
+      const pop=rows.reduce((a,r)=>a+(iaNum(iaField(r,['poblacion_actual','org_actuales','organismos_actuales']))||0),0);
+      const siteRows=Object.entries(by).map(([sitio,rr])=>({sitio,poblacion:rr.reduce((a,r)=>a+(iaNum(iaField(r,['poblacion_actual','org_actuales','organismos_actuales']))||0),0),estanques:rr.length}));
+      let answer='Población actual estimada: '+iaFmt(pop,0)+' organismos en '+rows.length+' estanques.';
+      if(siteRows.length>1) answer+='\n\nPor sitio:\n'+siteRows.map(r=>'• '+r.sitio+': '+iaFmt(r.poblacion,0)+' organismos').join('\n');
+      return {answer,kind:'population',data:{bySite:siteRows,total:pop}};
+    }
+
+    // Biomasa / crecimiento / talla por SECCIÓN.
+    if(/por seccion|por sección/.test(question) && /biomasa/.test(nq) && !asksAnalysis){
+      const by={}; rows.forEach(r=>{const s=r.seccion||'Sin sección';by[s]=(by[s]||0)+(iaNum(iaField(r,['biomasa_actual_kg','biomasa_kg']))||0);});
+      const arr=Object.entries(by).sort((a,b)=>b[1]-a[1]);
+      return {answer:'Biomasa activa por sección:\n'+arr.map(([s,v])=>'• '+s+': '+iaFmt(v/1000,1)+' t').join('\n'),kind:'biomass_section',data:{bySection:arr}};
+    }
+
+    // Rangos exactos de talla.
+    const range=iaExtractRange(question);
+    if(range && /(cuantos?|numero|cantidad|estanques|talla|peso)/.test(nq) && !asksAnalysis){
+      const hit=rows.filter(r=>{const w=iaNum(iaField(r,['peso_actual_g','peso_g','peso_actual']));return w!==null&&w>=range.min&&w<=range.max;});
+      const bio=hit.reduce((a,r)=>a+(iaNum(iaField(r,['biomasa_actual_kg','biomasa_kg']))||0),0);
+      return {answer:'Hay '+hit.length+' estanques entre '+iaFmt(range.min,1)+' y '+iaFmt(range.max,1)+' g'+(bio?' y representan '+iaFmt(bio/1000,1)+' t de biomasa activa':'')+'.',kind:'range_count',data:{table:hit.slice(0,20).map(r=>({estanque:r.estanque,sitio:r.sitio,seccion:r.seccion,peso_actual_g:iaNum(r.peso_actual_g),biomasa_actual_kg:iaNum(r.biomasa_actual_kg)}))}};
+    }
+
+    // Resumen técnico / biometría / producción activa con lenguaje combinado.
+    if(hasActive && iaIsTechnicalProductionQuestion(question) && !asksAnalysis){
+      const namedMetric=iaCurrentMetricFromQuestion(question);
+      // Si pide explícitamente una sola métrica, dejamos que el motor de métricas la resuelva.
+      // Si pide datos técnicos/biometría/resumen o múltiples variables, usamos el resumen técnico.
+      const requestedMetrics=iaRequestedTechnicalMetrics(question);
+      const nTech=iaNormText(question);
+      const asksTechnical=/(datos tecnicos|datos técnicos|biometria|biometría|resumen tecnico|resumen técnico|resumen general|produccion activa|producción activa|como va|cómo va|como estan|cómo están|como viene|cómo viene)/.test(nTech);
+      if(asksTechnical || requestedMetrics.length>1 || !namedMetric){
+        const tech=iaTechnicalProductionAnswer(all,question);
+        if(tech) return tech;
+      }
+    }
+
+    // Datos genéricos de producción expresados en lenguaje natural:
+    // Ejemplos: 'dame biomasa actual de cada sitio', 'qué tenemos en Santa Fe',
+    // 'pásame datos del módulo MT', 'cómo va Owen 2', 'mándame los datos por estanque'.
+    // se evalúa después de métricas específicas para no interceptar "quiero saber crecimiento/costo/etc."
+    if(hasActive && iaIsGenericOperationalDataQuestion(question) && !asksAnalysis){
+      const pond=iaPondNumberFromQuestion(question);
+      if(!pond && !iaIsPondGroupDetailQuestion(question)){
+        const generic=iaGenericOperationalAnswer(all,question);
+        if(generic) return generic;
+      }
+    }
+
+    // Resumen exacto local.
+    if(/resumen/.test(nq) && /(actual|produccion|activo|ejecutivo)/.test(nq) && !asksAnalysis){
+      const bio=rows.reduce((a,r)=>a+(iaNum(r.biomasa_actual_kg)||0),0); const med=iaMedian(rows.map(r=>iaNum(r.inc_peso_semanal_g))); const grow=iaWeightedAvg(rows,['inc_peso_semanal_g'],['biomasa_actual_kg']);
+      return {answer:'Resumen local: '+rows.length+' estanques activos, '+iaFmt(bio/1000,1)+' t de biomasa, crecimiento ponderado de '+iaFmt(grow,2)+' g/sem y mediana de '+iaFmt(med,2)+' g/sem.',kind:'summary'};
+    }
+
+    // Desviaciones precalculadas: listado/conteo local.
+    if(/desviacion|crecimiento bajo|fca alto|sobrevivencia baja|anomalia|atipic/.test(nq) && !asksAnalysis){
+      const a=ctx.analisis_local||iaBuildAnalytics(ctx); let ds=Array.isArray(a.desviaciones)?a.desviaciones:[];
+      const site=iaSiteFilterFromQuestion(question,all), sec=iaSectionFilterFromQuestion(question,all); if(site) ds=ds.filter(d=>d.sitio===site); if(sec) ds=ds.filter(d=>d.seccion===sec);
+      const top=ds.slice(0,10);
+      return {answer:'Detecté '+ds.length+' estanques con al menos una desviación estadística frente a su grupo comparable.'+(top.length?'\n\nPrincipales casos:\n'+top.map(d=>'• Est. '+d.estanque+' · '+d.sitio+' · '+(d.seccion||'')+' · '+d.flags.map(f=>f.tipo.replaceAll('_',' ')).join(', ')).join('\n'):''),kind:'deviation',data:{table:top}};
+    }
+    return null; // Solo preguntas interpretativas/ambiguas usan Haiku.
   }
 
-  window.iaSend = async function(){
+  function iaRenderLocalResult(parent,result){
+    if(!parent||!result||!result.data) return;
+    const d=result.data; const box=document.createElement('div'); box.className='ia-rich'; let html='';
+    function bars(title,arr,labelFn,valueFn,displayFn){
+      if(!Array.isArray(arr)||!arr.length) return; const vals=arr.map(valueFn).map(v=>Number(v)||0), max=Math.max(...vals,1);
+      html+='<div class="ia-mini-title">'+title+'</div>';
+      arr.forEach((x,i)=>{const v=vals[i]; html+='<div class="ia-bar-row"><span>'+labelFn(x)+'</span><div class="ia-bar-track"><div class="ia-bar-fill" style="width:'+(v/max*100).toFixed(1)+'%"></div></div><b>'+displayFn(x)+'</b></div>';});
+    }
+    if(result.kind==='projection' && Array.isArray(d.bands) && d.bands.length) bars('Proyección de talla — próxima semana',d.bands,x=>x.label,x=>x.count,x=>String(x.count));
+    if(result.kind==='biomass' && Array.isArray(d.bySite)) bars('Biomasa activa por sitio',d.bySite,x=>x[0],x=>x[1],x=>iaFmt(x[1]/1000,1)+' t');
+    if(result.kind==='harvest_biomass' && Array.isArray(d.bySite)) bars('Biomasa cosechada por sitio',d.bySite,x=>x.sitio,x=>x.biomasa_kg,x=>iaFmt(x.biomasa_kg/1000,1)+' t');
+    if(result.kind==='harvest_hectares' && Array.isArray(d.bySite)) bars('Hectáreas cosechadas por sitio',d.bySite,x=>x.sitio,x=>x.hectareas_cosechadas||0,x=>iaFmt(x.hectareas_cosechadas,2)+' ha');
+    if(result.kind==='harvest_ponds' && Array.isArray(d.bySite)) bars('Estanques cosechados por sitio',d.bySite,x=>x.sitio,x=>x.estanques||0,x=>String(x.estanques||0));
+    if(result.kind==='harvest_summary' && Array.isArray(d.bySite)) bars('Biomasa cosechada por sitio',d.bySite,x=>x.ciclo?(x.sitio+' · '+iaCycleLabel(x.ciclo)):x.sitio,x=>x.biomasa_kg||0,x=>iaFmt((x.biomasa_kg||0)/1000,1)+' t');
+    if(result.kind==='costs' && Array.isArray(d.bySite)) bars('Costo acumulado por sitio',d.bySite,x=>x.sitio,x=>x.costo_total,x=>'$'+iaFmt(x.costo_total,0));
+    if(result.kind==='growth' && Array.isArray(d.bySite)) bars('Crecimiento semanal por sitio',d.bySite,x=>x.sitio,x=>Math.max(0,x.crecimiento_ponderado_g||0),x=>iaFmt(x.crecimiento_ponderado_g,2)+' g');
+    if(result.kind==='weight' && Array.isArray(d.bySite)) bars('Peso promedio por sitio',d.bySite,x=>x.sitio,x=>Math.max(0,x.peso_promedio_g||0),x=>iaFmt(x.peso_promedio_g,1)+' g');
+    if(result.kind==='survival' && Array.isArray(d.bySite)) bars('Sobrevivencia por sitio',d.bySite,x=>x.sitio,x=>Math.max(0,x.sobrevivencia_pct||0),x=>iaFmt(x.sobrevivencia_pct,1)+'%');
+    if(result.kind==='fca' && Array.isArray(d.bySite)) bars('FCA semanal por sitio',d.bySite,x=>x.sitio,x=>Math.max(0,x.fca_semanal||0),x=>iaFmt(x.fca_semanal,2));
+    if(result.kind==='active_count' && Array.isArray(d.bySite)) bars('Estanques activos por sitio',d.bySite,x=>x.sitio,x=>x.estanques,x=>String(x.estanques));
+    if(result.kind==='harvest_program' && Array.isArray(d.bySite)) bars('Biomasa programada por sitio',d.bySite,x=>x.sitio,x=>x.biomasa_kg||x.estanques,x=>(x.biomasa_kg?iaFmt(x.biomasa_kg/1000,1)+' t':String(x.estanques)));
+    if(result.kind==='feed' && Array.isArray(d.bySite)) bars('Alimento '+d.metric+' por sitio',d.bySite,x=>x.sitio,x=>x[d.metric]||0,x=>iaFmt(x[d.metric],0)+' kg');
+    if(result.kind==='feed_projection' && Array.isArray(d.bySite)) bars('Alimento proyectado por sitio',d.bySite,x=>x.sitio,x=>x.alimento_periodo_kg||0,x=>iaFmt((x.alimento_periodo_kg||0)/1000,1)+' t');
+    if(result.kind==='labs' && Array.isArray(d.byLab)) bars('Comparativo de laboratorios',d.byLab,x=>x.laboratorio,x=>(d.metric==='fca'?Math.max(0,5-(x.fca_semanal||0)):d.metric==='crecimiento'?(x.crecimiento_g||0):d.metric==='sobrevivencia'?(x.sobrevivencia_pct||0):d.metric==='peso'?(x.peso_g||0):(x.indice_rendimiento||0)),x=>(d.metric==='fca'?iaFmt(x.fca_semanal,2):d.metric==='crecimiento'?iaFmt(x.crecimiento_g,2)+' g':d.metric==='sobrevivencia'?iaFmt(x.sobrevivencia_pct,1)+'%':d.metric==='peso'?iaFmt(x.peso_g,1)+' g':iaFmt(x.indice_rendimiento,1)));
+    if(result.kind==='population' && Array.isArray(d.bySite)) bars('Población actual por sitio',d.bySite,x=>x.sitio,x=>x.poblacion||0,x=>iaFmt(x.poblacion,0));
+    if(result.kind==='biomass_section' && Array.isArray(d.bySection)) bars('Biomasa activa por sección',d.bySection,x=>x[0],x=>x[1],x=>iaFmt(x[1]/1000,1)+' t');
+    if(/^harvest_(fca|weight|survival|growth)$/.test(result.kind) && Array.isArray(d.bySite)){
+      const key=result.kind==='harvest_fca'?'fca':result.kind==='harvest_weight'?'peso_promedio_g':result.kind==='harvest_survival'?'sobrevivencia_pct':'crec_semanal_promedio';
+      const unit=result.kind==='harvest_fca'?'':result.kind==='harvest_weight'?' g':result.kind==='harvest_survival'?'%':' g/sem';
+      bars('Cosechas realizadas por sitio',d.bySite,x=>x.sitio,x=>Math.max(0,x[key]||0),x=>iaFmt(x[key],result.kind==='harvest_survival'?1:(result.kind==='harvest_weight'?1:2))+unit);
+    }
+    const operationalKinds=new Set(['pond_detail','pond_group_detail','operational_overview','low_growth_list','growth_band','biomass_ha_band','fca_band','survival_low','count','weight_top_local']);
+    const table=d.table;
+    if(Array.isArray(table)&&table.length){
+      if(operationalKinds.has(result.kind)){
+        const hasMultipleCycles=[...new Set(table.map(r=>r.ciclo).filter(v=>v!==null&&v!==undefined))].length>1;
+        const cols=hasMultipleCycles
+          ? ['sitio','ciclo','seccion','estanque','has','dc','org_m2_actual','sobrevivencia_pct','peso_actual_g','incremento_semanal_g','alimento_kg_ha_dia','fca']
+          : ['sitio','seccion','estanque','has','dc','org_m2_actual','sobrevivencia_pct','peso_actual_g','incremento_semanal_g','alimento_kg_ha_dia','fca'];
+        html+='<div class="ia-mini-title">Detalle</div><div class="ia-table-scroll"><table class="ia-mini-table ia-op-table"><thead><tr>'+cols.map(c=>'<th>'+iaPrettyFieldName(c)+'</th>').join('')+'</tr></thead><tbody>';
+        table.forEach(r=>{
+          html+='<tr>'+cols.map(c=>{
+            if(c==='estanque') return '<td>'+((r[c]===null||r[c]===undefined)?'—':String(r[c]).replace(/\.0+$/,''))+'</td>';
+            if(c==='ciclo') return '<td>'+((r[c]===null||r[c]===undefined)?'—':iaFmt(Number(r[c]),0))+'</td>';
+            if(c==='sitio'||c==='seccion') return '<td>'+String(r[c]??'—')+'</td>';
+            const v=iaNum(r[c]);
+            if(v===null) return '<td>—</td>';
+            if(c==='has') return '<td>'+iaFmt(v,1)+'</td>';
+            if(c==='dc') return '<td>'+iaFmt(v,0)+'</td>';
+            if(c==='org_m2_actual') return '<td>'+iaFmt(v,1)+'</td>';
+            if(c==='sobrevivencia_pct') return '<td>'+iaFmt(v,1)+'</td>';
+            if(c==='peso_actual_g') return '<td>'+iaFmt(v,1)+'</td>';
+            if(c==='incremento_semanal_g') return '<td>'+iaFmt(v,2)+'</td>';
+            if(c==='alimento_kg_ha_dia') return '<td>'+iaFmt(v,1)+'</td>';
+            if(c==='fca') return '<td>'+iaFmt(v,2)+'</td>';
+            return '<td>'+iaFmt(v,2)+'</td>';
+          }).join('')+'</tr>';
+        });
+        html+='</tbody></table></div>';
+
+        if(d.summary){
+          const s=d.summary;
+          const summaryRows=[
+            ['# Estanques',iaFmt(s.estanques,0)],
+            ['Has/Sup',iaFmt(s.has,1)],
+            ['Biomasa total',iaFmt(s.biomasa_total_kg,0)+' kg'],
+            ['Biomasa kg/ha',iaFmt(s.biomasa_kg_ha,0)],
+            ['Cm/2 actual',iaFmt(s.org_m2_actual,1)],
+            ['Sob %',iaFmt(s.sobrevivencia_pct,1)],
+            ['Peso (g)',iaFmt(s.peso_actual_g,1)],
+            ['g/sem',iaFmt(s.incremento_semanal_g,2)],
+            ['Alim kg/ha',iaFmt(s.alimento_kg_ha_dia,1)],
+            ['F.C.A',iaFmt(s.fca,2)]
+          ];
+          html+='<div class="ia-mini-title" style="margin-top:7px">Resumen general</div>';
+          html+='<table class="ia-summary-simple"><tbody>'
+            +summaryRows.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('')
+            +'</tbody></table>';
+        }
+      }else{
+        const cols=Object.keys(table[0]).slice(0,6); html+='<div class="ia-mini-title">Detalle</div><div class="ia-table-scroll"><table class="ia-mini-table"><thead><tr>'+cols.map(c=>'<th>'+iaPrettyFieldName(c)+'</th>').join('')+'</tr></thead><tbody>';
+        table.forEach(r=>{html+='<tr>'+cols.map(c=>'<td>'+((typeof r[c]==='number')?iaFmtByField(c,r[c],true):String(r[c]??'—'))+'</td>').join('')+'</tr>';}); html+='</tbody></table></div>';
+      }
+    }
+    if(html){ html+='<div class="ia-local-note">Cálculo realizado en el navegador con los datos del portal. No consumió créditos de Anthropic.</div>'; box.innerHTML=html; parent.appendChild(box); }
+  }
+
+  // ==================== V7.2: modo ahorro estricto ====================
+  // Si una pregunta parece ser una consulta exacta de datos del portal, jamás se
+  // envía a Haiku solo porque una expresión natural no coincidió con el router.
+  function iaIsClearlyInterpretive(q){
+    const n=iaNormText(q);
+    const strong=/(analiza|analisis|análisis|por que|por qué|porque|causa|causas|recomienda|recomendacion|recomendación|diagnost|correlacion|correlación|relaciona|relación entre|relacion entre|estrategia|que harias|qué harías|que revisarias|qué revisarías|conclusion|conclusiones|conclusión|patron|patrones|patrón|riesgo.*por que|riesgo.*por qué|que significa|qué significa)/.test(n);
+    if(strong) return true;
+    if(iaIsDescriptiveExplanationQuestion(q)) return false;
+    if(/(explica|explicame|explícame|interpreta|interpretame|interprétame)/.test(n)) return true;
+    return false;
+  }
+  function iaLooksLikePortalDataQuestion(q){
+    const n=iaNormText(q);
+    if(iaIsClearlyInterpretive(q)) return false;
+    const dataWords=/(produccion|producción|cultivo|biometria|biometría|biomasa|cosecha|cosechas|cosechado|programa|programacion|agenda|calendario|costo|costos|costeo|gasto|alimento|alimentacion|racion|bodyweight|body weight|poblacion|organismos|camarones|crecimiento|incremento|fca|conversion|sobrevivencia|supervivencia|peso|talla|hectareas|has\b|estanques|estanque|datos|dato|informacion|modulo|modulos|seccion|secciones|sitio|sitios|laboratorio|biomarina|aquapacific|genesis|ranking|top\b|densidad|org\/m2|orgm2|c\/m2|cm\/2|cam\/m2|kg\/ha|biomasa\/ha|proyect|indicador|kpi|ciclo|primer ciclo|segundo ciclo|tercer ciclo|1er ciclo|2do ciclo|3er ciclo)/.test(n);
+    const lookupWords=iaHasBasicDataIntent(q) || iaIsTechnicalProductionQuestion(q) || /(datos de la granja|datos del sitio|datos de los sitios|datos de laboratorio|datos de cosecha|cuantas has|cuántas has|hectareas por sitio|hectáreas por sitio|costo de alimento|costo de larva|costo de nomina|costo de nómina|costo mas fuerte|costo más fuerte|gasto de alimento|gasto de larva)/.test(n) || /(tenemos|hay|llevamos|actual|total|promedio|por sitio|por sitios|cada sitio|todos los sitios|por seccion|por modulo|por estanque|general|esta semana|manana|hoy|semana|mejor|peor|mayor|menor|arriba|debajo|entre|programad|solo|solamente|nada mas|nada más|unicamente|únicamente|especifico|específico|por separado|separado|separame|sepárame)/.test(n);
+    return dataWords && lookupWords;
+  }
+
+  function iaSafeLocalMissAnswer(q){
+    const n=iaNormText(q);
+    let tema='ese dato';
+    if(/cosech|programa/.test(n)) tema='cosechas/programación';
+    else if(/biomasa/.test(n)) tema='biomasa';
+    else if(/costo|gasto/.test(n)) tema='costos';
+    else if(/bodyweight|body weight/.test(n)) tema='BodyWeight/alimentación';
+    else if(/alimento|racion/.test(n)) tema='alimento';
+    else if(/crecimiento|incremento/.test(n)) tema='crecimiento';
+    else if(/fca|conversion/.test(n)) tema='FCA';
+    else if(/sobrevivencia|supervivencia/.test(n)) tema='sobrevivencia';
+    else if(/peso|talla/.test(n)) tema='peso/talla';
+    else if(/poblacion|organismos|camarones/.test(n)) tema='población';
+    else if(/laboratorio|biomarina|aquapacific|genesis/.test(n)) tema='laboratorios';
+    else if(/ranking|top/.test(n)) tema='ranking';
+    return {answer:'Modo ahorro: detecté que preguntas por '+tema+', que debería resolverse con los datos del portal, pero no pude identificar con seguridad la ruta local para esta redacción. No envié la consulta a Haiku ni consumí créditos. Intenta reformularla o pide un análisis explícito si quieres usar la IA.',kind:'local_guard'};
+  }
+
+  window.iaSend = async function(prefilled){
     const input = document.getElementById('ia-input');
-    const question = input.value.trim();
+    const question = (typeof prefilled === 'string' ? prefilled : input.value).trim();
     if(!question) return;
-    input.value = '';
-    iaAppend('user', question);
-    const loadingEl = iaAppend('bot loading', 'Consultando datos...');
-    document.getElementById('ia-send').disabled = true;
+    input.value=''; input.style.height='auto';
+    iaAppend('user',question);
+    iaHistory.push({role:'user',content:question}); iaSaveMemory();
+    const loading = iaAppend('bot','',{loading:true,meta:'Procesando datos…'});
+    const sendBtn = document.getElementById('ia-send'); sendBtn.disabled=true;
+
+    let context=null, resolvedQuestion=question, local=null;
+    try{
+      context=buildContext();
+      updateContextDate(context);
+      resolvedQuestion=iaResolveFollowup(question);
+      local=await iaLocalRouteAsync(context,resolvedQuestion);
+    }catch(localErr){
+      console.error('[IA local] Error de procesamiento',localErr,{question});
+      loading.bubble.textContent='Detecté un error interno al procesar los datos locales. No envié esta consulta a Haiku para evitar consumo o una respuesta basada en un contexto incompleto.';
+      loading.bubble.classList.remove('loading');
+      loading.meta.textContent='Protección local · Haiku NO utilizado · '+iaTime();
+      sendBtn.disabled=false;
+      return;
+    }
+
+    if(local){
+      loading.bubble.textContent=local.answer; loading.bubble.classList.remove('loading');
+      loading.meta.textContent=(local.kind==='harvest_program_error'?'Consulta local Firebase':(local.kind==='harvest_program'?'Programa de Cosechas · Firebase · sin Haiku':'Cálculo local · sin consumo de Haiku'))+' · '+iaTime();
+      try{
+        iaRenderLocalResult(loading.col,local);
+        if(local.kind==='deviation') iaRenderRich(loading.col,context,resolvedQuestion);
+      }catch(renderErr){
+        console.error('[IA local] Error al renderizar resultado',renderErr,{kind:local.kind});
+        loading.meta.textContent+=' · tabla no renderizada';
+      }
+      iaHistory.push({role:'assistant',content:local.answer});
+      iaRememberQuestion(question,resolvedQuestion,local);
+      iaSaveMemory();
+      sendBtn.disabled=false; return;
+    }
+
+    // Protección de costo: una consulta de dato del portal que no encontró ruta
+    // local NO cae silenciosamente a Haiku.
+    if(iaLooksLikePortalDataQuestion(resolvedQuestion)){
+      const guarded=iaSafeLocalMissAnswer(resolvedQuestion);
+      loading.bubble.textContent=guarded.answer; loading.bubble.classList.remove('loading');
+      loading.meta.textContent='Modo ahorro · Haiku NO utilizado · '+iaTime();
+      iaHistory.push({role:'assistant',content:guarded.answer});
+      iaRememberQuestion(question,resolvedQuestion,guarded); iaSaveMemory();
+      sendBtn.disabled=false; return;
+    }
 
     try{
-      const context = buildContext();
-      const res = await fetch(IA_ENDPOINT, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ question, context })
-      });
+      loading.meta.textContent='Consulta analítica · usando Haiku…';
+      const res = await fetch(IA_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:resolvedQuestion,context,history:iaHistory.slice(-10),memory:iaMemory})});
       if(!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      loadingEl.textContent = data.answer || 'No obtuve respuesta.';
-      loadingEl.classList.remove('loading');
+      const data = await res.json(); const answer = data.answer || 'No obtuve respuesta.';
+      loading.bubble.textContent = answer; loading.bubble.classList.remove('loading');
+      loading.meta.textContent = 'Haiku + análisis local · ' + iaTime();
+      iaRenderRich(loading.col,context,resolvedQuestion); iaHistory.push({role:'assistant',content:answer}); iaRememberQuestion(question,resolvedQuestion,{kind:'haiku'}); iaSaveMemory();
     }catch(err){
-      loadingEl.textContent = 'No se pudo consultar al asistente (' + err.message + '). Verifica que la Cloud Function esté desplegada y la URL configurada en IA_ENDPOINT.';
-      loadingEl.classList.remove('loading');
+      console.error('[IA Haiku] Error de consulta',err);
+      try{
+        const fallback = iaLocalFallback(context||{},question);
+        loading.bubble.textContent = fallback; loading.bubble.classList.remove('loading');
+        loading.meta.textContent = 'Análisis local (sin conexión al modelo) · ' + iaTime();
+        try{ iaRenderRich(loading.col,context||{},resolvedQuestion); }
+        catch(renderErr){ console.error('[IA render] Error en fallback',renderErr); }
+      }catch(fallbackErr){
+        console.error('[IA local] Error en fallback',fallbackErr);
+        loading.bubble.textContent='No pude completar la consulta por un error interno de procesamiento.';
+        loading.bubble.classList.remove('loading');
+        loading.meta.textContent='Error controlado · '+iaTime();
+      }
+    }finally{
+      sendBtn.disabled=false;
     }
-    document.getElementById('ia-send').disabled = false;
   };
 
-  document.getElementById('ia-input').addEventListener('keydown', function(e){
-    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); window.iaSend(); }
-  });
+  document.querySelectorAll('.ia-chip').forEach(btn=>btn.addEventListener('click',()=>window.iaSend(btn.dataset.q || '')));
+
+  const input = document.getElementById('ia-input');
+  input.addEventListener('input',function(){ this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,110)+'px'; });
+  input.addEventListener('keydown',function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); window.iaSend(); } });
+
+  try{ updateContextDate(buildContext()); }catch(err){}
 })();
 </script>
 
