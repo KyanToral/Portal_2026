@@ -560,8 +560,8 @@
   <script>
   (function(){
     // ===== Datos de configuración — KPIs reales (17-ago vs. semana anterior 10-ago) =====
-    const ciaKpis = [{"label":"Biomasa total activa","value":"1,046.2","unit":"t","delta":"-3.6% vs. semana anterior (GENERAL)","icon":"shrimp","color":"#00C9A7","bg":"rgba(0,201,167,.14)","tone":"warn"},{"label":"Biomasa / Ha (kg) activa","value":"922","unit":"kg/ha","delta":"+3.3% vs. semana anterior (GENERAL)","icon":"biomassPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa total cosechada","value":"1,892.8","unit":"t","delta":"291 estanques cosechados · Ciclo 1 2026","icon":"harvestBiomass","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa cosechada / Ha","value":"1,425","unit":"kg/ha","delta":"1,373.88 ha cosechadas · SANTAFE, 4-H, OWEN 1, OWEN 2","icon":"harvestPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Costo / kg total","value":"105.74","unit":"MXN/kg","delta":"Directo $89.00 · Indirecto $16.74 · Ciclo 1 2026","icon":"dollarSign","color":"#F4A261","bg":"rgba(244,162,97,.14)","tone":"neutral"}];
-    const ciaMeta = {"updated":"18 sep 2026","coverage":"277 estanques cosechados · 1,309.95 ha · SANTAFE, 4-H, OWEN 1, OWEN 2"};
+    const ciaKpis = [{"label":"Biomasa total activa","value":"1,046.2","unit":"t","delta":"-3.6% vs. semana anterior (GENERAL)","icon":"shrimp","color":"#00C9A7","bg":"rgba(0,201,167,.14)","tone":"warn"},{"label":"Biomasa / Ha (kg) activa","value":"922","unit":"kg/ha","delta":"+3.3% vs. semana anterior (GENERAL)","icon":"biomassPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa total cosechada","value":"1,892.8","unit":"t","delta":"291 estanques cosechados · Ciclo 1 2026","icon":"harvestBiomass","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa cosechada / Ha","value":"1,425","unit":"kg/ha","delta":"1,373.88 ha cosechadas · SANTAFE, 4-H, OWEN 1, OWEN 2","icon":"harvestPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Costo / kg total","value":"68.10","unit":"MXN/kg","delta":"Directo $57.32 · Indirecto $10.78 · Ciclo 1 2026","icon":"dollarSign","color":"#F4A261","bg":"rgba(244,162,97,.14)","tone":"neutral"}];
+    const ciaMeta = {"updated":"18 sep 2026","coverage":"291 estanques cosechados · 1,373.88 ha · SANTAFE, 4-H, OWEN 1, OWEN 2"};
 
     // key = mismo argumento que ya usa openReport(key) — no se toca la lógica existente
     const ciaReports = [
@@ -1401,6 +1401,13 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
           // con estanques resembrados y cosechados 2 veces (2do ciclo), sumar sus
           // hectareas otra vez en el denominador diluye el numero hacia abajo.
           if(kHa && estCount > 0){ kHa.value = fmtNum(Math.round(perHaSum/estCount), 0); kHa.delta = fmtNum(ha,2) + ' ha cosechadas · SANTAFE, 4-H, OWEN 1, OWEN 2'; }
+          // "Datos consolidados" del pie (ciaMeta.coverage) usaba el mismo conteo,
+          // pero solo se refrescaba la fecha (ciaMeta.updated) — nunca el texto en
+          // sí, así que se quedaba con el conteo de estanques/ha de la última vez
+          // que se editó a mano. Se recalcula aquí también (bug corregido 18-sep-2026).
+          if(window.ciaMeta){
+            window.ciaMeta.coverage = estCount + ' estanques cosechados · ' + fmtNum(ha,2) + ' ha · SANTAFE, 4-H, OWEN 1, OWEN 2';
+          }
           updated = true;
         }
       }
@@ -1409,6 +1416,11 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     if(targetKey === 'costos'){
       const rawData = extractJSValue(text, 'RAW_DATA');
       const kgCosechado = extractJSValue(text, 'KG_COSECHADO');
+      // MISMA BASE QUE EL DASHBOARD DE COSTOS Y EL ASISTENTE IA:
+      // biomasa general = biomasa activa + biomasa cosechada (antes este bloque
+      // solo sumaba KG_COSECHADO, por eso el KPI corporativo daba ~$105/kg en
+      // vez de los ~$68/kg reales — bug corregido el 18-sep-2026).
+      const biomasaActiva = extractJSValue(text, 'BIOMASA_ACTIVA');
       if(Array.isArray(rawData) && kgCosechado){
         let importeDirecto = 0, importeIndirecto = 0;
         rawData.forEach(r=>{
@@ -1417,7 +1429,9 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
           else importeIndirecto += imp;
         });
         const importeTotal = importeDirecto + importeIndirecto;
-        const kgTotal = Object.values(kgCosechado).reduce((s,v)=>s+(Number(v)||0),0);
+        const kgCosechadoTotal = Object.values(kgCosechado).reduce((s,v)=>s+(Number(v)||0),0);
+        const kgActivaTotal = biomasaActiva ? Object.values(biomasaActiva).reduce((s,v)=>s+(Number(v)||0),0) : 0;
+        const kgTotal = kgCosechadoTotal + kgActivaTotal;
         if(importeTotal > 0 && kgTotal > 0){
           const kCosto = kpiByLabel['Costo / kg total'];
           if(kCosto){
