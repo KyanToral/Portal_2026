@@ -1974,7 +1974,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
   const IA_ENDPOINT = 'https://us-central1-cosechas-santa-fe.cloudfunctions.net/portalAssistant';
   const IA_MEMORY_KEY = 'cia_memory_v7';
   const IA_HISTORY_KEY = 'cia_history_v7';
-  const IA_BUILD = 'V7.34.6 ESTABLE BLINDADA · lenguaje operativo + proyecciones';
+  const IA_BUILD = 'V7.34.8 ESTABLE BLINDADA · lenguaje operativo reforzado';
   let iaHistory = [];
   let iaMemory = {lastQuestion:'',lastResolvedQuestion:'',lastKind:'',lastSite:'',lastSection:'',lastThreshold:null,lastGrowth:null};
   try{
@@ -2568,7 +2568,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
 
   function iaHasBasicDataIntent(q){
     const n=iaNormText(q);
-    return /(quiero saber|quiero conocer|quiero ver|quiero revisar|quiero checar|quiero consultar|quiero los datos|quiero el dato|quiero informacion|quiero información|necesito saber|necesito conocer|necesito ver|necesito revisar|necesito los datos|dame|dime|muestra|muestrame|mostrar|ensename|enseñame|mandame|mándame|pasame|pásame|sacame|sácame|reportame|repórtame|informame|infórmame|traeme|tráeme|buscame|búscame|consultame|consúltame|checame|chécame|revisame|revísame|ponme|suelta|informacion|información|informacion tecnica|información técnica|datos|dato|datos tecnicos|datos técnicos|detalle|detalles|ficha|resumen|resumen general|resumen tecnico|resumen técnico|cual es|cuál es|cuales son|cuáles son|cual fue|cuál fue|cuanto dio|cuánto dio|cuanto da|cuánto da|cuanto tenemos|cuánto tenemos|cuanto hay|cuánto hay|cuanto llevo|cuánto llevo|cuanto llevamos|cuánto llevamos|que llevamos|qué llevamos|que traemos|qué traemos|cuanto traemos|cuánto traemos|cuanto se tiro|cuánto se tiró|cuanto se esta tirando|cuánto se está tirando|que tenemos|qué tenemos|que hay|qué hay|que dato|qué dato|que trae|qué trae|que tiene|qué tiene|como va|cómo va|como vamos|cómo vamos|como viene|cómo viene|como salio|cómo salió|como estan|cómo están|como andan|cómo andan|como se ve|cómo se ve|como ves|cómo ves|como viste|cómo viste|que tal|qué tal|como se comporto|cómo se comportó|como se comportaron|cómo se comportaron|estado de|resultado de|resultados de|numero de|número de|cantidad de|total de|acumulado de|promedio de|promedio|media|mayor peso|menor peso|peso mas grande|peso más grande|peso mas chico|peso más chico|talla mayor|talla menor|bloques de peso|bloques de talla|rangos de peso|rangos de talla|bandas de peso|bandas de talla|distribucion por peso|distribución por peso|concentrado de peso|concentrado de talla|fecha de corte|fecha del reporte|reporte mas reciente|reporte más reciente|de que fecha|de qué fecha|hasta que fecha|hasta qué fecha|valor de|indicador de|kpi de|dame el dato|dame los datos|ver datos|consultar datos|revisar datos|datos de biometria|datos de biometría|datos de produccion|datos de producción|biometria|biometría)/.test(n);
+    return /(quiero saber|quiero conocer|quiero ver|quiero revisar|quiero checar|quiero consultar|quiero los datos|quiero el dato|quiero informacion|quiero información|necesito saber|necesito conocer|necesito ver|necesito revisar|necesito los datos|dame|dime|muestra|muestrame|mostrar|ensename|enseñame|mandame|mándame|pasame|pásame|sacame|sácame|reportame|repórtame|informame|infórmame|traeme|tráeme|buscame|búscame|consultame|consúltame|checame|chécame|revisame|revísame|ponme|suelta|informacion|información|informacion tecnica|información técnica|datos|dato|datos tecnicos|datos técnicos|detalle|detalles|ficha|resumen|resumen general|resumen tecnico|resumen técnico|cual es|cuál es|cuales son|cuáles son|cual fue|cuál fue|cuanto dio|cuánto dio|cuanto da|cuánto da|cuanto tenemos|cuánto tenemos|cuanto hay|cuánto hay|cuanto llevo|cuánto llevo|cuanto llevamos|cuánto llevamos|que llevamos|qué llevamos|que traemos|qué traemos|cuanto traemos|cuánto traemos|que estamos manejando|qué estamos manejando|cuanto estamos manejando|cuánto estamos manejando|que volumen tenemos|qué volumen tenemos|cuanto volumen tenemos|cuánto volumen tenemos|que tenemos acumulado|qué tenemos acumulado|cuanto tenemos acumulado|cuánto tenemos acumulado|cuanto hemos gastado|cuánto hemos gastado|cuanto hemos usado|cuánto hemos usado|cuanto llevamos invertido|cuánto llevamos invertido|que llevamos invertido|qué llevamos invertido|cuanto se tiro|cuánto se tiró|cuanto se esta tirando|cuánto se está tirando|que tenemos|qué tenemos|que hay|qué hay|que dato|qué dato|que trae|qué trae|que tiene|qué tiene|como va|cómo va|como vamos|cómo vamos|como viene|cómo viene|como salio|cómo salió|como estan|cómo están|como andan|cómo andan|como se ve|cómo se ve|como ves|cómo ves|como viste|cómo viste|que tal|qué tal|como se comporto|cómo se comportó|como se comportaron|cómo se comportaron|estado de|resultado de|resultados de|numero de|número de|cantidad de|total de|acumulado de|promedio de|promedio|media|mayor peso|menor peso|peso mas grande|peso más grande|peso mas chico|peso más chico|talla mayor|talla menor|bloques de peso|bloques de talla|rangos de peso|rangos de talla|bandas de peso|bandas de talla|distribucion por peso|distribución por peso|concentrado de peso|concentrado de talla|fecha de corte|fecha del reporte|reporte mas reciente|reporte más reciente|de que fecha|de qué fecha|hasta que fecha|hasta qué fecha|valor de|indicador de|kpi de|dame el dato|dame los datos|ver datos|consultar datos|revisar datos|datos de biometria|datos de biometría|datos de produccion|datos de producción|biometria|biometría)/.test(n);
   }
 
   // Lenguaje local soportado: sitio/sitios, general/por separado, crecimiento/g/sem,
@@ -3459,9 +3459,9 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
   }
   function iaExtractGrowthScenario(q){
     const nq=iaNormText(q);
-    let m=nq.match(/(?:crecimiento|incremento)(?:\s+(?:de|a))?\s*(\d+(?:\.\d+)?)\s*(?:g|gramos?)(?:\s*\/\s*sem(?:ana)?|\s+por\s+semana|\s+semanal)?/);
-    if(!m) m=nq.match(/(?:doy|dar|suben|subir|crecen|crecer)\s*(\d+(?:\.\d+)?)\s*(?:g|gramos?)(?:\s*\/\s*sem(?:ana)?|\s+por\s+semana)?/);
-    return m?Number(m[1]):null;
+    let m=nq.match(/(?:crecimiento|incremento|ganancia|avance)(?:\s+(?:de|a))?\s*(\d+(?:[\.,]\d+)?)\s*(?:g|gramos?)(?:\s*\/\s*sem(?:ana)?|\s+por\s+semana|\s+semanal)?/);
+    if(!m) m=nq.match(/(?:doy|dar|dando|suben|subir|subiendo|crecen|crecer|creciendo|gana|ganan|ganando|a ritmo de|ritmo de|suponiendo|asumiendo)\s*(?:un\s*)?(?:incremento\s*de\s*)?(\d+(?:[\.,]\d+)?)\s*(?:g|gramos?)(?:\s*\/\s*sem(?:ana)?|\s+por\s+semana)?/);
+    return m?Number(String(m[1]).replace(',','.')):null;
   }
   function iaIsNextWeek(q){ const n=iaNormText(q); return /proxima semana|siguiente semana|en una semana|7 dias/.test(n); }
   function iaCountByBands(values){
@@ -3802,6 +3802,24 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
   let iaHarvestProgramCache={ts:0,data:null,error:null};
   function iaIsHarvestProgramQuestion(q){
     const n=iaNormText(q);
+
+    // V7.34.7 — intención explícita del Programa de Cosechas aunque el usuario
+    // no escriba literalmente "cosecha". Ejemplos:
+    // "biomasa programada de Owen 1", "kg programados", "total programado",
+    // "estanques programados", "hectáreas programadas".
+    const programMetric =
+      /(programad|planificad|calendarizad|agendad|comprometid)/.test(n) &&
+      /(biomasa|kg|kilos|toneladas|volumen|total|estanques?|has|hectareas|hectáreas|peso|talla)/.test(n);
+    if(programMetric) return true;
+
+    // Formas operativas naturales aunque no digan "programado":
+    // "qué traemos para cosechar", "qué volumen tenemos para cosecha",
+    // "qué está por salir", "qué está listo para cosecha", "qué falta por cosechar".
+    const naturalHarvestPlan =
+      /(que traemos|qué traemos|cuanto traemos|cuánto traemos|que tenemos|qué tenemos|cuanto tenemos|cuánto tenemos|que volumen|qué volumen|cuanto volumen|cuánto volumen|que esta|qué está|cuanto esta|cuánto está|que falta|qué falta|cuanto falta|cuánto falta)/.test(n) &&
+      /(para cosech|por cosech|de cosecha|listo.*cosech|salir.*cosech|por salir|pendiente.*cosech|comprometid.*cosech)/.test(n);
+    if(naturalHarvestPlan) return true;
+
     const hablaCosecha = /(cosecha|cosechas|cosechar)/.test(n);
     if(!hablaCosecha) return false;
 
@@ -3844,7 +3862,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     const asksProgrammedTotal =
       /(programad|planificad)/.test(n) &&
       /(biomasa|total|cuanto|cuanta|cuantos|cuantas|kg|kilos|toneladas|has|hectareas|estanques)/.test(n) &&
-      !/(pendiente|faltan|falta por|desde hoy|a partir de hoy|futuras?|proximas?)/.test(n);
+      !/(pendiente|faltan|falta por|por salir|listo para|desde hoy|a partir de hoy|futuras?|proximas?|próximas?)/.test(n);
     if(asksProgrammedTotal){
       return {from:'0000-01-01',to:'9999-12-31',label:'todas las semanas capturadas',allCaptured:true};
     }
@@ -3882,8 +3900,8 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     if(!rows.length) return {answer:'Consulté directamente el Programa de Cosechas en Firebase y no encontré registros para '+win.label+(wanted?' en '+(labels[wanted]||wanted):'')+'. Esta respuesta no usó Haiku.',kind:'harvest_program',data:{table:[]}};
     const bio=rows.reduce((a,r)=>a+(r.biomasa_kg||0),0), ha=rows.reduce((a,r)=>a+(r.has||0),0);
     const bySite={}; rows.forEach(r=>{const x=bySite[r.sitio]||(bySite[r.sitio]={sitio:r.sitio,estanques:0,biomasa_kg:0,has:0});x.estanques++;x.biomasa_kg+=r.biomasa_kg||0;x.has+=r.has||0;});
-    let answer='Programación de cosechas para '+win.label+': '+rows.length+' registros'+(bio?(', '+iaFmt(bio/1000,1)+' t de biomasa programada'):'')+(ha?(' en '+iaFmt(ha,1)+' ha'):'')+'.';
-    answer+='\n\nPor sitio:\n'+Object.values(bySite).map(x=>'• '+x.sitio+': '+x.estanques+' estanques'+(x.biomasa_kg?' · '+iaFmt(x.biomasa_kg/1000,1)+' t':'')).join('\n');
+    let answer='Programación de cosechas para '+win.label+': '+rows.length+' registros'+(bio?(', '+iaFmt(bio/1000,1)+' t ('+iaFmt(bio,0)+' kg) de biomasa programada'):'')+(ha?(' en '+iaFmt(ha,1)+' ha'):'')+'.';
+    answer+='\n\nPor sitio:\n'+Object.values(bySite).map(x=>'• '+x.sitio+': '+x.estanques+' estanques'+(x.biomasa_kg?' · '+iaFmt(x.biomasa_kg/1000,1)+' t ('+iaFmt(x.biomasa_kg,0)+' kg)':'')).join('\n');
     answer+='\n\nPróximos registros:\n'+rows.slice(0,12).map(r=>'• '+r.fecha+' · '+r.sitio+' · Est. '+(r.estanque||'—')+(r.peso_g!==null?' · '+iaFmt(r.peso_g,1)+' g':'')+(r.biomasa_kg!==null?' · '+iaFmt(r.biomasa_kg,0)+' kg':'')).join('\n');
     return {answer,kind:'harvest_program',data:{table:rows,bySite:Object.values(bySite),totalBiomasa:bio,totalHas:ha,window:win}};
   }
@@ -4055,8 +4073,8 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
   // ==================== V7.34.6: lenguaje operativo ampliado ====================
   function iaNaturalExtremeIntent(q,spec){
     const n=iaNormText(q);
-    const high=/(mas alto|más alto|mas alta|más alta|mayor|mayores|superior|superiores|arriba|top|mejor|mejores|maximo|maxima|máximo|máxima|el que mas|el que más|los que mas|los que más)/.test(n);
-    const low=/(mas bajo|más bajo|mas baja|más baja|menor|menores|inferior|inferiores|abajo|peor|peores|minimo|minima|mínimo|mínima|el que menos|los que menos|rezagad|atrasad|se queda|se estan quedando|se están quedando)/.test(n);
+    const high=/(mas alto|más alto|mas alta|más alta|mayor|mayores|superior|superiores|arriba|top|mejor|mejores|maximo|maxima|máximo|máxima|el que mas|el que más|los que mas|los que más|mas cargado|más cargado|mas adelantado|más adelantado|mejor parado|mas fuerte|más fuerte)/.test(n);
+    const low=/(mas bajo|más bajo|mas baja|más baja|menor|menores|inferior|inferiores|abajo|peor|peores|minimo|minima|mínimo|mínima|el que menos|los que menos|rezagad|atrasad|se queda|se estan quedando|se están quedando|mas flojo|más flojo|menos cargado|mas atrasado|más atrasado|quedado|se quedo|se quedó)/.test(n);
     const avg=/(promedio|media|promediame|promédiame|en promedio)/.test(n);
     if(avg) return 'avg';
     if(spec && spec.kind==='fca'){
@@ -4071,27 +4089,27 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
 
   function iaOperationalMetricSpec(q){
     const n=iaNormText(q);
-    if(/dias? de cultivo|d\/c|dias cultivo|edad de cultivo|edad del cultivo/.test(n))
+    if(/dias? de cultivo|d\/c|dias cultivo|edad de cultivo|edad del cultivo|dias sembrado|días sembrado|tiempo de cultivo|tiempo sembrado/.test(n))
       return {kind:'days',label:'Días de cultivo',unit:'días',dec:0,fields:['dc']};
-    if(/alimento.*acumulad|acumulad.*alimento|racion.*acumulad|ración.*acumulad|consumo acumulado/.test(n))
+    if(/alimento.*acumulad|acumulad.*alimento|racion.*acumulad|ración.*acumulad|consumo acumulado|alimento que lleva|comida acumulada|kilos de alimento acumulados|kg de alimento acumulados|alimento total dado|total de alimento dado/.test(n))
       return {kind:'feed_acc',label:'Alimento acumulado',unit:'kg',dec:0,fields:['alimento_acumulado_kg']};
     if(/alimento.*semanal|alimento.*semana|racion.*semanal|ración.*semanal/.test(n))
       return {kind:'feed_week',label:'Alimento semanal',unit:'kg',dec:0,fields:['alimento_semanal_total_kg','alimento_semanal_kg']};
-    if(/poblacion|población|organismos actuales|camarones actuales|cantidad de organismos/.test(n))
+    if(/poblacion|población|organismos actuales|camarones actuales|cantidad de organismos|cantidad de camaron|cantidad de camarón|cuantos camarones|cuántos camarones|existencia de camaron|existencia de camarón/.test(n))
       return {kind:'population',label:'Población actual',unit:'org',dec:0,fields:['poblacion_actual','org_actuales','organismos_actuales']};
-    if(/cm\/2|c\/m2|org\/m2|orgm2|densidad|organismos por metro|camarones por metro/.test(n))
+    if(/cm\/2|c\/m2|org\/m2|orgm2|densidad|organismos por metro|camarones por metro|camarones m2|camaron por m2|camarón por m2|poblacion por metro|población por metro/.test(n))
       return {kind:'density',label:'Densidad actual',unit:'org/m²',dec:1,fields:['org_m2_actual']};
-    if(/sobrevivencia|supervivencia|sob\s*%/.test(n))
+    if(/sobrevivencia|supervivencia|sob\s*%|porcentaje de sobrevivencia|porcentaje de supervivencia|mortalidad aparente/.test(n))
       return {kind:'survival',label:'Sobrevivencia',unit:'%',dec:1,fields:['sobrevivencia_actual_pct']};
-    if(/f\.?c\.?a|fca|factor de conversion|factor de conversión/.test(n))
+    if(/f\.?c\.?a|fca|factor de conversion|factor de conversión|conversion alimenticia|conversión alimenticia|eficiencia de conversion|eficiencia de conversión/.test(n))
       return {kind:'fca',label:'FCA',unit:'',dec:2,fields:['fca','fca_semanal']};
-    if(/crecimiento|incremento|g\/sem|gramos por semana|ganancia semanal/.test(n))
+    if(/crecimiento|incremento|g\/sem|gramos por semana|ganancia semanal|avance semanal|subida de peso|ganancia de peso|cuanto subio|cuánto subió|cuanto crecio|cuánto creció/.test(n))
       return {kind:'growth',label:'Crecimiento semanal',unit:'g/sem',dec:2,fields:['inc_peso_semanal_g','incremento_semanal_g','incremento_semanal_ciclo_g']};
-    if(/biomasa.*kg\/ha|kg\/ha.*biomasa|biomasa por hectarea|biomasa por hectárea|biomasa\/ha/.test(n))
+    if(/biomasa.*kg\/ha|kg\/ha.*biomasa|biomasa por hectarea|biomasa por hectárea|biomasa\/ha|carga por hectarea|carga por hectárea|kilos por hectarea|kilos por hectárea/.test(n))
       return {kind:'biomass_ha',label:'Biomasa kg/ha',unit:'kg/ha',dec:0,fields:['biomasa_total_ha_kg','biomasa_ha_actual_kg']};
-    if(/biomasa total|biomasa del estanque|biomasa por estanque/.test(n))
+    if(/biomasa total|biomasa del estanque|biomasa por estanque|kilos en el estanque|kg en el estanque|volumen de biomasa|volumen del estanque/.test(n))
       return {kind:'biomass_total',label:'Biomasa total',unit:'kg',dec:0,fields:['biomasa_total_kg','biomasa_actual_kg','biomasa_kg']};
-    if(/peso|talla|gramos|\bg\b/.test(n) && !/g\/sem|gramos por semana/.test(n))
+    if(/peso|talla|gramos|\bg\b|tamano|tamaño|calibre/.test(n) && !/g\/sem|gramos por semana/.test(n))
       return {kind:'weight',label:'Peso',unit:'g',dec:1,fields:['peso_actual_g','peso_g']};
     return null;
   }
@@ -4185,14 +4203,14 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
 
   function iaHarvestEstimateIntent(q){
     const n=iaNormText(q);
-    return /(para cuando|cuándo|cuando|en cuanto tiempo|cuantas semanas|cuántas semanas|fecha estimada|estimar.*cosech|proximos estanques.*cosech|próximos estanques.*cosech|cuando llegan|cuándo llegan)/.test(n)
-      && /(cosech|talla|peso|gramos|\bg\b)/.test(n);
+    return /(para cuando|cuándo|cuando|en cuanto tiempo|cuantas semanas|cuántas semanas|fecha estimada|fecha probable|estimar.*cosech|proximos estanques.*cosech|próximos estanques.*cosech|cuando llegan|cuándo llegan|cuando estarian|cuándo estarían|cuando quedan|cuándo quedan|cuando alcanzan|cuándo alcanzan|cuando llegan a talla|en que fecha|en qué fecha|que tan pronto|qué tan pronto)/.test(n)
+      && /(cosech|talla|peso|gramos|\bg\b|biomasa|kg\/ha)/.test(n);
   }
 
   function iaHarvestTargetWeight(q){
     const n=iaNormText(q), N='(\\d+(?:[\\.,]\\d+)?)';
     const pats=[
-      new RegExp('(?:cosechar|cosecha|objetivo|meta|llegar|lleguen|alcanzar|alcancen|hasta)\\s*(?:a|en|de)?\\s*'+N+'\\s*(?:g|gramos?)'),
+      new RegExp('(?:cosechar|cosecha|objetivo|meta|llegar|lleguen|alcanzar|alcancen|hasta|talla de salida|peso de salida|salir en|salir a)\\s*(?:a|en|de)?\\s*'+N+'\\s*(?:g|gramos?)'),
       new RegExp('(?:a|hasta)\\s*'+N+'\\s*(?:g|gramos?)\\s*(?:para cosechar|de cosecha)')
     ];
     for(const p of pats){const m=n.match(p);if(m)return Number(String(m[1]).replace(',','.'));}
@@ -4201,8 +4219,8 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
 
   function iaWeightSelectionFromQuestion(q){
     const n=iaNormText(q),N='(\\d+(?:[\\.,]\\d+)?)';
-    let m=n.match(new RegExp('(?:estanques?|camaron(?:es)?|peso|talla)(?:\\s+de)?\\s*'+N+'\\s*(?:g|gramos?)\\s*(?:para arriba|hacia arriba|en adelante|o mas|o más)'));
-    if(!m) m=n.match(new RegExp('(?:desde|arriba de|mayores? de|mas de|más de)\\s*'+N+'\\s*(?:g|gramos?)'));
+    let m=n.match(new RegExp('(?:estanques?|camaron(?:es)?|peso|talla)(?:\\s+de)?\\s*'+N+'\\s*(?:g|gramos?)\\s*(?:para arriba|hacia arriba|en adelante|o mas|o más|en delante|pa arriba)'));
+    if(!m) m=n.match(new RegExp('(?:desde|arriba de|mayores? de|mas de|más de|de)\\s*'+N+'\\s*(?:g|gramos?)\\s*(?:para arriba|en adelante|o mas|o más)?'));
     if(m){const v=Number(String(m[1]).replace(',','.')); return {min:v,max:Infinity,label:'≥ '+iaFmt(v,1)+' g'};}
     return null;
   }
@@ -4358,7 +4376,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
   function iaWeightBlocksIntent(q){
     const n=iaNormText(q);
     const hasWeight=/(peso|talla|tamano|gramos|\bg\b)/.test(n);
-    const hasBlock=/(bloques?|rangos?|bandas?|grupo(?:s)? de peso|grupo(?:s)? de talla|distribucion por peso|distribucion de peso|distribucion por talla|concentrado de peso|concentrado de talla|peso por bloques|talla por bloques|peso por rangos|talla por rangos|clasificacion por peso|clasificacion por talla)/.test(n);
+    const hasBlock=/(bloques?|rangos?|bandas?|grupo(?:s)? de peso|grupo(?:s)? de talla|distribucion por peso|distribucion de peso|distribucion por talla|concentrado de peso|concentrado de talla|peso por bloques|talla por bloques|peso por rangos|talla por rangos|clasificacion por peso|clasificacion por talla|como estan repartidos los pesos|cómo están repartidos los pesos|como se distribuyen las tallas|cómo se distribuyen las tallas|cuantos hay por talla|cuántos hay por talla|cuantos hay por peso|cuántos hay por peso)/.test(n);
     return hasWeight && hasBlock;
   }
 
@@ -4821,13 +4839,13 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
 
     // COMPONENTES DE COSTO: alimento, larva, nómina, diesel, etc.
     // También identifica automáticamente cuál cuenta representa el mayor costo.
-    if(/costo|costos|gasto|gastos|gastado|gastamos|llevamos|traemos/.test(nq) && !asksAnalysis){
+    if(/costo|costos|gasto|gastos|gastado|gastamos|hemos gastado|dinero|invertido|inversion|inversión|erogado|erogacion|erogación|llevamos|traemos/.test(nq) && !asksAnalysis){
       const costComponent=iaCostComponentAnswer(ctx,question);
       if(costComponent) return costComponent;
     }
 
     // COSTOS: general, por sitio, directos, indirectos y costo/kg.
-    if(/costo|costos|gasto|gastos|importe|costeo|que costo llevamos|qué costo llevamos|costo que llevamos|que costos llevamos|qué costos llevamos|como vamos de costo|cómo vamos de costo|costo actual|costo hasta hoy|costo de produccion|costo produccion|costo operativo|costo total|costo general|costos generales|costo directo|costo indirecto|costo por kg|costo\/kg|costo kg|costo kilo|costo por kilo|cuanto cuesta producir|cuánto cuesta producir|cuanto sale producir|cuánto sale producir|cuanto cuesta el kilo|cuánto cuesta el kilo|precio de produccion por kg|precio de producción por kg/.test(nq) && !asksAnalysis){
+    if(/costo|costos|gasto|gastos|importe|costeo|dinero gastado|dinero invertido|cuanto hemos gastado|cuánto hemos gastado|cuanto llevamos gastado|cuánto llevamos gastado|cuanto llevamos invertido|cuánto llevamos invertido|que gasto traemos|qué gasto traemos|que costo llevamos|qué costo llevamos|costo que llevamos|que costos llevamos|qué costos llevamos|como vamos de costo|cómo vamos de costo|costo actual|costo hasta hoy|costo de produccion|costo produccion|costo operativo|costo total|costo general|costos generales|costo directo|costo indirecto|costo por kg|costo\/kg|costo kg|costo kilo|costo por kilo|cuanto cuesta producir|cuánto cuesta producir|cuanto sale producir|cuánto sale producir|cuanto cuesta el kilo|cuánto cuesta el kilo|precio de produccion por kg|precio de producción por kg/.test(nq) && !asksAnalysis){
       const c=iaCostsSummary(ctx,question); if(c){
         const asksCostKg=/(costo por kg|costo\/kg|costo kg|costo kilo|costo por kilo|cuanto cuesta el kilo|cuánto cuesta el kilo|precio de produccion por kg|precio de producción por kg)/.test(nq);
         let answer=(c.requested?'Costos acumulados de '+c.requested:'Costos acumulados del portal')+': $'+iaFmt(c.total,0)+'.\nCosto directo: $'+iaFmt(c.direct,0)+' · costo indirecto: $'+iaFmt(c.indirect,0)+'.';
@@ -5183,7 +5201,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
   function iaLooksLikePortalDataQuestion(q){
     const n=iaNormText(q);
     if(iaIsClearlyInterpretive(q)) return false;
-    const dataWords=/(produccion|producción|cultivo|biometria|biometría|biomasa|cosecha|cosechas|cosechado|programa|programacion|agenda|calendario|costo|costos|costeo|gasto|alimento|alimentacion|racion|bodyweight|body weight|poblacion|organismos|camarones|crecimiento|incremento|fca|conversion|sobrevivencia|supervivencia|peso|talla|hectareas|has\b|estanques|estanque|datos|dato|informacion|modulo|modulos|seccion|secciones|sitio|sitios|laboratorio|biomarina|aquapacific|genesis|ranking|top\b|densidad|org\/m2|orgm2|c\/m2|cm\/2|cam\/m2|kg\/ha|biomasa\/ha|proyect|indicador|kpi|ciclo|primer ciclo|segundo ciclo|tercer ciclo|1er ciclo|2do ciclo|3er ciclo)/.test(n);
+    const dataWords=/(produccion|producción|cultivo|biometria|biometría|biomasa|cosecha|cosechas|cosechado|programa|programacion|agenda|calendario|costo|costos|costeo|gasto|gastos|dinero|invertido|inversion|inversión|alimento|alimentacion|racion|bodyweight|body weight|poblacion|organismos|camarones|crecimiento|incremento|fca|conversion|sobrevivencia|supervivencia|peso|talla|hectareas|has\b|estanques|estanque|datos|dato|informacion|modulo|modulos|seccion|secciones|sitio|sitios|laboratorio|biomarina|aquapacific|genesis|ranking|top\b|densidad|org\/m2|orgm2|c\/m2|cm\/2|cam\/m2|kg\/ha|biomasa\/ha|proyect|indicador|kpi|ciclo|primer ciclo|segundo ciclo|tercer ciclo|1er ciclo|2do ciclo|3er ciclo)/.test(n);
     const lookupWords=iaHasBasicDataIntent(q) || iaIsTechnicalProductionQuestion(q) || /(datos de la granja|datos del sitio|datos de los sitios|datos de laboratorio|datos de cosecha|cuantas has|cuántas has|hectareas por sitio|hectáreas por sitio|costo de alimento|costo de larva|costo de nomina|costo de nómina|costo mas fuerte|costo más fuerte|gasto de alimento|gasto de larva)/.test(n) || /(tenemos|hay|llevamos|actual|total|promedio|media|fecha|corte|reporte reciente|por sitio|por sitios|cada sitio|todos los sitios|por seccion|por modulo|por estanque|general|esta semana|manana|hoy|semana|mejor|peor|mayor|menor|arriba|debajo|entre|programad|solo|solamente|nada mas|nada más|unicamente|únicamente|especifico|específico|por separado|separado|separame|sepárame)/.test(n);
     return dataWords && lookupWords;
   }
@@ -5191,7 +5209,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
   function iaSafeLocalMissAnswer(q){
     const n=iaNormText(q);
     let tema='ese dato';
-    if(/cosech|programa/.test(n)) tema='cosechas/programación';
+    if(/cosech|programa|programad|planificad|agendad|calendarizad/.test(n)) tema='cosechas/programación';
     else if(/biomasa/.test(n)) tema='biomasa';
     else if(/costo|gasto/.test(n)) tema='costos';
     else if(/bodyweight|body weight/.test(n)) tema='BodyWeight/alimentación';
