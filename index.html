@@ -1974,7 +1974,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
   const IA_ENDPOINT = 'https://us-central1-cosechas-santa-fe.cloudfunctions.net/portalAssistant';
   const IA_MEMORY_KEY = 'cia_memory_v7';
   const IA_HISTORY_KEY = 'cia_history_v7';
-  const IA_BUILD = 'V7.34.4 ESTABLE BLINDADA · bloques de peso + lenguaje ampliado';
+  const IA_BUILD = 'V7.34.6 ESTABLE BLINDADA · lenguaje operativo + proyecciones';
   let iaHistory = [];
   let iaMemory = {lastQuestion:'',lastResolvedQuestion:'',lastKind:'',lastSite:'',lastSection:'',lastThreshold:null,lastGrowth:null};
   try{
@@ -2568,7 +2568,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
 
   function iaHasBasicDataIntent(q){
     const n=iaNormText(q);
-    return /(quiero saber|quiero conocer|quiero ver|quiero revisar|quiero checar|quiero consultar|quiero los datos|quiero el dato|quiero informacion|quiero información|necesito saber|necesito conocer|necesito ver|necesito revisar|necesito los datos|dame|dime|muestra|muestrame|mostrar|ensename|enseñame|mandame|mándame|pasame|pásame|sacame|sácame|reportame|repórtame|informame|infórmame|traeme|tráeme|buscame|búscame|consultame|consúltame|checame|chécame|revisame|revísame|ponme|suelta|informacion|información|informacion tecnica|información técnica|datos|dato|datos tecnicos|datos técnicos|detalle|detalles|ficha|resumen|resumen general|resumen tecnico|resumen técnico|cual es|cuál es|cuales son|cuáles son|cual fue|cuál fue|cuanto dio|cuánto dio|cuanto da|cuánto da|cuanto tenemos|cuánto tenemos|cuanto hay|cuánto hay|cuanto llevo|cuánto llevo|cuanto llevamos|cuánto llevamos|que llevamos|qué llevamos|que traemos|qué traemos|cuanto traemos|cuánto traemos|cuanto se tiro|cuánto se tiró|cuanto se esta tirando|cuánto se está tirando|que tenemos|qué tenemos|que hay|qué hay|que dato|qué dato|que trae|qué trae|que tiene|qué tiene|como va|cómo va|como vamos|cómo vamos|como viene|cómo viene|como salio|cómo salió|como estan|cómo están|como andan|cómo andan|como se ve|cómo se ve|estado de|resultado de|resultados de|numero de|número de|cantidad de|total de|acumulado de|promedio de|promedio|media|mayor peso|menor peso|peso mas grande|peso más grande|peso mas chico|peso más chico|talla mayor|talla menor|bloques de peso|bloques de talla|rangos de peso|rangos de talla|bandas de peso|bandas de talla|distribucion por peso|distribución por peso|concentrado de peso|concentrado de talla|fecha de corte|fecha del reporte|reporte mas reciente|reporte más reciente|de que fecha|de qué fecha|hasta que fecha|hasta qué fecha|valor de|indicador de|kpi de|dame el dato|dame los datos|ver datos|consultar datos|revisar datos|datos de biometria|datos de biometría|datos de produccion|datos de producción|biometria|biometría)/.test(n);
+    return /(quiero saber|quiero conocer|quiero ver|quiero revisar|quiero checar|quiero consultar|quiero los datos|quiero el dato|quiero informacion|quiero información|necesito saber|necesito conocer|necesito ver|necesito revisar|necesito los datos|dame|dime|muestra|muestrame|mostrar|ensename|enseñame|mandame|mándame|pasame|pásame|sacame|sácame|reportame|repórtame|informame|infórmame|traeme|tráeme|buscame|búscame|consultame|consúltame|checame|chécame|revisame|revísame|ponme|suelta|informacion|información|informacion tecnica|información técnica|datos|dato|datos tecnicos|datos técnicos|detalle|detalles|ficha|resumen|resumen general|resumen tecnico|resumen técnico|cual es|cuál es|cuales son|cuáles son|cual fue|cuál fue|cuanto dio|cuánto dio|cuanto da|cuánto da|cuanto tenemos|cuánto tenemos|cuanto hay|cuánto hay|cuanto llevo|cuánto llevo|cuanto llevamos|cuánto llevamos|que llevamos|qué llevamos|que traemos|qué traemos|cuanto traemos|cuánto traemos|cuanto se tiro|cuánto se tiró|cuanto se esta tirando|cuánto se está tirando|que tenemos|qué tenemos|que hay|qué hay|que dato|qué dato|que trae|qué trae|que tiene|qué tiene|como va|cómo va|como vamos|cómo vamos|como viene|cómo viene|como salio|cómo salió|como estan|cómo están|como andan|cómo andan|como se ve|cómo se ve|como ves|cómo ves|como viste|cómo viste|que tal|qué tal|como se comporto|cómo se comportó|como se comportaron|cómo se comportaron|estado de|resultado de|resultados de|numero de|número de|cantidad de|total de|acumulado de|promedio de|promedio|media|mayor peso|menor peso|peso mas grande|peso más grande|peso mas chico|peso más chico|talla mayor|talla menor|bloques de peso|bloques de talla|rangos de peso|rangos de talla|bandas de peso|bandas de talla|distribucion por peso|distribución por peso|concentrado de peso|concentrado de talla|fecha de corte|fecha del reporte|reporte mas reciente|reporte más reciente|de que fecha|de qué fecha|hasta que fecha|hasta qué fecha|valor de|indicador de|kpi de|dame el dato|dame los datos|ver datos|consultar datos|revisar datos|datos de biometria|datos de biometría|datos de produccion|datos de producción|biometria|biometría)/.test(n);
   }
 
   // Lenguaje local soportado: sitio/sitios, general/por separado, crecimiento/g/sem,
@@ -3040,6 +3040,9 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
       biomasa_kg_ha:firstNum(['biomasa_total_ha_kg','biomasa_ha_actual_kg']),
       alimento_kg_ha_dia:firstNum(['alimento_ha_dia_kg']),
       alimento_diario_kg:firstNum(['alimento_diario_kg']),
+      alimento_semanal_kg:firstNum(['alimento_semanal_total_kg','alimento_semanal_kg']),
+      alimento_acumulado_kg:firstNum(['alimento_acumulado_kg']),
+      poblacion_actual:firstNum(['poblacion_actual','org_actuales','organismos_actuales']),
       fca:firstNum(['fca','fca_semanal']),
       dc:firstNum(['dc']),
       has:firstNum(['has'])
@@ -3087,6 +3090,10 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
       peso_actual_g:avg('peso_actual_g','biomasa_total_kg'),
       incremento_semanal_g:avg('incremento_semanal_g','biomasa_total_kg'),
       alimento_kg_ha_dia:avg('alimento_kg_ha_dia','has'),
+      alimento_semanal_kg:sum('alimento_semanal_kg'),
+      alimento_acumulado_kg:sum('alimento_acumulado_kg'),
+      poblacion_actual:sum('poblacion_actual'),
+      dc_promedio:avg('dc'),
       fca:avg('fca','biomasa_total_kg')
     };
   }
@@ -3412,7 +3419,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     return {
       answer,
       kind:def.kind,
-      data:{filter:def,table:iaOperationalTable(hit,100),summary:iaOperationalSummary(hit),count:hit.length}
+      data:{filter:def,table:iaOperationalTable(hit,hit.length),summary:iaOperationalSummary(hit),count:hit.length}
     };
   }
 
@@ -3830,6 +3837,18 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     if(/semana pasada|semana anterior/.test(n)){const a=iaMonday(today);a.setDate(a.getDate()-7);const b=new Date(a);b.setDate(b.getDate()+6);return {from:iaLocalDateISO(a),to:iaLocalDateISO(b),label:'la semana pasada'};}
     if(/proxima semana|semana que viene/.test(n)){const a=iaMonday(today);a.setDate(a.getDate()+7);const b=new Date(a);b.setDate(b.getDate()+6);return {from:iaLocalDateISO(a),to:iaLocalDateISO(b),label:'la próxima semana'};}
     let m=n.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/); if(m){const s=m[0];return {from:s,to:s,label:s};}
+
+    // V7.34.5:
+    // "biomasa programada", "total programado", etc. deben coincidir con la
+    // tarjeta "Todas las semanas capturadas" del Programa de Cosechas.
+    const asksProgrammedTotal =
+      /(programad|planificad)/.test(n) &&
+      /(biomasa|total|cuanto|cuanta|cuantos|cuantas|kg|kilos|toneladas|has|hectareas|estanques)/.test(n) &&
+      !/(pendiente|faltan|falta por|desde hoy|a partir de hoy|futuras?|proximas?)/.test(n);
+    if(asksProgrammedTotal){
+      return {from:'0000-01-01',to:'9999-12-31',label:'todas las semanas capturadas',allCaptured:true};
+    }
+
     return {from:iaLocalDateISO(today),to:'9999-12-31',label:'próximas cosechas'};
   }
   function iaProgramSiteFilter(question){
@@ -3866,7 +3885,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     let answer='Programación de cosechas para '+win.label+': '+rows.length+' registros'+(bio?(', '+iaFmt(bio/1000,1)+' t de biomasa programada'):'')+(ha?(' en '+iaFmt(ha,1)+' ha'):'')+'.';
     answer+='\n\nPor sitio:\n'+Object.values(bySite).map(x=>'• '+x.sitio+': '+x.estanques+' estanques'+(x.biomasa_kg?' · '+iaFmt(x.biomasa_kg/1000,1)+' t':'')).join('\n');
     answer+='\n\nPróximos registros:\n'+rows.slice(0,12).map(r=>'• '+r.fecha+' · '+r.sitio+' · Est. '+(r.estanque||'—')+(r.peso_g!==null?' · '+iaFmt(r.peso_g,1)+' g':'')+(r.biomasa_kg!==null?' · '+iaFmt(r.biomasa_kg,0)+' kg':'')).join('\n');
-    return {answer,kind:'harvest_program',data:{table:rows.slice(0,20),bySite:Object.values(bySite),totalBiomasa:bio,totalHas:ha,window:win}};
+    return {answer,kind:'harvest_program',data:{table:rows,bySite:Object.values(bySite),totalBiomasa:bio,totalHas:ha,window:win}};
   }
 
 
@@ -4032,6 +4051,238 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     };
   }
 
+
+  // ==================== V7.34.6: lenguaje operativo ampliado ====================
+  function iaNaturalExtremeIntent(q,spec){
+    const n=iaNormText(q);
+    const high=/(mas alto|más alto|mas alta|más alta|mayor|mayores|superior|superiores|arriba|top|mejor|mejores|maximo|maxima|máximo|máxima|el que mas|el que más|los que mas|los que más)/.test(n);
+    const low=/(mas bajo|más bajo|mas baja|más baja|menor|menores|inferior|inferiores|abajo|peor|peores|minimo|minima|mínimo|mínima|el que menos|los que menos|rezagad|atrasad|se queda|se estan quedando|se están quedando)/.test(n);
+    const avg=/(promedio|media|promediame|promédiame|en promedio)/.test(n);
+    if(avg) return 'avg';
+    if(spec && spec.kind==='fca'){
+      if(/mejor|mejores/.test(n)) return 'min';
+      if(/peor|peores/.test(n)) return 'max';
+    }
+    if(spec && spec.kind==='days' && /(rezagad|atrasad|se queda|se estan quedando|se están quedando)/.test(n)) return 'max';
+    if(high && !low) return 'max';
+    if(low && !high) return 'min';
+    return null;
+  }
+
+  function iaOperationalMetricSpec(q){
+    const n=iaNormText(q);
+    if(/dias? de cultivo|d\/c|dias cultivo|edad de cultivo|edad del cultivo/.test(n))
+      return {kind:'days',label:'Días de cultivo',unit:'días',dec:0,fields:['dc']};
+    if(/alimento.*acumulad|acumulad.*alimento|racion.*acumulad|ración.*acumulad|consumo acumulado/.test(n))
+      return {kind:'feed_acc',label:'Alimento acumulado',unit:'kg',dec:0,fields:['alimento_acumulado_kg']};
+    if(/alimento.*semanal|alimento.*semana|racion.*semanal|ración.*semanal/.test(n))
+      return {kind:'feed_week',label:'Alimento semanal',unit:'kg',dec:0,fields:['alimento_semanal_total_kg','alimento_semanal_kg']};
+    if(/poblacion|población|organismos actuales|camarones actuales|cantidad de organismos/.test(n))
+      return {kind:'population',label:'Población actual',unit:'org',dec:0,fields:['poblacion_actual','org_actuales','organismos_actuales']};
+    if(/cm\/2|c\/m2|org\/m2|orgm2|densidad|organismos por metro|camarones por metro/.test(n))
+      return {kind:'density',label:'Densidad actual',unit:'org/m²',dec:1,fields:['org_m2_actual']};
+    if(/sobrevivencia|supervivencia|sob\s*%/.test(n))
+      return {kind:'survival',label:'Sobrevivencia',unit:'%',dec:1,fields:['sobrevivencia_actual_pct']};
+    if(/f\.?c\.?a|fca|factor de conversion|factor de conversión/.test(n))
+      return {kind:'fca',label:'FCA',unit:'',dec:2,fields:['fca','fca_semanal']};
+    if(/crecimiento|incremento|g\/sem|gramos por semana|ganancia semanal/.test(n))
+      return {kind:'growth',label:'Crecimiento semanal',unit:'g/sem',dec:2,fields:['inc_peso_semanal_g','incremento_semanal_g','incremento_semanal_ciclo_g']};
+    if(/biomasa.*kg\/ha|kg\/ha.*biomasa|biomasa por hectarea|biomasa por hectárea|biomasa\/ha/.test(n))
+      return {kind:'biomass_ha',label:'Biomasa kg/ha',unit:'kg/ha',dec:0,fields:['biomasa_total_ha_kg','biomasa_ha_actual_kg']};
+    if(/biomasa total|biomasa del estanque|biomasa por estanque/.test(n))
+      return {kind:'biomass_total',label:'Biomasa total',unit:'kg',dec:0,fields:['biomasa_total_kg','biomasa_actual_kg','biomasa_kg']};
+    if(/peso|talla|gramos|\bg\b/.test(n) && !/g\/sem|gramos por semana/.test(n))
+      return {kind:'weight',label:'Peso',unit:'g',dec:1,fields:['peso_actual_g','peso_g']};
+    return null;
+  }
+
+  function iaMetricSpecValue(r,spec){
+    return iaNum(iaField(r||{},spec.fields||[]));
+  }
+
+  function iaMetricAverageForSpec(rows,spec){
+    const vals=(Array.isArray(rows)?rows:[]).map(r=>({r,v:iaMetricSpecValue(r,spec)})).filter(x=>x.v!==null);
+    if(!vals.length) return null;
+    if(spec.kind==='biomass_ha'){
+      let bio=0,ha=0;
+      vals.forEach(x=>{
+        const b=iaNum(iaField(x.r,['biomasa_total_kg','biomasa_actual_kg','biomasa_kg']));
+        const h=iaNum(x.r.has);
+        if(b!==null && h!==null && h>0){bio+=b;ha+=h;}
+      });
+      if(ha>0) return bio/ha;
+    }
+    const summary=iaOperationalSummary(rows);
+    if(summary){
+      if(spec.kind==='weight') return summary.peso_actual_g;
+      if(spec.kind==='growth') return summary.incremento_semanal_g;
+      if(spec.kind==='density') return summary.org_m2_actual;
+      if(spec.kind==='survival') return summary.sobrevivencia_pct;
+      if(spec.kind==='fca') return summary.fca;
+      if(spec.kind==='days') return summary.dc_promedio;
+    }
+    return vals.reduce((a,x)=>a+x.v,0)/vals.length;
+  }
+
+  function iaOperationalExtremeAnswer(rows,allRows,q,spec,intent){
+    const valid=(Array.isArray(rows)?rows:[]).filter(r=>iaMetricSpecValue(r,spec)!==null);
+    const scope=iaFilterDescription(q,allRows);
+    if(!valid.length) return {answer:'No encontré valores válidos de '+spec.label.toLowerCase()+' para '+scope+'.',kind:'metric_extreme_no_data'};
+
+    if(intent==='avg'){
+      const v=iaMetricAverageForSpec(valid,spec);
+      return {
+        answer:spec.label+' promedio · '+scope+': '+iaFmt(v,spec.dec)+(spec.unit?' '+spec.unit:'')+'.',
+        kind:'metric_average',
+        data:{metric:spec.kind,value:v,summary:iaOperationalSummary(valid)}
+      };
+    }
+
+    const desc=intent==='max';
+    const sorted=valid.slice().sort((a,b)=>{
+      const va=iaMetricSpecValue(a,spec),vb=iaMetricSpecValue(b,spec);
+      return desc ? vb-va : va-vb;
+    });
+    const top=sorted.slice(0,Math.min(15,sorted.length));
+    const first=iaMetricSpecValue(top[0],spec);
+    const title=(intent==='max'?'Mayor ':'Menor ')+spec.label.toLowerCase()+' · '+scope;
+    let answer=title+': '+iaFmt(first,spec.dec)+(spec.unit?' '+spec.unit:'')+'.';
+    answer+='\n\n'+top.map((r,i)=>
+      (i+1)+'. Est. '+r.estanque+' · '+(r.sitio==='SANTAFE'?'Santa Fe':r.sitio)+' · '+(r.seccion||'—')+
+      ' · '+iaFmt(iaMetricSpecValue(r,spec),spec.dec)+(spec.unit?' '+spec.unit:'')
+    ).join('\n');
+    return {answer,kind:'metric_extreme',data:{metric:spec.kind,intent,table:iaOperationalTable(top,top.length),value:first}};
+  }
+
+  function iaPondFeedQuestion(q){
+    const n=iaNormText(q);
+    return !!iaPondNumberFromQuestion(q) &&
+      /(alimento|alimentacion|alimentación|racion|ración|consumo)/.test(n) &&
+      /(acumulad|semanal|semana|diario|dia|día|lleva|llevado|consumido|tirado|se ha dado|hemos dado)/.test(n);
+  }
+
+  function iaPondFeedAnswer(allRows,q){
+    const pond=iaPondNumberFromQuestion(q);
+    if(!pond) return null;
+    const site=iaSiteFilterFromQuestion(q,allRows),sec=iaSectionFilterFromQuestion(q,allRows),cycle=iaCycleFilterFromQuestion(q);
+    let rr=allRows.filter(r=>String(r.estanque??'').trim().toUpperCase()===pond);
+    if(site) rr=rr.filter(r=>String(r.sitio||'')===site);
+    if(sec) rr=rr.filter(r=>String(r.seccion||'')===sec);
+    if(cycle) rr=rr.filter(r=>Number(r.ciclo)===cycle);
+    if(!rr.length) return {answer:'No encontré el estanque '+pond+' con los filtros solicitados.',kind:'pond_feed_no_match'};
+    const calc=rows=>({
+      diario:rows.reduce((a,r)=>a+(iaNum(iaField(r,['alimento_diario_kg']))||0),0),
+      semanal:rows.reduce((a,r)=>a+(iaNum(iaField(r,['alimento_semanal_total_kg','alimento_semanal_kg']))||0),0),
+      acumulado:rows.reduce((a,r)=>a+(iaNum(iaField(r,['alimento_acumulado_kg']))||0),0)
+    });
+    const x=calc(rr), n=iaNormText(q);
+    const metric=/acumulad|lleva|llevado|consumido/.test(n)?'acumulado':(/semanal|semana/.test(n)?'semanal':'diario');
+    const unit=metric==='diario'?' kg/día':' kg';
+    let answer='Estanque '+pond+' · alimento '+metric+': '+iaFmt(x[metric],0)+unit+'.';
+    if(rr.length>1) answer+=' Hay '+rr.length+' registros coincidentes por sitio/ciclo; el valor mostrado es la suma de esos registros.';
+    return {answer,kind:'pond_feed',data:{pond,metric,total:x[metric],table:iaOperationalTable(rr,rr.length)}};
+  }
+
+  function iaHarvestEstimateIntent(q){
+    const n=iaNormText(q);
+    return /(para cuando|cuándo|cuando|en cuanto tiempo|cuantas semanas|cuántas semanas|fecha estimada|estimar.*cosech|proximos estanques.*cosech|próximos estanques.*cosech|cuando llegan|cuándo llegan)/.test(n)
+      && /(cosech|talla|peso|gramos|\bg\b)/.test(n);
+  }
+
+  function iaHarvestTargetWeight(q){
+    const n=iaNormText(q), N='(\\d+(?:[\\.,]\\d+)?)';
+    const pats=[
+      new RegExp('(?:cosechar|cosecha|objetivo|meta|llegar|lleguen|alcanzar|alcancen|hasta)\\s*(?:a|en|de)?\\s*'+N+'\\s*(?:g|gramos?)'),
+      new RegExp('(?:a|hasta)\\s*'+N+'\\s*(?:g|gramos?)\\s*(?:para cosechar|de cosecha)')
+    ];
+    for(const p of pats){const m=n.match(p);if(m)return Number(String(m[1]).replace(',','.'));}
+    return null;
+  }
+
+  function iaWeightSelectionFromQuestion(q){
+    const n=iaNormText(q),N='(\\d+(?:[\\.,]\\d+)?)';
+    let m=n.match(new RegExp('(?:estanques?|camaron(?:es)?|peso|talla)(?:\\s+de)?\\s*'+N+'\\s*(?:g|gramos?)\\s*(?:para arriba|hacia arriba|en adelante|o mas|o más)'));
+    if(!m) m=n.match(new RegExp('(?:desde|arriba de|mayores? de|mas de|más de)\\s*'+N+'\\s*(?:g|gramos?)'));
+    if(m){const v=Number(String(m[1]).replace(',','.')); return {min:v,max:Infinity,label:'≥ '+iaFmt(v,1)+' g'};}
+    return null;
+  }
+
+  function iaAddDaysISO(iso,days){
+    const parts=String(iso||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const d=parts?new Date(Number(parts[1]),Number(parts[2])-1,Number(parts[3]),12):new Date();
+    d.setDate(d.getDate()+Math.round(days));
+    return iaLocalDateISO(d);
+  }
+
+  function iaHarvestEstimateAnswer(ctx,rows,allRows,q,growth){
+    const scope=iaFilterDescription(q,allRows);
+    const select=iaWeightSelectionFromQuestion(q);
+    let base=(Array.isArray(rows)?rows:[]).filter(r=>{
+      const w=iaNum(iaField(r,['peso_actual_g','peso_g']));
+      if(w===null) return false;
+      if(!select) return true;
+      return w>=select.min;
+    });
+    if(!base.length) return {answer:'No encontré estanques con peso válido para la proyección solicitada en '+scope+'.',kind:'harvest_estimate_no_data'};
+
+    const g=iaNum(growth);
+    if(g===null || g<=0){
+      return {answer:'Para estimar fechas de cosecha necesito un incremento semanal mayor que cero, por ejemplo 1.2 g/sem.',kind:'harvest_estimate_need_growth'};
+    }
+    const target=iaHarvestTargetWeight(q);
+    const reportDate=(ctx&&ctx.fecha_estanques_activos)||iaLocalDateISO(new Date());
+
+    if(target===null){
+      const proj=base.map(r=>{
+        const w=iaNum(iaField(r,['peso_actual_g','peso_g']));
+        const bio=iaNum(iaField(r,['biomasa_total_kg','biomasa_actual_kg']));
+        const ha=iaNum(r.has);
+        const w1=w+g,w2=w+2*g,w3=w+3*g;
+        const b1=(bio!==null&&w>0)?bio*(w1/w):null;
+        const b2=(bio!==null&&w>0)?bio*(w2/w):null;
+        const b3=(bio!==null&&w>0)?bio*(w3/w):null;
+        return {
+          sitio:r.sitio==='SANTAFE'?'Santa Fe':r.sitio,seccion:r.seccion,estanque:r.estanque,
+          peso_actual_g:w,peso_1_sem_g:w1,peso_2_sem_g:w2,peso_3_sem_g:w3,
+          biomasa_1_sem_kg:b1,biomasa_2_sem_kg:b2,biomasa_3_sem_kg:b3,
+          kg_ha_1_sem:(b1!==null&&ha>0)?b1/ha:null,
+          kg_ha_2_sem:(b2!==null&&ha>0)?b2/ha:null,
+          kg_ha_3_sem:(b3!==null&&ha>0)?b3/ha:null
+        };
+      }).sort((a,b)=>b.peso_actual_g-a.peso_actual_g);
+      let answer='Proyección de posibles próximos estanques · '+scope+(select?' · '+select.label:'')+
+        ', usando '+iaFmt(g,2)+' g/sem. No fijé una fecha exacta de cosecha porque no indicaste una talla objetivo de cosecha.';
+      answer+='\n\nComo referencia, la tabla proyecta peso, biomasa total y kg/ha a 1, 2 y 3 semanas desde el corte '+reportDate+'.';
+      answer+='\nPara una fecha exacta puedes preguntar, por ejemplo: “¿cuándo llegan a 16 g los estanques de 12 g para arriba con 1.2 g/sem?”';
+      return {answer,kind:'harvest_estimate_preview',data:{growth:g,selection:select,reportDate,table:proj}};
+    }
+
+    const est=base.filter(r=>{
+      const w=iaNum(iaField(r,['peso_actual_g','peso_g']));
+      return w!==null;
+    }).map(r=>{
+      const w=iaNum(iaField(r,['peso_actual_g','peso_g']));
+      const weeks=Math.max(0,(target-w)/g);
+      const bio=iaNum(iaField(r,['biomasa_total_kg','biomasa_actual_kg']));
+      const ha=iaNum(r.has);
+      const bioTarget=(bio!==null&&w>0)?bio*(target/w):null;
+      return {
+        sitio:r.sitio==='SANTAFE'?'Santa Fe':r.sitio,seccion:r.seccion,estanque:r.estanque,
+        peso_actual_g:w,objetivo_g:target,semanas_estimadas:weeks,
+        fecha_estimada:iaAddDaysISO(reportDate,weeks*7),
+        biomasa_estimada_kg:bioTarget,
+        biomasa_estimada_kg_ha:(bioTarget!==null&&ha>0)?bioTarget/ha:null
+      };
+    }).sort((a,b)=>a.semanas_estimadas-b.semanas_estimadas);
+
+    const already=est.filter(x=>x.semanas_estimadas<=0.0001).length;
+    let answer='Estimación local hacia '+iaFmt(target,1)+' g · '+scope+(select?' · selección '+select.label:'')+
+      ', usando '+iaFmt(g,2)+' g/sem desde el corte '+reportDate+'.';
+    if(already) answer+='\n'+already+' estanque(s) ya están en o por encima de la talla objetivo.';
+    answer+='\nLa tabla ordena los estanques por fecha estimada e incluye biomasa total y kg/ha proyectados suponiendo población/sobrevivencia constantes.';
+    return {answer,kind:'harvest_estimate',data:{growth:g,target,selection:select,reportDate,table:est}};
+  }
+
   function iaWeightGrowthConditionFromQuestion(q){
     const n=iaNormText(q);
     if(!/(crecio|crecieron|crece|crecen|crecimiento|incremento|ganancia|aumento|subio|subieron|ganaron|gano)/.test(n)) return null;
@@ -4070,7 +4321,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
       +'• Sobrevivencia: '+iaFmt(s.sobrevivencia_pct,1)+'%\n'
       +'• FCA: '+iaFmt(s.fca,2)+'.';
     answer+=iaOperationalGroupedSummary(hit,q);
-    return {answer,kind:'weight_growth_average',data:{condition:cond,table:iaOperationalTable(hit,60),summary:s}};
+    return {answer,kind:'weight_growth_average',data:{condition:cond,table:iaOperationalTable(hit,hit.length),summary:s}};
   }
 
   function iaWeightStatisticIntent(q){
@@ -4212,6 +4463,26 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
       return iaWeightBlocksAnswer(rows,all,question);
     }
 
+
+    // Proyección de próximos estanques/talla de cosecha con incremento supuesto.
+    // Se resuelve localmente y nunca inventa una talla objetivo si el usuario no la indica.
+    if(hasActive && iaHarvestEstimateIntent(question) && growth!==null && !asksAnalysis){
+      return iaHarvestEstimateAnswer(ctx,rows,all,question,growth);
+    }
+
+    // Alimento por estanque: diario, semanal o acumulado.
+    if(hasActive && iaPondFeedQuestion(question) && !asksAnalysis){
+      const pf=iaPondFeedAnswer(all,question);
+      if(pf) return pf;
+    }
+
+    // Máximos, mínimos, rezagos y promedios de métricas operativas.
+    const opMetricSpec=iaOperationalMetricSpec(question);
+    const opExtremeIntent=opMetricSpec?iaNaturalExtremeIntent(question,opMetricSpec):null;
+    if(hasActive && opMetricSpec && opExtremeIntent && !asksAnalysis){
+      return iaOperationalExtremeAnswer(rows,all,question,opMetricSpec,opExtremeIntent);
+    }
+
     // Promedio de crecimiento condicionado por talla/peso: "cuánto creció el camarón de 12 g para arriba".
     const weightGrowthCond=iaWeightGrowthConditionFromQuestion(question);
     if(hasActive && weightGrowthCond && !asksAnalysis){
@@ -4247,7 +4518,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
       }).sort((a,b)=>(iaNum(iaField(b,['inc_peso_semanal_g','incremento_semanal_g','incremento_semanal_ciclo_g']))||0)-(iaNum(iaField(a,['inc_peso_semanal_g','incremento_semanal_g','incremento_semanal_ciclo_g']))||0));
       const title='Crecimiento '+growthBand.label+' en '+scopeLabel;
       let answer=iaOperationalSummaryText(hit,title) + iaOperationalGroupedSummary(hit,question);
-      return {answer,kind:'growth_band',data:{band:growthBand,table:iaOperationalTable(hit,50),summary:iaOperationalSummary(hit)}};
+      return {answer,kind:'growth_band',data:{band:growthBand,table:iaOperationalTable(hit,hit.length),summary:iaOperationalSummary(hit)}};
     }
 
     // FILTROS NUMÉRICOS OPERATIVOS PRIORITARIOS.
@@ -4274,7 +4545,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
         .sort((a,b)=>(iaNum(iaField(b,['biomasa_total_ha_kg','biomasa_ha_actual_kg']))||0)-(iaNum(iaField(a,['biomasa_total_ha_kg','biomasa_ha_actual_kg']))||0));
       const title='Biomasa '+bioHaBand.label+' en '+scopeLabel;
       let answer=iaOperationalSummaryText(hit,title) + iaOperationalGroupedSummary(hit,question);
-      return {answer,kind:'biomass_ha_band',data:{band:bioHaBand,table:iaOperationalTable(hit,50),summary:iaOperationalSummary(hit)}};
+      return {answer,kind:'biomass_ha_band',data:{band:bioHaBand,table:iaOperationalTable(hit,hit.length),summary:iaOperationalSummary(hit)}};
     }
 
     // FCA ARRIBA DE 1.50
@@ -4284,7 +4555,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
         .sort((a,b)=>(iaNum(iaField(b,['fca','fca_semanal']))||0)-(iaNum(iaField(a,['fca','fca_semanal']))||0));
       const title='FCA '+fcaBand.label+' en '+scopeLabel;
       let answer=iaOperationalSummaryText(hit,title) + iaOperationalGroupedSummary(hit,question);
-      return {answer,kind:'fca_band',data:{band:fcaBand,table:iaOperationalTable(hit,50),summary:iaOperationalSummary(hit)}};
+      return {answer,kind:'fca_band',data:{band:fcaBand,table:iaOperationalTable(hit,hit.length),summary:iaOperationalSummary(hit)}};
     }
 
     // SOBREVIVENCIA BAJA: umbral explícito o desviación estadística si no se da porcentaje.
@@ -4304,7 +4575,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
       let answer=iaOperationalSummaryText(hit,title+' · '+scopeLabel);
       answer+=iaOperationalGroupedSummary(hit,question);
       if(survThreshold===null) answer+='\n\nCriterio: desviación estadística IQR dentro de cada sitio/ciclo.';
-      return {answer,kind:'survival_low',data:{threshold:survThreshold,table:iaOperationalTable(hit,50),summary:iaOperationalSummary(hit)}};
+      return {answer,kind:'survival_low',data:{threshold:survThreshold,table:iaOperationalTable(hit,hit.length),summary:iaOperationalSummary(hit)}};
     }
 
     // BodyWeight: nunca se manda a Haiku si la tabla no está cargada.
@@ -4328,7 +4599,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
       if(hit.length){
         answer+='\n\nLa tabla muestra la alimentación real cargada en el portal. Para calcular la ración teórica BodyWeight hace falta cargar esa tabla.';
       }
-      return {answer,kind:'low_growth_list',data:{threshold:limit,table:iaOperationalTable(hit,40),summary:iaOperationalSummary(hit)}};
+      return {answer,kind:'low_growth_list',data:{threshold:limit,table:iaOperationalTable(hit,hit.length),summary:iaOperationalSummary(hit)}};
     }
 
     // Estanques más grandes por peso: local, con filtros y agrupación opcional.
@@ -4628,7 +4899,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
       }else if(hit.length){
         answer+='\n\nEstanques:\n'+hit.slice(0,20).map(r=>'• Est. '+r.estanque+' · '+(r.sitio==='SANTAFE'?'Santa Fe':r.sitio)+' · '+(r.seccion||'—')+' · '+iaFmt(iaNum(r.peso_actual_g),1)+' g').join('\n');
       }
-      return {answer,kind:'count',data:{table:iaOperationalTable(hit,40),summary:iaOperationalSummary(hit)}};
+      return {answer,kind:'count',data:{table:iaOperationalTable(hit,hit.length),summary:iaOperationalSummary(hit)}};
     }
 
     // Biomasa ACTIVA total y por sitio.
@@ -4723,7 +4994,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     if(range && /(cuantos?|numero|cantidad|estanques|talla|peso)/.test(nq) && !asksAnalysis){
       const hit=rows.filter(r=>{const w=iaNum(iaField(r,['peso_actual_g','peso_g','peso_actual']));return w!==null&&w>=range.min&&w<=range.max;});
       const bio=hit.reduce((a,r)=>a+(iaNum(iaField(r,['biomasa_actual_kg','biomasa_kg']))||0),0);
-      return {answer:'Hay '+hit.length+' estanques entre '+iaFmt(range.min,1)+' y '+iaFmt(range.max,1)+' g'+(bio?' y representan '+iaFmt(bio/1000,1)+' t de biomasa activa':'')+'.',kind:'range_count',data:{table:hit.slice(0,20).map(r=>({estanque:r.estanque,sitio:r.sitio,seccion:r.seccion,peso_actual_g:iaNum(r.peso_actual_g),biomasa_actual_kg:iaNum(r.biomasa_actual_kg)}))}};
+      return {answer:'Hay '+hit.length+' estanques entre '+iaFmt(range.min,1)+' y '+iaFmt(range.max,1)+' g'+(bio?' y representan '+iaFmt(bio/1000,1)+' t de biomasa activa':'')+'.',kind:'range_count',data:{table:hit.map(r=>({estanque:r.estanque,sitio:r.sitio,seccion:r.seccion,peso_actual_g:iaNum(r.peso_actual_g),biomasa_actual_kg:iaNum(r.biomasa_actual_kg)}))}};
     }
 
     // Resumen técnico / biometría / producción activa con lenguaje combinado.
