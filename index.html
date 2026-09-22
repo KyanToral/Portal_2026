@@ -259,6 +259,37 @@
   .cia-kpi-sub{font-size:8px; color:var(--muted)}
   .cia-kpi-sub2{font-size:8px; color:var(--muted); margin-bottom:4px; line-height:1.45}
   .cia-kpi-chartwrap{margin:1px 0 3px}
+  /* KPI Costo / kg — versión Glow Aqua (solo visual; no altera cálculos) */
+  .cia-kpi-cost-card{
+    position:relative; overflow:hidden;
+    border-color:rgba(65,220,255,.34);
+    background:
+      radial-gradient(circle at 18% 18%,rgba(32,215,255,.08),transparent 38%),
+      radial-gradient(circle at 86% 78%,rgba(41,230,139,.08),transparent 34%),
+      linear-gradient(155deg,#0C2038,#091A31 64%,#08192C);
+    box-shadow:0 0 0 1px rgba(32,215,255,.05) inset,0 7px 18px rgba(0,0,0,.27),0 0 16px rgba(32,215,255,.07);
+  }
+  .cia-kpi-cost-card:before{
+    content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+    background:linear-gradient(125deg,rgba(255,255,255,.05),transparent 28%,transparent 72%,rgba(32,215,255,.04));
+  }
+  .cia-kpi-cost-card .cia-kpi-label{color:#A8C8E8;letter-spacing:.7px}
+  .cia-kpi-cost-card .cia-kpi-value{font-size:20px;text-shadow:0 0 11px rgba(255,255,255,.22)}
+  .cia-kpi-cost-card .cia-kpi-sub2{position:relative;z-index:1;color:#9AB2CD}
+  .cia-kpi-cost-card .cia-kpi-chartwrap{position:relative;z-index:1;margin-top:4px}
+  .cia-cost-glow-wrap{display:flex;align-items:center;gap:10px;min-height:84px}
+  .cia-cost-donutbox{position:relative;flex:0 0 86px;width:86px;height:86px;display:grid;place-items:center}
+  .cia-cost-donutbox:after{content:'';position:absolute;left:16px;right:16px;bottom:-3px;height:7px;border-radius:50%;background:rgba(41,230,139,.42);filter:blur(6px);opacity:.58}
+  .cia-cost-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;z-index:2}
+  .cia-cost-center b{font-family:'Barlow Condensed',sans-serif;font-size:14px;color:#F7FBFF;line-height:1;text-shadow:0 0 8px rgba(255,255,255,.22)}
+  .cia-cost-center span{font-size:6.5px;color:#77A7CE;margin-top:3px;letter-spacing:.2px}
+  .cia-cost-legend{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
+  .cia-cost-legrow{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:5px 7px;border:1px solid rgba(65,172,218,.24);border-radius:8px;background:linear-gradient(90deg,rgba(7,28,52,.78),rgba(10,35,62,.42));font-size:7.5px;color:#DCEBFA;white-space:nowrap}
+  .cia-cost-legleft{display:flex;align-items:center;gap:5px;min-width:0}
+  .cia-cost-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+  .cia-cost-legrow b{font-size:9.5px;font-weight:800}
+  .cia-cost-direct{color:#4EF0A2!important;text-shadow:0 0 9px rgba(41,230,139,.38)}
+  .cia-cost-indirect{color:#30DEFF!important;text-shadow:0 0 9px rgba(32,215,255,.4)}
   .cia-kpi-foot{display:flex; justify-content:space-between; align-items:center; border-top:1px dashed rgba(255,255,255,.15); padding-top:4px; font-size:8px; color:var(--muted); margin-top:auto}
   .cia-chart-tip{position:fixed; z-index:9999; background:#0C1B30; border:1px solid rgba(255,255,255,.15); border-radius:8px; padding:6px 10px; pointer-events:none;
     box-shadow:0 8px 18px rgba(0,0,0,.4); display:none; white-space:nowrap}
@@ -560,7 +591,7 @@
   <script>
   (function(){
     // ===== Datos de configuración — KPIs reales (17-ago vs. semana anterior 10-ago) =====
-    const ciaKpis = [{"label":"Biomasa total activa","value":"1,046.2","unit":"t","delta":"-3.6% vs. semana anterior (GENERAL)","icon":"shrimp","color":"#00C9A7","bg":"rgba(0,201,167,.14)","tone":"warn"},{"label":"Biomasa / Ha (kg) activa","value":"922","unit":"kg/ha","delta":"+3.3% vs. semana anterior (GENERAL)","icon":"biomassPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa total cosechada","value":"1,923.5","unit":"t","delta":"297 estanques cosechados · Ciclo 1 2026","icon":"harvestBiomass","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa cosechada / Ha","value":"1,417","unit":"kg/ha","delta":"1,405.38 ha cosechadas · SANTAFE, 4-H, OWEN 1, OWEN 2","icon":"harvestPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Costo / kg total","value":"67.40","unit":"MXN/kg","delta":"Directo $56.73 · Indirecto $10.67 · Ciclo 1 2026","icon":"dollarSign","color":"#F4A261","bg":"rgba(244,162,97,.14)","tone":"neutral"}];
+    const ciaKpis = [{"label":"Biomasa total activa","value":"1,046.2","unit":"t","delta":"-3.6% vs. semana anterior (GENERAL)","icon":"shrimp","color":"#00C9A7","bg":"rgba(0,201,167,.14)","tone":"warn"},{"label":"Biomasa / Ha (kg) activa","value":"922","unit":"kg/ha","delta":"+3.3% vs. semana anterior (GENERAL)","icon":"biomassPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa total cosechada","value":"1,923.5","unit":"t","delta":"297 registros cosechados · acumulado 2026","icon":"harvestBiomass","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa cosechada / Ha","value":"1,417","unit":"kg/ha","delta":"1,405.38 ha cosechadas · SANTAFE, 4-H, OWEN 1, OWEN 2","icon":"harvestPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Costo / kg total","value":"67.40","unit":"MXN/kg","delta":"Directo $56.73 · Indirecto $10.67","icon":"dollarSign","color":"#F4A261","bg":"rgba(244,162,97,.14)","tone":"neutral"}];
     const ciaMeta = {"updated":"21 sep 2026","coverage":"297 estanques cosechados · 1,405.38 ha · SANTAFE, 4-H, OWEN 1, OWEN 2"};
 
     // key = mismo argumento que ya usa openReport(key) — no se toca la lógica existente
@@ -812,21 +843,43 @@
       return { d, i, total, pd: d/total*100, pi: i/total*100 };
     }
     function ciaCostoDonut(costo, color1, color2){
-      const size=46, r=17, sw=8, c=2*Math.PI*r, cx=size/2, cy=size/2, uid=Math.random().toString(36).slice(2,7);
-      const seg1 = c*(costo.pd/100);
-      const tipD = `${costo.pd.toFixed(0)}% · $${costo.d.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
-      const tipI = `${costo.pi.toFixed(0)}% · $${costo.i.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
-      return `<div style="display:flex; align-items:center; gap:10px">
-        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="flex-shrink:0">
-          <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color2}" stroke-width="${sw}"
-            style="cursor:pointer" onmouseenter="ciaShowTip(event,'Indirecto','${tipI}','${color2}')" onmousemove="ciaMoveTip(event)" onmouseleave="ciaHideTip()"/>
-          <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color1}" stroke-width="${sw}"
-            stroke-dasharray="${seg1.toFixed(1)} ${(c-seg1).toFixed(1)}" stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"
-            style="cursor:pointer" onmouseenter="ciaShowTip(event,'Directo','${tipD}','${color1}')" onmousemove="ciaMoveTip(event)" onmouseleave="ciaHideTip()"/>
-        </svg>
-        <div style="display:flex; flex-direction:column; gap:3px; font-size:8px; color:var(--muted)">
-          <span style="display:flex;align-items:center;gap:5px"><i style="width:7px;height:7px;border-radius:2px;background:${color1};display:inline-block;flex-shrink:0"></i>Directo ${costo.pd.toFixed(0)}%</span>
-          <span style="display:flex;align-items:center;gap:5px"><i style="width:7px;height:7px;border-radius:2px;background:${color2};display:inline-block;flex-shrink:0"></i>Indirecto ${costo.pi.toFixed(0)}%</span>
+      // Estilo Glow Aqua inspirado en el preview aprobado.
+      // Los colores se fijan solo para este KPI: Directo=verde, Indirecto=cian.
+      const direct='#29E68B', indirect='#20D7FF';
+      const size=86, r=31, sw=12, c=2*Math.PI*r, cx=size/2, cy=size/2, uid=Math.random().toString(36).slice(2,7);
+      const seg1=c*(costo.pd/100), seg2=c-seg1;
+      const gap=1.6;
+      const tipD=`${costo.pd.toFixed(0)}% · $${costo.d.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+      const tipI=`${costo.pi.toFixed(0)}% · $${costo.i.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+      const totalFmt=costo.total.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+      return `<div class="cia-cost-glow-wrap">
+        <div class="cia-cost-donutbox">
+          <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display:block;overflow:visible;filter:drop-shadow(0 0 5px rgba(41,230,139,.22))">
+            <defs>
+              <filter id="costGlow${uid}" x="-60%" y="-60%" width="220%" height="220%">
+                <feGaussianBlur stdDeviation="2.2" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <linearGradient id="costGreen${uid}" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#63FFC0"/><stop offset="48%" stop-color="#29E68B"/><stop offset="100%" stop-color="#0FCF76"/>
+              </linearGradient>
+              <linearGradient id="costCyan${uid}" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#7AF2FF"/><stop offset="55%" stop-color="#20D7FF"/><stop offset="100%" stop-color="#09ACF0"/>
+              </linearGradient>
+            </defs>
+            <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(80,123,160,.18)" stroke-width="${sw+3}"/>
+            <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="url(#costGreen${uid})" stroke-width="${sw}"
+              stroke-dasharray="${Math.max(0,seg1-gap).toFixed(1)} ${(c-Math.max(0,seg1-gap)).toFixed(1)}" stroke-linecap="butt" transform="rotate(-90 ${cx} ${cy})"
+              filter="url(#costGlow${uid})" style="cursor:pointer" onmouseenter="ciaShowTip(event,'Directo','${tipD}','${direct}')" onmousemove="ciaMoveTip(event)" onmouseleave="ciaHideTip()"/>
+            <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="url(#costCyan${uid})" stroke-width="${sw}"
+              stroke-dasharray="${Math.max(0,seg2-gap).toFixed(1)} ${(c-Math.max(0,seg2-gap)).toFixed(1)}" stroke-dashoffset="${(-seg1).toFixed(1)}" stroke-linecap="butt" transform="rotate(-90 ${cx} ${cy})"
+              filter="url(#costGlow${uid})" style="cursor:pointer" onmouseenter="ciaShowTip(event,'Indirecto','${tipI}','${indirect}')" onmousemove="ciaMoveTip(event)" onmouseleave="ciaHideTip()"/>
+          </svg>
+          <div class="cia-cost-center"><b>${totalFmt}</b><span>MXN/kg</span></div>
+        </div>
+        <div class="cia-cost-legend">
+          <div class="cia-cost-legrow"><span class="cia-cost-legleft"><i class="cia-cost-dot" style="background:${direct};box-shadow:0 0 8px ${direct}"></i>Directo</span><b class="cia-cost-direct">${costo.pd.toFixed(0)}%</b></div>
+          <div class="cia-cost-legrow"><span class="cia-cost-legleft"><i class="cia-cost-dot" style="background:${indirect};box-shadow:0 0 8px ${indirect}"></i>Indirecto</span><b class="cia-cost-indirect">${costo.pi.toFixed(0)}%</b></div>
         </div>
       </div>`;
     }
@@ -1034,7 +1087,7 @@
         let chart = ciaCardChart(series, chartColor, k.unit, dec);
         if(!chart && isCosto){
           const costo = ciaParseCosto(k.delta);
-          if(costo) chart = ciaCostoDonut(costo, chartColor, '#3E5A8E');
+          if(costo) chart = ciaCostoDonut(costo, '#29E68B', '#20D7FF');
         }
         // Si hay un filtro activo y sí hay serie filtrada, el valor grande refleja el filtro
         // en vez del total corporativo estático (para no mostrar un número que no corresponde).
@@ -1057,7 +1110,7 @@
           const footM = meta.cumulative ? 'Acumulado' : `${vals.length} semanas`;
           foot = `<div class="cia-kpi-foot"><span>${fmt(min)}</span><span>${footM}</span><span style="color:${chartColor};font-weight:700">${fmt(cur)}</span></div>`;
         }
-        h += `<div class="cia-kpi-card">
+        h += `<div class="cia-kpi-card${isCosto?' cia-kpi-cost-card':''}">
           <div class="cia-kpi-label">${k.label}</div>
           <div class="cia-kpi-value">${bigValue}<span class="cia-kpi-unit">${k.unit}</span></div>
           ${badgeHtml}
@@ -1193,7 +1246,12 @@
       frame.src = r.src;
     } else if(window.REPORTS_DATA && window.REPORTS_DATA[key]){
       frame.removeAttribute('src');
-      frame.srcdoc = b64ToUtf8(window.REPORTS_DATA[key]);
+      try{
+        frame.srcdoc = b64ToUtf8(window.REPORTS_DATA[key]);
+      }catch(err){
+        console.error('[openReport] Error al decodificar el reporte', key, err);
+        frame.srcdoc = "<p style='font-family:sans-serif;padding:40px;'>No se pudo cargar este reporte (datos dañados o incompletos). Vuelve a subirlo desde el panel de administración.</p>";
+      }
     } else {
       frame.removeAttribute('src');
       frame.srcdoc = "<p style='font-family:sans-serif;padding:40px;'>Este reporte aún no se ha cargado en este portal.</p>";
@@ -1396,7 +1454,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
         if(bioKg > 0){
           const kBio = kpiByLabel['Biomasa total cosechada'];
           const kHa = kpiByLabel['Biomasa cosechada / Ha'];
-          if(kBio){ kBio.value = fmtNum(bioKg/1000, 1); kBio.delta = estCount + ' estanques cosechados · Ciclo 1 2026'; }
+          if(kBio){ kBio.value = fmtNum(bioKg/1000, 1); kBio.delta = estCount + ' registros cosechados · acumulado 2026'; }
           // Promedio simple de kg/ha por estanque (no biomasa total / ha total):
           // con estanques resembrados y cosechados 2 veces (2do ciclo), sumar sus
           // hectareas otra vez en el denominador diluye el numero hacia abajo.
@@ -1436,7 +1494,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
           const kCosto = kpiByLabel['Costo / kg total'];
           if(kCosto){
             kCosto.value = fmtNum(importeTotal/kgTotal, 2);
-            kCosto.delta = 'Directo $' + fmtNum(importeDirecto/kgTotal,2) + ' · Indirecto $' + fmtNum(importeIndirecto/kgTotal,2) + ' · Ciclo 1 2026';
+            kCosto.delta = 'Directo $' + fmtNum(importeDirecto/kgTotal,2) + ' · Indirecto $' + fmtNum(importeIndirecto/kgTotal,2);
           }
           updated = true;
         }
@@ -1600,6 +1658,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
           finish(XLSX.utils.sheet_to_json(sheet, {defval:null}));
         }).catch(fail);
       };
+      reader.onerror = function(){ fail(new Error('No se pudo leer el archivo')); };
       reader.readAsText(file, 'UTF-8');
     } else {
       const reader = new FileReader();
@@ -1610,6 +1669,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
           finish(XLSX.utils.sheet_to_json(sheet, {defval:null}));
         }).catch(fail);
       };
+      reader.onerror = function(){ fail(new Error('No se pudo leer el archivo')); };
       reader.readAsArrayBuffer(file);
     }
   };
@@ -1652,6 +1712,10 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
       btn.disabled = false;
       btn.textContent = 'Aplicar';
       btn.classList.remove('done');
+    };
+    reader.onerror = function(){
+      const detectEl2 = document.getElementById('detect-'+rowKey);
+      if(detectEl2){ detectEl2.textContent = 'No se pudo leer el archivo. Intenta de nuevo.'; detectEl2.classList.remove('match'); }
     };
     reader.readAsText(file, 'UTF-8');
   };
@@ -1974,7 +2038,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
   const IA_ENDPOINT = 'https://us-central1-cosechas-santa-fe.cloudfunctions.net/portalAssistant';
   const IA_MEMORY_KEY = 'cia_memory_v7';
   const IA_HISTORY_KEY = 'cia_history_v7';
-  const IA_BUILD = 'V7.34.11 ESTABLE BLINDADA · métricas y cosechas por sitio';
+  const IA_BUILD = 'V7.35.2 ESTABLE · bloques de talla continuos >20 g · fixes proyección/cosecha, laboratorios por ciclo y etiquetas KPI · KPI costo Glow Aqua';
   let iaHistory = [];
   let iaMemory = {lastQuestion:'',lastResolvedQuestion:'',lastKind:'',lastSite:'',lastSection:'',lastThreshold:null,lastGrowth:null};
   try{
@@ -3761,18 +3825,48 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     return mentionsLab && mentionsHarvest;
   }
 
+  function iaHarvestLabFromQuestion(q,rawRows){
+    const n=iaNormText(q);
+    const labs=[...new Set((rawRows||[]).map(r=>String(r.LABORAT||'').trim()).filter(Boolean))];
+    for(const lab of labs){
+      const nl=iaNormText(lab);
+      if(nl && n.includes(nl)) return lab;
+    }
+    // Alias comunes para tolerar variaciones de escritura/acento.
+    const aliases={
+      biomarina:['biomarina'],
+      aquapacific:['aquapacific','aqua pacific'],
+      genesis:['genesis','génesis']
+    };
+    for(const [key,forms] of Object.entries(aliases)){
+      if(forms.some(f=>n.includes(iaNormText(f)))){
+        const hit=labs.find(l=>iaNormText(l).includes(key));
+        if(hit) return hit;
+      }
+    }
+    return null;
+  }
+
   function iaHarvestLabAnswer(ctx,q){
     const raw=Array.isArray(ctx&&ctx.cosechas)?ctx.cosechas:[];
     if(!raw.length) return {answer:'No encontré el Reporte de Cosechas General cargado en el portal, o no trae datos por estanque para separar por laboratorio.',kind:'harvest_labs'};
     const site=iaHarvestSiteFromQuestion(q,raw);
-    const filtered=site?raw.filter(r=>String(r.SITIO||'')===site):raw;
+    const cycle=iaCycleFilterFromQuestion(q);
+    const lab=iaHarvestLabFromQuestion(q,raw);
+
+    let filtered=raw;
+    if(site) filtered=filtered.filter(r=>String(r.SITIO||'')===site);
+    if(cycle!==null) filtered=filtered.filter(r=>Number(r.CICLO)===Number(cycle));
+    if(lab) filtered=filtered.filter(r=>iaNormText(String(r.LABORAT||''))===iaNormText(lab));
+
     const labs=iaHarvestLabSummary(filtered);
-    if(!labs.length) return {answer:'No encontré la columna de laboratorio en las cosechas'+(site?' de '+site:'')+' del corte actual.',kind:'harvest_labs'};
-    let answer='Datos de laboratorio en cosechas realizadas'+(site?' · '+site:'')+': '+labs.length+' laboratorio(s) en '+filtered.length+' registros de cosecha.';
+    const scope=[site,cycle!==null?iaCycleLabel(cycle):null,lab].filter(Boolean).join(' · ');
+    if(!labs.length) return {answer:'No encontré resultados de laboratorio en las cosechas'+(scope?' para '+scope:'')+'.',kind:'harvest_labs'};
+    let answer='Datos de laboratorio en cosechas realizadas'+(scope?' · '+scope:'')+': '+labs.length+' laboratorio(s) en '+filtered.length+' registros de cosecha.';
     answer+='\n\nPor laboratorio:\n'+labs.map(x=>
       '• '+x.laboratorio+': '+x.estanques+' est. · DC '+iaFmt(x.dc_promedio,0)+' · '+iaFmt(x.biomasa_kg/1000,1)+' t · '+iaFmt(x.biomasa_kg_ha,0)+' kg/ha · peso '+iaFmt(x.peso_g,1)+' g · crec./ISP '+iaFmt(x.crecimiento_g,2)+' g/sem · sob '+iaFmt(x.sobrevivencia_pct,1)+'% · FCA '+iaFmt(x.fca,2)
     ).join('\n');
-    return {answer,kind:'harvest_labs',data:{byLab:labs,site}};
+    return {answer,kind:'harvest_labs',data:{byLab:labs,site,cycle,lab}};
   }
 
   function iaCostSiteFromQuestion(q,ctx){
@@ -4657,13 +4751,16 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
   }
 
   function iaWeightBlocksDefinition(){
+    // V7.35.2 — bloques continuos: sin huecos y con último rango abierto.
+    // Se usan centésimas para evitar dejar fuera pesos como 9.05, 12.05 o 15.75 g.
     return [
-      {min:0.0,max:1.9,label:'0–1.9 g'},
-      {min:2.0,max:5.5,label:'2.0–5.5 g'},
-      {min:5.6,max:9.0,label:'5.6–9.0 g'},
-      {min:9.1,max:12.0,label:'9.1–12.0 g'},
-      {min:12.1,max:15.5,label:'12.1–15.5 g'},
-      {min:16.0,max:20.0,label:'16.0–20.0 g'}
+      {min:0.0,max:1.99,label:'0–1.99 g'},
+      {min:2.0,max:5.59,label:'2.00–5.59 g'},
+      {min:5.6,max:9.09,label:'5.60–9.09 g'},
+      {min:9.1,max:12.09,label:'9.10–12.09 g'},
+      {min:12.1,max:15.99,label:'12.10–15.99 g'},
+      {min:16.0,max:20.0,label:'16.00–20.00 g'},
+      {min:20.01,max:Infinity,label:'>20.00 g'}
     ];
   }
 
@@ -4685,7 +4782,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
       };
     });
     const represented=blocks.reduce((a,b)=>a+(b.estanques||0),0);
-    const answer='Bloques de peso/talla · '+scope+': '+iaFmt(represented,0)+' estanques clasificados en los bloques del Mapa Biomasa kg/ha.';
+    const answer='Bloques de peso/talla · '+scope+': '+iaFmt(represented,0)+' estanques clasificados por rango de peso (calculo propio del asistente, cortes continuos).';
     return {answer,kind:'weight_blocks',data:{blocks,scope,represented}};
   }
 
@@ -4736,6 +4833,13 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
   }
 
   async function iaLocalRouteAsync(ctx,question){
+    // V7.35.1 — una proyección con crecimiento supuesto debe resolverse con los
+    // estanques activos, no confundirse con el Programa de Cosechas de Firebase.
+    // Ej.: "próximos estanques a cosechar dando 1.2 g/sem".
+    const projectionGrowth=iaExtractGrowthScenario(question);
+    if(iaHarvestEstimateIntent(question) && projectionGrowth!==null){
+      return iaLocalRoute(ctx,question);
+    }
     if(iaIsHarvestProgramQuestion(question)) return await iaHarvestProgramAnswer(question);
     return iaLocalRoute(ctx,question);
   }
