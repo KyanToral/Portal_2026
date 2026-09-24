@@ -1861,7 +1861,13 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     if(btn){ btn.disabled = true; btn.textContent = 'Generando...'; }
     try{
       const res = await fetch(location.href, {cache:'no-store'});
+      if(!res.ok) throw new Error('No se pudo leer el portal actual (HTTP '+res.status+')');
       let text = await res.text();
+      // FIX 24-sep-2026: si falta alguna marca, antes se descargaba un portal SIN los cambios
+      // y el botón decía "✓ Descargado". Ahora se detiene y avisa.
+      ['const ciaKpis = ','const ciaMeta = ','window.REPORTS_DATA = '].forEach(mk=>{
+        if(text.indexOf(mk) === -1) throw new Error('No encontré "'+mk.trim()+'" en el portal; no se generó el archivo para no perder cambios.');
+      });
 
       text = ciaReplaceDecl(text, 'const ciaKpis = ', JSON.stringify(window.ciaKpis));
       text = ciaReplaceDecl(text, 'const ciaMeta = ', JSON.stringify(window.ciaMeta));
@@ -2107,12 +2113,12 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     if(Array.isArray(h)) iaHistory=h.slice(-24);
     const m=JSON.parse(localStorage.getItem(IA_MEMORY_KEY)||'null');
     if(m && typeof m==='object') iaMemory=Object.assign(iaMemory,m);
-  }catch(e){}
+  }catch(e){ console.warn('[IA] No se pudo leer la memoria guardada (se inicia vacía)', e); }
   function iaSaveMemory(){
     try{
       localStorage.setItem(IA_HISTORY_KEY,JSON.stringify(iaHistory.slice(-24)));
       localStorage.setItem(IA_MEMORY_KEY,JSON.stringify(iaMemory));
-    }catch(e){}
+    }catch(e){ console.warn('[IA] No se pudo guardar la memoria (navegador privado o sin espacio)', e); }
   }
 
   function iaTime(){
@@ -3487,13 +3493,13 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     }
 
     // Comparador antes del valor = estricto.
-    m=n.match(new RegExp('(?:arriba de|mayor(?:es)? de|mas de|superior(?:es)? a|por encima de|>)\\s*'+token));
+    m=n.match(new RegExp('(?:arriba de|mayor(?:es)? (?:de|a|que)|mas de|superior(?:es)? a|por encima de|encima de|>)\\s*'+token));
     if(m){
       const v=parseToken(m[1]);
       if(v!==null) return {...def,min:v,max:Infinity,minExclusive:true,labelCondition:'> '+iaFmt(v,def.dec)+(def.unit?' '+def.unit:'')};
     }
 
-    m=n.match(new RegExp('(?:abajo de|menor(?:es)? de|menos de|inferior(?:es)? a|por debajo de|<)\\s*'+token));
+    m=n.match(new RegExp('(?:abajo de|debajo de|menor(?:es)? (?:de|a|que)|menos de|inferior(?:es)? a|por debajo de|<)\\s*'+token));
     if(m){
       const v=parseToken(m[1]);
       if(v!==null) return {...def,min:-Infinity,max:v,maxExclusive:true,labelCondition:'< '+iaFmt(v,def.dec)+(def.unit?' '+def.unit:'')};
@@ -3988,7 +3994,10 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     const order={cuenta:0,subcuenta:1,concepto:2,producto:3,marca:4};
     const candidates=arr.filter(x=>{
       const label=iaNormText(x.label);
-      return label.length>=4 && (n.includes(label) || label.split(/\s+/).filter(w=>w.length>=5).some(w=>n.includes(w)));
+      // FIX 24-sep-2026: palabras genéricas ("total", "costos", "general"...) no identifican un
+      // componente; antes "costos acumulados en total" respondía el producto "VIMIFOS TOTAL RANGE".
+      const GENERIC=/^(total|totales|costo|costos|general|acumulado|acumulados|sitio|sitios|range|gasto|gastos|directo|directos|indirecto|indirectos)$/;
+      return label.length>=4 && (n.includes(label) || label.split(/\s+/).filter(w=>w.length>=5 && !GENERIC.test(w)).some(w=>n.includes(w)));
     }).sort((a,b)=>(order[a.dimension]??9)-(order[b.dimension]??9) || b.total-a.total);
     return candidates[0]||null;
   }
@@ -4409,8 +4418,16 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
 
 
   // ==================== V7.34.6: lenguaje operativo ampliado ====================
+  // Pregunta con umbral numérico explícito ("arriba de 14 g", "menor a 50%", "12 g para arriba").
+  function iaHasNumericComparison(n){
+    return /(arriba de|encima de|por encima de|mayor(?:es)? (?:a|de|que)|mas de|superior(?:es)? a|debajo de|abajo de|por debajo de|menor(?:es)? (?:a|de|que)|menos de|inferior(?:es)? a|entre|[<>]=?)\s*\d/.test(n) ||
+           /\d+(?:[\.,]\d+)?\s*(?:g|gramos?|%|kg\/ha)?\s*(?:para arriba|hacia arriba|pa arriba|en adelante|o mas|y mas|para abajo|hacia abajo|o menos)/.test(n);
+  }
   function iaNaturalExtremeIntent(q,spec){
     const n=iaNormText(q);
+    // FIX 24-sep-2026: "FCA arriba de 1.50", "arriba de 14 g", "menos de 1.0 g" son FILTROS con
+    // umbral, no preguntas de máximo/mínimo. Antes caían aquí y devolvían solo el ranking.
+    if(iaHasNumericComparison(n)) return null;
     const high=/(mas alto|más alto|mas alta|más alta|alto|alta|mayor|mayores|superior|superiores|arriba|top|mejor|mejores|maximo|maxima|máximo|máxima|max|maxim|el que mas|el que más|los que mas|los que más|mas cargado|más cargado|mas adelantado|más adelantado|mejor parado|mas fuerte|más fuerte)/.test(n);
     const low=/(mas bajo|más bajo|mas baja|más baja|bajo|baja|menor|menores|inferior|inferiores|abajo|peor|peores|minimo|minima|mínimo|mínima|min|minim|el que menos|los que menos|rezagad|atrasad|se queda|se estan quedando|se están quedando|mas flojo|más flojo|menos cargado|mas atrasado|más atrasado|quedado|se quedo|se quedó)/.test(n);
     const avg=/(promedio|media|promediame|promédiame|en promedio|valor medio|prom)/.test(n);
@@ -4742,6 +4759,9 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     if(!/(crecio|crecieron|crece|crecen|crecimiento|incremento|ganancia|aumento|subio|subieron|ganaron|gano)/.test(n)) return null;
     if(!/(camaron|camarones|peso|talla|tamano|gramos|\bg\b)/.test(n)) return null;
     if(/g\s*\/\s*sem|gramos?\s*por\s*semana/.test(n)) return null;
+    // FIX 24-sep-2026: "crecieron menos de 1.0 g" es un umbral de CRECIMIENTO, no de peso
+    // (antes respondía "no hay camarón de < 1.0 g").
+    if(/(crecio|crecieron|crece|crecen|crecimiento|incremento|ganaron|gano)\s+(?:\S+\s+){0,2}(menos de|menor(?:es)? (?:de|a|que)|abajo de|debajo de|por debajo de|mas de|arriba de|encima de|mayor(?:es)? (?:de|a|que)|entre)\s*\d/.test(n)) return null;
     const N='(\\d+(?:[\\.,]\\d+)?)';
     const num=s=>Number(String(s).replace(',','.'));
     let m=n.match(new RegExp('(?:entre|de)\\s*'+N+'\\s*(?:g|gramos?)?\\s*(?:y|a|-)\\s*'+N+'\\s*(?:g|gramos?)'));
@@ -4780,8 +4800,9 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
 
   function iaWeightStatisticIntent(q){
     const n=iaNormText(q);
-    const weightCtx=/(peso|talla|gramos|camaron|camarones)/.test(n);
+    const weightCtx=/(peso|pesad|talla|gramos|camaron|camarones)/.test(n);
     if(!weightCtx) return null;
+    if(iaHasNumericComparison(n)) return null; // FIX 24-sep-2026: "peso menor a 5 g" es filtro, no mínimo
     if(/(?:mas grande|mas grandes|mayor peso|peso mayor|talla mayor|talla mas alta|mas pesado|mas pesados|mayor talla|peso maximo|talla maxima|camaron mayor|camaron mas grande|camarones mas grandes|talla maxima actual|peso maximo actual)/.test(n)) return 'max';
     if(/(?:mas chico|mas chicos|mas pequeno|mas pequenos|menor peso|peso menor|talla menor|talla mas baja|mas liviano|menor talla|peso minimo|talla minima|camaron menor|camaron mas chico|camarones mas chicos|talla minima actual|peso minimo actual)/.test(n)) return 'min';
     if(/(?:promedio|media|peso medio|talla media|peso promedio|talla promedio|promedio de peso|promedio de talla|talla promedio actual|peso promedio actual)/.test(n)) return 'avg';
@@ -4910,6 +4931,26 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     return iaLocalRoute(ctx,question);
   }
 
+  // FIX 24-sep-2026: escenario "¿cuántos estanques llegarán a 18 g en 2 semanas si crecen 1.5 g/sem?"
+  // (chip "Escenario cosecha"). Antes lo interceptaba el conteo genérico de estanques activos.
+  function iaScenarioProjectionAnswer(rows,question,growth,threshold){
+      const weeks=iaExtractWeeksAhead(question); const assumedGrowth=growth!==null?growth:iaCurrentGrowthForRows(rows);
+      if(weeks && assumedGrowth!==null){
+      const p=iaProjectionRows(rows,assumedGrowth,weeks);
+      // Meta de talla: "llegarán a 18 g", "alcancen 15 g" (antes no se reconocía y solo daba el promedio).
+      let th=threshold;
+      if(th===null){ const mt=iaNormText(question).match(/(?:llegar\w*|lleguen|alcanz\w*|alcancen)\s*(?:a|al|los)?\s*(\d+(?:[\.,]\d+)?)\s*(?:g|gramos?)\b/); if(mt) th=Number(mt[1].replace(',','.')); }
+      const hit=th!==null?p.filter(x=>x.peso_proyectado>=th):p;
+      const bio=hit.reduce((a,x)=>a+(x.biomasa_proyectada||0),0); const avg=hit.length?hit.reduce((a,x)=>a+x.peso_proyectado,0)/hit.length:null;
+      let answer=`Escenario local a ${iaFmt(weeks,1)} semana(s) con crecimiento supuesto de ${iaFmt(assumedGrowth,2)} g/sem: ${p.length} estanques proyectados.`;
+      if(th!==null) answer+=`\n\nEstanques que alcanzarían ≥ ${iaFmt(th,1)} g: ${hit.length}. Biomasa potencial de ese grupo: ${iaFmt(bio/1000,1)} t.`;
+      else answer+=`\nPeso promedio proyectado: ${iaFmt(avg,2)} g.`;
+      answer+='\n\nSupuesto: sobrevivencia/población constante; la biomasa se escala por el aumento de peso.';
+      return {answer,kind:'scenario_projection',data:{weeks,growth:assumedGrowth,threshold:th,totalProjected:p.length,hitCount:hit.length,biomassKg:bio,table:hit.sort((a,b)=>b.peso_proyectado-a.peso_proyectado).slice(0,20).map(x=>({estanque:x.r.estanque,sitio:x.r.sitio,seccion:x.r.seccion,peso_actual_g:x.peso_actual,peso_proyectado_g:x.peso_proyectado,biomasa_proyectada_kg:x.biomasa_proyectada}))}};
+    }
+    return null;
+  }
+
   function iaLocalRoute(ctx,question){
     const nq=iaNormText(question); const all=iaRows(ctx); const hasActive=all.length>0;
     const rows=hasActive?iaApplyFilters(all,question):[]; const scopeLabel=hasActive?iaFilterDescription(question,all):'sin datos';
@@ -4920,6 +4961,13 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     // Fecha/corte del dato: acepta lenguaje natural como "de qué fecha estás tomando los datos".
     if(iaIsDataDateQuestion(question) && !asksAnalysis){
       return iaDataDateAnswer(ctx,all);
+    }
+
+    // Escenario explícito (semanas + crecimiento supuesto + "llegar/alcanzar"): va antes que
+    // las métricas genéricas para que no se responda solo el conteo de estanques.
+    if(hasActive && growth!==null && iaExtractWeeksAhead(question) && /(llegar|llegaran|alcanzar|alcanzaran|alcancen|lleguen|tendremos|estaran)/.test(nq) && !iaIsFeedProjectionQuestion(question) && !asksAnalysis){
+      const sc=iaScenarioProjectionAnswer(rows,question,growth,threshold);
+      if(sc) return sc;
     }
 
     // Bloques de peso/talla del Mapa Biomasa kg/ha.
@@ -5172,17 +5220,8 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
 
     // V7: escenarios de talla/biomasa a N semanas y disponibilidad potencial para cosecha.
     if(hasActive && /(proyect|llegar|tendremos|estaran|estarán|disponibles?|potencial.*cosecha)/.test(nq) && /(semana|dias|talla|peso|cosecha|g\b)/.test(nq) && !asksAnalysis){
-      const weeks=iaExtractWeeksAhead(question); const assumedGrowth=growth!==null?growth:iaCurrentGrowthForRows(rows);
-      if(weeks && assumedGrowth!==null){
-        const p=iaProjectionRows(rows,assumedGrowth,weeks); const th=threshold;
-        const hit=th!==null?p.filter(x=>x.peso_proyectado>=th):p;
-        const bio=hit.reduce((a,x)=>a+(x.biomasa_proyectada||0),0); const avg=hit.length?hit.reduce((a,x)=>a+x.peso_proyectado,0)/hit.length:null;
-        let answer=`Escenario local a ${iaFmt(weeks,1)} semana(s) con crecimiento supuesto de ${iaFmt(assumedGrowth,2)} g/sem: ${p.length} estanques proyectados.`;
-        if(th!==null) answer+=`\n\nEstanques que alcanzarían ≥ ${iaFmt(th,1)} g: ${hit.length}. Biomasa potencial de ese grupo: ${iaFmt(bio/1000,1)} t.`;
-        else answer+=`\nPeso promedio proyectado: ${iaFmt(avg,2)} g.`;
-        answer+='\n\nSupuesto: sobrevivencia/población constante; la biomasa se escala por el aumento de peso.';
-        return {answer,kind:'scenario_projection',data:{weeks,growth:assumedGrowth,threshold:th,totalProjected:p.length,hitCount:hit.length,biomassKg:bio,table:hit.sort((a,b)=>b.peso_proyectado-a.peso_proyectado).slice(0,20).map(x=>({estanque:x.r.estanque,sitio:x.r.sitio,seccion:x.r.seccion,peso_actual_g:x.peso_actual,peso_proyectado_g:x.peso_proyectado,biomasa_proyectada_kg:x.biomasa_proyectada}))}};
-      }
+      const sc=iaScenarioProjectionAnswer(rows,question,growth,threshold);
+      if(sc) return sc;
     }
 
     // Proyección simple de talla a una semana: cálculo determinista, no IA.
@@ -5809,7 +5848,12 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
 
     try{
       loading.meta.textContent='Consulta analítica · usando Haiku…';
-      const res = await fetch(IA_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:resolvedQuestion,context,history:iaHistory.slice(-10),memory:iaMemory})});
+      // FIX 24-sep-2026: límite de 30 s para la consulta a Haiku (antes podía quedarse esperando).
+      const hCtrl=('AbortController' in window)?new AbortController():null;
+      const hTmr=hCtrl?setTimeout(()=>hCtrl.abort(),30000):null;
+      let res;
+      try{ res = await fetch(IA_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:resolvedQuestion,context,history:iaHistory.slice(-10),memory:iaMemory}),signal:hCtrl?hCtrl.signal:undefined}); }
+      finally{ if(hTmr) clearTimeout(hTmr); }
       if(!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json(); const answer = data.answer || 'No obtuve respuesta.';
       loading.bubble.textContent = answer; loading.bubble.classList.remove('loading');
