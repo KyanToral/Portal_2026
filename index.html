@@ -5888,5 +5888,61 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
 })();
 </script>
 
+<!-- ===== Fondo "Red de datos" del panel corporativo (opción D, 24-sep-2026) ===== -->
+<style id="cia-bg-css">
+  #selector-screen{position:relative; isolation:isolate; background:#060F1C}
+  #selector-screen > .cia-wrap{position:relative; z-index:1}
+  #cia-bg{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden}
+  #cia-bg > *{position:absolute; inset:0; width:100%; height:100%}
+  .cia-bg-base{background:
+      radial-gradient(1100px 560px at 50% -12%, rgba(46,125,210,.17), transparent 62%),
+      linear-gradient(180deg,#060F1C 0%,#0A1A30 55%,#050C17 100%)}
+  /* Tarjetas tipo cristal: dejan ver el fondo y se integran con él */
+  #selector-screen :is(.cia-kpi-card,.cia-pi-card,.cia-pi-empty,.cia-card){
+    background:linear-gradient(155deg, rgba(14,36,64,.62), rgba(8,22,42,.55));
+    border-color:rgba(140,190,240,.14);
+    -webkit-backdrop-filter:blur(14px) saturate(130%); backdrop-filter:blur(14px) saturate(130%);
+    box-shadow:0 10px 30px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  #selector-screen .cia-kpi-cost-card{background:linear-gradient(155deg, rgba(10,44,66,.66), rgba(8,26,46,.58)); border-color:rgba(32,215,255,.28)}
+  #selector-screen :is(.cia-pi-seg,.cia-pi-desde){background:rgba(10,26,46,.6); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px)}
+</style>
+<script id="cia-bg-js">
+(function(){
+  const scr=document.getElementById('selector-screen'); if(!scr) return;
+  const bg=document.createElement('div'); bg.id='cia-bg';
+  bg.innerHTML='<div class="cia-bg-base"></div><canvas id="cia-bg-canvas"></canvas>';
+  scr.insertBefore(bg, scr.firstChild);
+  const c=document.getElementById('cia-bg-canvas'), ctx=c.getContext('2d');
+  const reduce=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W=0,H=0,pts=[],raf=null;
+  const visible=()=>scr.offsetParent!==null || getComputedStyle(scr).display!=='none';
+  function size(){
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    W=c.clientWidth; H=c.clientHeight; if(!W||!H) return;
+    c.width=W*dpr; c.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    const n=Math.round(Math.min(90, W*H/16000));
+    pts=Array.from({length:n},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,r:Math.random()*1.4+.6,g:Math.random()<.12}));
+  }
+  function draw(){
+    raf=null;
+    if(!W||!H) return;
+    ctx.clearRect(0,0,W,H);
+    for(let i=0;i<pts.length;i++){ const a=pts[i];
+      for(let j=i+1;j<pts.length;j++){ const b=pts[j],dx=a.x-b.x,dy=a.y-b.y,d=dx*dx+dy*dy;
+        if(d<19600){ ctx.strokeStyle='rgba(90,170,230,'+(.28*(1-d/19600))+')'; ctx.lineWidth=.7; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); } }
+      ctx.fillStyle=a.g?'rgba(232,184,75,.8)':'rgba(120,200,240,.7)'; ctx.beginPath(); ctx.arc(a.x,a.y,a.r,0,Math.PI*2); ctx.fill();
+      if(!reduce){ a.x+=a.vx; a.y+=a.vy; if(a.x<0||a.x>W)a.vx*=-1; if(a.y<0||a.y>H)a.vy*=-1; }
+    }
+    // Solo sigue animando si el panel está a la vista (no en login, no con un reporte abierto, no con la pestaña oculta).
+    if(!reduce && !document.hidden && visible()) raf=requestAnimationFrame(draw);
+  }
+  function start(){ if(!visible()) return; if(c.clientWidth!==W||c.clientHeight!==H||!pts.length) size(); if(!raf) draw(); }
+  window.addEventListener('resize',()=>{ size(); if(!raf) draw(); });
+  document.addEventListener('visibilitychange',start);
+  new MutationObserver(start).observe(scr,{attributes:true,attributeFilter:['style']});
+  start();
+})();
+</script>
 </body>
 </html>
