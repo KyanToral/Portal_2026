@@ -642,7 +642,7 @@
       }
       if(end === -1) return null;
       try{ return Function('"use strict"; return (' + text.slice(start,end) + ')')(); }
-      catch(err){ return null; }
+      catch(err){ console.warn('[KPIs] No se pudo leer '+varName, err); return null; }
     }
     function ciaBuildHistories(filter){
       filter = filter || { site:'TODOS', ciclo:'GENERAL' };
@@ -680,7 +680,7 @@
             if(perHa.length >= 2) hist['Biomasa / Ha (kg) activa'] = {values:perHa, dates:perHaDates};
           }
         }
-      }catch(err){}
+      }catch(err){ console.warn('[KPIs] Serie de Resumen General no disponible', err); }
       try{
         if(window.REPORTS_DATA && window.REPORTS_DATA['cosechas_general']){
           const txt = ciaB64ToUtf8(window.REPORTS_DATA['cosechas_general']);
@@ -695,6 +695,8 @@
             const byDate = {};
             rawData.forEach(r=>{
               if(wanted && r.SITIO !== wanted) return;
+              // FIX 24-sep-2026: antes el filtro C1/C2 cambiaba la etiqueta pero no los datos.
+              if(filter.ciclo !== 'GENERAL' && String(r.CICLO) !== String(filter.ciclo)) return;
               const f = r['FECHA DE COSECHA'];
               if(!f) return;
               if(!byDate[f]) byDate[f] = { bio:0, ha:0, perHaSum:0, n:0 };
@@ -719,7 +721,7 @@
             if(perHaAcum.length >= 2) hist['Biomasa cosechada / Ha'] = {values:perHaAcum, dates:perHaAcumDates};
           }
         }
-      }catch(err){}
+      }catch(err){ console.warn('[KPIs] Serie de Cosechas General no disponible', err); }
       return hist;
     }
     // Se queda con las fechas <= "hasta" (ver el panel "como estaba" en esa fecha de reporte,
@@ -819,7 +821,7 @@
       if((m = txt.match(/^([+-]?\d[\d,.]*%)\s+(.*)$/))){
         return { badge:m[1], badgeColor:color, badgeBg:bg, badgeIcon:arrowIcon, sub:m[2], sub2:'', cumulative:false };
       }
-      if((m = txt.match(/^([\d,.]+)\s+(estanques cosechados|ha cosechadas)\s*(?:·\s*(.*))?$/))){
+      if((m = txt.match(/^([\d,.]+)\s+(estanques cosechados|registros cosechados|ha cosechadas)\s*(?:·\s*(.*))?$/))){
         return { badge:m[1], badgeColor:color, badgeBg:bg, badgeIcon:arrowIcon, sub:m[2], sub2:m[3]||'', cumulative:true };
       }
       if(txt.indexOf('Directo')===0){
@@ -937,7 +939,7 @@
             });
           }
         }
-      }catch(err){}
+      }catch(err){ console.warn('[KPIs] Peso/Incremento no disponible', err); }
       return result;
     }
     function ciaGapChart(values, dates, color, unit){
@@ -996,6 +998,7 @@
         window.ciaFilter.desde = data.fechas[data.fechas.length-1];
         window.ciaFilterDesdeReady = true;
       }
+      window.ciaFilterLatest = data.fechas.length ? data.fechas[data.fechas.length-1] : null;
       const sitesPresent = Object.keys(data.series).filter(k=>k!=='TODOS');
       const sitios = [['TODOS','Todos']].concat(sitesPresent.map(s=>[s, s==='SANTA FE'?'Sta Fe':(s.length>7?s.slice(0,6):s)]));
       const ciclos = [['GENERAL','General'],['1','C1'],['2','C2']];
@@ -1066,8 +1069,11 @@
       // Por eso estas dos tarjetas ignoran "desde" y solo respetan sitio/ciclo si el
       // usuario los elige explícitamente.
       const COSECHA_KPI_LABELS = ['Biomasa total cosechada', 'Biomasa cosechada / Ha'];
-      const filterActive = filter.site!=='TODOS' || filter.ciclo!=='GENERAL' || filter.desde!=='TODO';
-      const filterLabel = (filter.site==='TODOS'?'Todos los sitios':filter.site) + (filter.ciclo==='GENERAL'?'':(' · Ciclo '+filter.ciclo)) + (filter.desde==='TODO'?'':(' · al '+ciaFmtDate(filter.desde)));
+      // FIX 24-sep-2026: la fecha por defecto (= última semana) NO es un filtro; antes el panel
+      // siempre se consideraba "filtrado" y ocultaba el badge ▲ % vs. semana anterior.
+      const desdeActive = !!filter.desde && filter.desde!=='TODO' && filter.desde!==window.ciaFilterLatest;
+      const filterActive = filter.site!=='TODOS' || filter.ciclo!=='GENERAL' || desdeActive;
+      const filterLabel = (filter.site==='TODOS'?'Todos los sitios':filter.site) + (filter.ciclo==='GENERAL'?'':(' · Ciclo '+filter.ciclo)) + (desdeActive?(' · al '+ciaFmtDate(filter.desde)):'');
       const filterLabelSinFecha = (filter.site==='TODOS'?'Todos los sitios':filter.site) + (filter.ciclo==='GENERAL'?'':(' · Ciclo '+filter.ciclo));
       const hist = ciaBuildHistories(filter);
       let h = '';
@@ -1239,6 +1245,7 @@
 
   function openReport(key){
     const r = REPORTS[key];
+    if(!r){ console.warn('[openReport] Reporte no registrado:', key); return; }
     const frame = document.getElementById('report-frame');
     document.getElementById('report-title').innerHTML = r.title + '<span>Grupo Acuícola Santa Fe</span>';
     if(r.src){
@@ -1837,12 +1844,27 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
   // que se abre el portal, leyendo el reporte ya embebido en REPORTS_DATA — asi no
   // hace falta re-subirlo manualmente desde el panel admin para que el numero grande
   // de la tarjeta quede al dia.
-  try{
-    if(window.REPORTS_DATA && window.REPORTS_DATA['cosechas_general'] && typeof b64ToUtf8 === 'function'){
-      const liveUpdated = autoUpdateKpisFromUpload('cosechas_general', b64ToUtf8(window.REPORTS_DATA['cosechas_general']));
-      if(liveUpdated && window.renderKpis) window.renderKpis();
+  // FIX 24-sep-2026: antes solo se recalculaba Cosechas; Biomasa activa, kg/ha activa, sus % y
+  // Costo/kg quedaban con el número guardado en el HTML. Además se conserva la fecha de
+  // "Última actualización" (antes se sobrescribía con la fecha de HOY en cada apertura).
+  (function liveKpis(){
+    if(!window.REPORTS_DATA || typeof b64ToUtf8 !== 'function') return;
+    const keepUpdated = window.ciaMeta ? window.ciaMeta.updated : null;
+    let any = false;
+    ['resumen2026','cosechas_general','costos'].forEach(key=>{
+      if(!window.REPORTS_DATA[key]) return;
+      try{
+        if(autoUpdateKpisFromUpload(key, b64ToUtf8(window.REPORTS_DATA[key]))) any = true;
+        else console.warn('[KPIs en vivo] No se pudo recalcular desde', key);
+      }catch(err){ console.warn('[KPIs en vivo] Error recalculando desde', key, err); }
+    });
+    if(window.ciaMeta && keepUpdated !== null) window.ciaMeta.updated = keepUpdated;
+    if(any){
+      if(window.renderKpis) window.renderKpis();
+      if(window.renderMeta) window.renderMeta();
+      if(window.lucide) lucide.createIcons();
     }
-  }catch(err){}
+  })();
 
 })();
 </script>
@@ -2141,12 +2163,12 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     }
     if(end === -1) return null;
     try{ return Function('"use strict"; return (' + text.slice(start,end) + ')')(); }
-    catch(err){ return null; }
+    catch(err){ console.warn('[IA] No se pudo leer '+varName, err); return null; }
   }
 
   function decodeReport(key){
     if(!(window.REPORTS_DATA && window.REPORTS_DATA[key])) return null;
-    try{ return b64ToUtf8(window.REPORTS_DATA[key]); }catch(err){ return null; }
+    try{ return b64ToUtf8(window.REPORTS_DATA[key]); }catch(err){ console.warn('[IA] No se pudo decodificar '+key, err); return null; }
   }
 
   function buildContext(){
@@ -4094,7 +4116,12 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
   async function iaFetchHarvestProgram(){
     const now=Date.now();
     if(iaHarvestProgramCache.data && now-iaHarvestProgramCache.ts<300000) return iaHarvestProgramCache.data;
-    const res=await fetch(IA_HARVEST_DB,{method:'GET',cache:'no-store'});
+    const ctrl=('AbortController' in window)?new AbortController():null;
+    const tmr=ctrl?setTimeout(()=>ctrl.abort(),10000):null;
+    let res;
+    try{ res=await fetch(IA_HARVEST_DB,{method:'GET',cache:'no-store',signal:ctrl?ctrl.signal:undefined}); }
+    catch(e){ throw new Error(e && e.name==='AbortError' ? 'tiempo de espera agotado (10 s)' : (e && e.message) || 'sin conexión'); }
+    finally{ if(tmr) clearTimeout(tmr); }
     if(!res.ok) throw new Error('Firebase RTDB HTTP '+res.status);
     const raw=await res.json();
     iaHarvestProgramCache={ts:now,data:raw,error:null};
@@ -5713,6 +5740,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     }
 
     if(local){
+      sendBtn.disabled=false;
       loading.bubble.textContent=local.answer; loading.bubble.classList.remove('loading');
       loading.meta.textContent=(local.kind==='harvest_program_error'?'Consulta local Firebase':(local.kind==='harvest_program'?'Programa de Cosechas · Firebase · sin Haiku':'Cálculo local · sin consumo de Haiku'))+' · '+iaTime();
       try{
@@ -5723,7 +5751,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
         loading.meta.textContent+=' · tabla no renderizada';
       }
       iaHistory.push({role:'assistant',content:local.answer});
-      iaRememberQuestion(question,resolvedQuestion,local);
+      try{ iaRememberQuestion(question,resolvedQuestion,local); }catch(e){ console.warn('[IA] memoria', e); }
       iaSaveMemory();
       sendBtn.disabled=false; return;
     }
@@ -5731,6 +5759,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
     // Protección de costo: una consulta de dato del portal que no encontró ruta
     // local NO cae silenciosamente a Haiku.
     if(iaLooksLikePortalDataQuestion(resolvedQuestion)){
+      sendBtn.disabled=false;
       const guarded=iaSafeLocalMissAnswer(resolvedQuestion);
       loading.bubble.textContent=guarded.answer; loading.bubble.classList.remove('loading');
       loading.meta.textContent='Modo ahorro · Haiku NO utilizado · '+iaTime();
@@ -5772,7 +5801,7 @@ window.REPORTS_DATA = {"2027":"PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVzIj4KPGhlY
   input.addEventListener('input',function(){ this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,110)+'px'; });
   input.addEventListener('keydown',function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); window.iaSend(); } });
 
-  try{ updateContextDate(buildContext()); }catch(err){}
+  try{ updateContextDate(buildContext()); }catch(err){ console.warn('[IA] No se pudo preparar el contexto inicial', err); }
 })();
 </script>
 
