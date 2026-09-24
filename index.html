@@ -676,8 +676,8 @@
                 if(ha>0){ perHa.push(bioKg/ha); perHaDates.push(f); }
               }
             });
-            if(bio.length >= 2) hist['Biomasa total activa'] = {values:bio, dates:bioDates};
-            if(perHa.length >= 2) hist['Biomasa / Ha (kg) activa'] = {values:perHa, dates:perHaDates};
+            if(bio.length >= 1) hist['Biomasa total activa'] = {values:bio, dates:bioDates};
+            if(perHa.length >= 1) hist['Biomasa / Ha (kg) activa'] = {values:perHa, dates:perHaDates};
           }
         }
       }catch(err){ console.warn('[KPIs] Serie de Resumen General no disponible', err); }
@@ -712,13 +712,14 @@
             // de hectareas, lo que diluye artificialmente el kg/ha si se usa suma/suma.
             let accBio = 0, accPerHaSum = 0, accN = 0;
             const bioAcum = [], bioAcumDates = [], perHaAcum = [], perHaAcumDates = [];
+            let accHa = 0;
             fechas.forEach(f=>{
-              accBio += byDate[f].bio; accPerHaSum += byDate[f].perHaSum; accN += byDate[f].n;
+              accBio += byDate[f].bio; accPerHaSum += byDate[f].perHaSum; accN += byDate[f].n; accHa += byDate[f].ha;
               bioAcum.push(accBio/1000); bioAcumDates.push(f);
               if(accN>0){ perHaAcum.push(accPerHaSum/accN); perHaAcumDates.push(f); }
             });
-            if(bioAcum.length >= 2) hist['Biomasa total cosechada'] = {values:bioAcum, dates:bioAcumDates};
-            if(perHaAcum.length >= 2) hist['Biomasa cosechada / Ha'] = {values:perHaAcum, dates:perHaAcumDates};
+            if(bioAcum.length >= 1) hist['Biomasa total cosechada'] = {values:bioAcum, dates:bioAcumDates, n:accN, ha:accHa};
+            if(perHaAcum.length >= 1) hist['Biomasa cosechada / Ha'] = {values:perHaAcum, dates:perHaAcumDates, n:accN, ha:accHa};
           }
         }
       }catch(err){ console.warn('[KPIs] Serie de Cosechas General no disponible', err); }
@@ -904,14 +905,14 @@
               const i = entries.reduce((a,e)=>a+e.incr*e.pob,0)/tot;
               return [Math.round(p*10)/10, Math.round(i*10)/10];
             };
-            // TODOS -> GENERAL (todos los sitios, ambos ciclos) / 1 / 2 (todos los sitios, ese ciclo)
-            const todos = { GENERAL:{peso:[],incr:[]}, '1':{peso:[],incr:[]}, '2':{peso:[],incr:[]} };
+            // TODOS -> GENERAL (todos los sitios, todos los ciclos) / 1 / 2 / 3 (todos los sitios, ese ciclo)
+            const todos = { GENERAL:{peso:[],incr:[]}, '1':{peso:[],incr:[]}, '2':{peso:[],incr:[]}, '3':{peso:[],incr:[]} };
             fechas.forEach(f=>{
               const sites = (datesData[f]&&datesData[f].sites) || {};
               const gen = Object.values(sites).filter(d=>d.biomasa_total>0 && d.poblacion>0).map(d=>({peso:d.peso,incr:d.incr,pob:d.poblacion}));
               const rg = gen.length ? weighted(gen) : [null,null];
               todos.GENERAL.peso.push(rg[0]); todos.GENERAL.incr.push(rg[1]);
-              ['1','2'].forEach(ciclo=>{
+              ['1','2','3'].forEach(ciclo=>{
                 const ent = [];
                 Object.values(sites).forEach(d=>{
                   const c = (d.ciclos||{})[ciclo];
@@ -924,12 +925,12 @@
             result.series['TODOS'] = todos;
             // Por sitio -> GENERAL (ese sitio, ambos ciclos) / 1 / 2 (ese sitio, ese ciclo)
             sitesSet.forEach(site=>{
-              const bySite = { GENERAL:{peso:[],incr:[]}, '1':{peso:[],incr:[]}, '2':{peso:[],incr:[]} };
+              const bySite = { GENERAL:{peso:[],incr:[]}, '1':{peso:[],incr:[]}, '2':{peso:[],incr:[]}, '3':{peso:[],incr:[]} };
               fechas.forEach(f=>{
                 const d = ((datesData[f]&&datesData[f].sites)||{})[site];
                 if(d && d.biomasa_total>0){ bySite.GENERAL.peso.push(Math.round(d.peso*10)/10); bySite.GENERAL.incr.push(Math.round(d.incr*10)/10); }
                 else { bySite.GENERAL.peso.push(null); bySite.GENERAL.incr.push(null); }
-                ['1','2'].forEach(ciclo=>{
+                ['1','2','3'].forEach(ciclo=>{
                   const c = d && (d.ciclos||{})[ciclo];
                   if(c && c.biomasa_total>0){ bySite[ciclo].peso.push(Math.round(c.peso*10)/10); bySite[ciclo].incr.push(Math.round(c.incr*10)/10); }
                   else { bySite[ciclo].peso.push(null); bySite[ciclo].incr.push(null); }
@@ -999,9 +1000,10 @@
         window.ciaFilterDesdeReady = true;
       }
       window.ciaFilterLatest = data.fechas.length ? data.fechas[data.fechas.length-1] : null;
+      window.ciaPIAllDates = data.fechas.slice();
       const sitesPresent = Object.keys(data.series).filter(k=>k!=='TODOS');
       const sitios = [['TODOS','Todos']].concat(sitesPresent.map(s=>[s, s==='SANTA FE'?'Sta Fe':(s.length>7?s.slice(0,6):s)]));
-      const ciclos = [['GENERAL','General'],['1','C1'],['2','C2']];
+      const ciclos = [['GENERAL','General'],['1','C1'],['2','C2'],['3','C3']];
       // Lista real de fechas (semanas de reporte de "Resumen General por Sitio"), empezando desde la más antigua.
       const fechasOpts = [['TODO','Todo el histórico']].concat(data.fechas.map(f=>[f, ciaFmtDate(f)]));
       let fh = `<div class="cia-pi-seg" id="cia-pi-site">${sitios.map(([v,l])=>{
@@ -1049,7 +1051,10 @@
           return;
         }
         const min = Math.min(...clean), max = Math.max(...clean);
-        const chart = ciaGapChart(c.vals, c.dates, c.color, c.unit);
+        // La gráfica arranca en la primera semana con dato (ciclos nuevos como C3 no quedan
+        // comprimidos en la esquina derecha del eje de 27 semanas).
+        const i0 = c.vals.findIndex(v=>v!==null);
+        const chart = ciaGapChart(c.vals.slice(i0), (c.dates||[]).slice(i0), c.color, c.unit);
         h += `<div class="cia-pi-card">
           <div class="cia-kpi-label">${c.label.toUpperCase()}</div>
           <div class="cia-kpi-value">${cur.toFixed(1)}<span class="cia-kpi-unit">${c.unit}</span></div>
@@ -1079,7 +1084,7 @@
       let h = '';
       ciaKpis.forEach((k, idx)=>{
         const meta = ciaParseDelta(k);
-        const chartColor = k.tone==='warn' ? '#FF6B6B' : CIA_CHART_PALETTE[idx % CIA_CHART_PALETTE.length];
+        let chartColor = k.tone==='warn' ? '#FF6B6B' : CIA_CHART_PALETTE[idx % CIA_CHART_PALETTE.length];
         const isCosto = k.label === 'Costo / kg total';
         const isCosechaKpi = COSECHA_KPI_LABELS.indexOf(k.label) !== -1;
         const kpiFilterActive = isCosechaKpi ? (filter.site!=='TODOS' || filter.ciclo!=='GENERAL') : filterActive;
@@ -1100,9 +1105,43 @@
         let bigValue = k.value, badgeHtml = '', sub2Html = meta.sub2 ? `<div class="cia-kpi-sub2">${meta.sub2}</div>` : '';
         if(!isCosto && kpiFilterActive && series && series.values.length){
           const fmt = n => n.toLocaleString('es-MX', {minimumFractionDigits:dec, maximumFractionDigits:dec});
-          bigValue = fmt(series.values[series.values.length-1]);
-          badgeHtml = `<div class="cia-kpi-sub" style="margin-bottom:8px">${kpiFilterLabel}</div>`;
+          const vv = series.values, cur = vv[vv.length-1];
+          bigValue = fmt(cur);
+          // FIX 24-sep-2026: el badge también se calcula para el filtro (sitio / ciclo / fecha),
+          // con la misma lógica que la vista general, en vez de mostrar solo la etiqueta.
+          let fb = '', fsub = '', ftone = 'neutral';
+          if(isCosechaKpi){
+            const n = rawSeries && rawSeries.n, ha = rawSeries && rawSeries.ha;
+            if(k.label === 'Biomasa total cosechada' && n){ fb = n.toLocaleString('es-MX'); fsub = 'registros cosechados'; ftone = 'good'; }
+            else if(ha){ fb = ha.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2}); fsub = 'ha cosechadas'; ftone = 'good'; }
+          } else if(vv.length >= 2 && vv[vv.length-2]){
+            const pct = (cur / vv[vv.length-2] - 1) * 100;
+            ftone = pct > 0 ? 'good' : (pct < 0 ? 'warn' : 'neutral');
+            fb = (pct >= 0 ? '+' : '') + pct.toLocaleString('es-MX',{minimumFractionDigits:1,maximumFractionDigits:1}) + '%';
+            // Texto honesto de la comparación: si la semana previa con dato no es la inmediata
+            // anterior (p. ej. el reporte del 14-sep no trae desglose por ciclo) o el último dato
+            // no es de la fecha seleccionada (ciclo ya cosechado), se muestran las fechas reales.
+            const dl = series.dates[series.dates.length-1], dp = series.dates[series.dates.length-2];
+            const allF = (window.ciaPIAllDates || []);
+            const iL = allF.indexOf(dl), iP = allF.indexOf(dp);
+            const refDate = desdeActive ? filter.desde : window.ciaFilterLatest;
+            if(dl !== refDate) fsub = ciaFmtDate(dl) + ' vs. ' + ciaFmtDate(dp);
+            else if(iL > 0 && iP === iL-1) fsub = 'vs. semana anterior';
+            else fsub = 'vs. ' + ciaFmtDate(dp);
+          }
+          if(!fb && !isCosechaKpi && vv.length === 1){ fsub = 'solo 1 semana (' + ciaFmtDate(series.dates[0]) + ')'; }
+          if(fb){
+            const fColor = ftone==='warn' ? '#FF6B6B' : (ftone==='good' ? '#3ED598' : '#8FA3BE');
+            const fBg = ftone==='warn' ? 'rgba(255,107,107,.15)' : (ftone==='good' ? 'rgba(62,213,152,.15)' : 'rgba(143,163,190,.15)');
+            const fIcon = ftone==='warn' ? '&#9660;' : (ftone==='good' ? '&#9650;' : '&#8213;');
+            badgeHtml = `<div class="cia-kpi-badgerow"><span class="cia-kpi-badge" style="background:${fBg};color:${fColor}">${fIcon} ${fb}</span><span class="cia-kpi-sub">${fsub}</span></div><div class="cia-kpi-sub" style="margin-bottom:8px">${kpiFilterLabel}</div>`;
+            sub2Html = '';
+          } else {
+            badgeHtml = `<div class="cia-kpi-sub" style="margin-bottom:8px">${kpiFilterLabel}${fsub?' · '+fsub:''}</div>`;
+            sub2Html = '';
+          }
         } else if(!isCosto && kpiFilterActive && (!series || !series.values.length)){
+          bigValue = '—'; sub2Html = '';
           badgeHtml = `<div class="cia-kpi-sub" style="margin-bottom:8px">${kpiFilterLabel} · sin datos</div>`;
         } else {
           badgeHtml = meta.badge ? `<div class="cia-kpi-badgerow"><span class="cia-kpi-badge" style="background:${meta.badgeBg};color:${meta.badgeColor}">${meta.badgeIcon} ${meta.badge}</span>${meta.sub?`<span class="cia-kpi-sub">${meta.sub}</span>`:''}</div>` : (meta.sub?`<div class="cia-kpi-sub" style="margin-bottom:8px">${meta.sub}</div>`:'');
