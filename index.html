@@ -736,6 +736,8 @@
               });
               if(bioKg > 0){
                 bio.push(bioKg/1000); bioDates.push(f);
+                // Metodologia acordada (30-sep-2026): Biomasa/Ha activa = biomasa total / ha de superficie (suma/suma),
+                // para cualquier filtro de sitio/ciclo. NO usar promedio por estanque ni por seccion.
                 if(ha>0){ perHa.push(bioKg/ha); perHaDates.push(f); }
               }
             });
@@ -1604,6 +1606,7 @@ window.REPORTS_DATA = {"crec_alim_densidad":"PCFkb2N0eXBlIGh0bWw+CjxodG1sIGxhbmc
               ha += Number(s.has) || 0;
             }
           });
+          // Metodologia acordada (30-sep-2026): biomasa total / ha de superficie (suma/suma), no promedios.
           return { bioKg, ha, perHa: ha > 0 ? bioKg/ha : 0 };
         }
 
