@@ -1257,7 +1257,19 @@
         // Para las tarjetas de cosecha usamos la serie completa (sin truncar por "desde"),
         // así el punto más reciente del sparkline siempre es la última fecha real de cosecha
         // en el reporte, y se actualiza solo cada vez que se reincrusta la tarjeta.
-        const series = isCosto ? null : (isCosechaKpi ? rawSeries : ciaApplyDesde(rawSeries, filter.desde));
+        let series = isCosto ? null : (isCosechaKpi ? rawSeries : ciaApplyDesde(rawSeries, filter.desde));
+        // FIX 12-oct-2026: si el sitio/ciclo ya no tiene estanques activos en la fecha seleccionada
+        // (ej. Santa Fe C1 terminó el 7-sep, 4-H el 20-jul), la biomasa activa es 0 — antes se
+        // mostraba el último dato que existía como si siguiera activo.
+        const refDateKpi = desdeActive ? filter.desde : window.ciaFilterLatest;
+        let sinActivos = null;
+        if(!isCosto && !isCosechaKpi && kpiFilterActive && series && series.values.length && refDateKpi){
+          const lastD = series.dates[series.dates.length-1];
+          if(lastD < refDateKpi){
+            sinActivos = lastD;
+            series = { values: series.values.concat([0]), dates: series.dates.concat([refDateKpi]) };
+          }
+        }
         const dec = (k.value.split('.')[1] || '').length;
         let chart = ciaCardChart(series, chartColor, k.unit, dec);
         if(!chart && isCosto){
@@ -1269,7 +1281,11 @@
         // Si hay un filtro activo y sí hay serie filtrada, el valor grande refleja el filtro
         // en vez del total corporativo estático (para no mostrar un número que no corresponde).
         let bigValue = k.value, badgeHtml = '', sub2Html = meta.sub2 ? `<div class="cia-kpi-sub2">${meta.sub2}</div>` : '';
-        if(!isCosto && kpiFilterActive && series && series.values.length){
+        if(sinActivos){
+          const fmt0 = n => n.toLocaleString('es-MX', {minimumFractionDigits:dec, maximumFractionDigits:dec});
+          bigValue = fmt0(0); sub2Html = '';
+          badgeHtml = `<div class="cia-kpi-sub" style="margin-bottom:8px">${kpiFilterLabel} · sin estanques activos al ${ciaFmtDate(refDateKpi)} (último dato ${ciaFmtDate(sinActivos)})</div>`;
+        } else if(!isCosto && kpiFilterActive && series && series.values.length){
           const fmt = n => n.toLocaleString('es-MX', {minimumFractionDigits:dec, maximumFractionDigits:dec});
           const vv = series.values, cur = vv[vv.length-1];
           bigValue = fmt(cur);
