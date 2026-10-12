@@ -654,8 +654,8 @@
   <script>
   (function(){
     // ===== Datos de configuración — KPIs reales (17-ago vs. semana anterior 10-ago) =====
-    const ciaKpis = [{"label":"Biomasa total activa","value":"1,137.9","unit":"t","delta":"-3.2% vs. semana anterior (GENERAL)","icon":"shrimp","color":"#00C9A7","bg":"rgba(0,201,167,.14)","tone":"warn"},{"label":"Biomasa / Ha (kg) activa","value":"1,164","unit":"kg/ha","delta":"+8.4% vs. semana anterior (GENERAL)","icon":"biomassPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa total cosechada","value":"2,071.9","unit":"t","delta":"323 registros cosechados · acumulado 2026","icon":"harvestBiomass","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa cosechada / Ha","value":"1,389","unit":"kg/ha","delta":"1,547.88 ha cosechadas · SANTAFE, 4-H, OWEN 1, OWEN 2","icon":"harvestPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Costo / kg total","value":"64.46","unit":"MXN/kg","delta":"Directo $53.74 · Indirecto $10.72","icon":"dollarSign","color":"#F4A261","bg":"rgba(244,162,97,.14)","tone":"neutral"}];
-    const ciaMeta = {"updated":"12 oct 2026","coverage":"323 estanques cosechados · 1,547.88 ha · SANTAFE, 4-H, OWEN 1, OWEN 2"};
+    const ciaKpis = [{"label":"Biomasa total activa","value":"1,137.9","unit":"t","delta":"-3.2% vs. semana anterior (GENERAL)","icon":"shrimp","color":"#00C9A7","bg":"rgba(0,201,167,.14)","tone":"warn"},{"label":"Biomasa / Ha (kg) activa","value":"1,164","unit":"kg/ha","delta":"+8.4% vs. semana anterior (GENERAL)","icon":"biomassPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa total cosechada","value":"2,071.9","unit":"t","delta":"323 registros cosechados · acumulado 2026","icon":"harvestBiomass","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Biomasa cosechada / Ha","value":"1,339","unit":"kg/ha","delta":"1,547.88 ha cosechadas · SANTAFE, 4-H, OWEN 1, OWEN 2","icon":"harvestPerHa","color":"#4DD9E8","bg":"rgba(77,217,232,.14)","tone":"good"},{"label":"Costo / kg total","value":"64.46","unit":"MXN/kg","delta":"Directo $53.74 · Indirecto $10.72","icon":"dollarSign","color":"#F4A261","bg":"rgba(244,162,97,.14)","tone":"neutral"}];
+    const ciaMeta = {"updated":"12 oct 2026","coverage":"323 registros cosechados · 1,547.88 ha · SANTAFE, 4-H, OWEN 1, OWEN 2"};
 
     // key = mismo argumento que ya usa openReport(key) — no se toca la lógica existente
     const ciaReports = [
@@ -707,6 +707,29 @@
       try{ return Function('"use strict"; return (' + text.slice(start,end) + ')')(); }
       catch(err){ console.warn('[KPIs] No se pudo leer '+varName, err); return null; }
     }
+    // FIX 12-oct-2026: los sitios/semanas que no traen desglose por ciclo (Owen 1, Owen 2, 4-H y
+    // Santa Fe antes de que existiera el 2do ciclo) son 1er ciclo. Antes quedaban fuera del filtro C1:
+    // "Owen 1 · C1" decía "sin datos" y "Todos · C1" solo sumaba Santa Fe.
+    // Las semanas de un sitio que YA tenía desglose y en esa fecha no lo trae (ej. Santa Fe 14-sep) siguen sin dato.
+    function ciaFirstCicloDates(datesData){
+      const first = {};
+      Object.keys(datesData||{}).sort().forEach(f=>{
+        const s = (datesData[f] && datesData[f].sites) || {};
+        Object.keys(s).forEach(site=>{
+          const c = s[site] && s[site].ciclos;
+          if(c && Object.keys(c).length && !first[site]) first[site] = f;
+        });
+      });
+      return first;
+    }
+    function ciaCicloEntry(d, site, f, ciclo, first){
+      if(!d) return null;
+      const c = d.ciclos;
+      if(c && Object.keys(c).length) return c[ciclo] || null;
+      if(String(ciclo) === '1' && (!first[site] || f < first[site])) return d;
+      return null;
+    }
+    window.ciaFirstCicloDates = ciaFirstCicloDates; window.ciaCicloEntry = ciaCicloEntry;
     function ciaBuildHistories(filter){
       filter = filter || { site:'TODOS', ciclo:'GENERAL' };
       const hist = {};
@@ -716,18 +739,15 @@
           const datesData = ciaExtractVar(txt, 'DATES_DATA');
           if(datesData){
             const fechas = Object.keys(datesData).sort();
+            const firstC = ciaFirstCicloDates(datesData);
             const bio = [], bioDates = [], perHa = [], perHaDates = [];
             fechas.forEach(f=>{
               const sites = (datesData[f] && datesData[f].sites) || {};
-              let entries;
-              if(filter.site === 'TODOS'){
-                entries = Object.values(sites);
-              } else {
-                const d = sites[filter.site];
-                entries = d ? [d] : [];
-              }
+              const pairs = filter.site === 'TODOS' ? Object.entries(sites)
+                : (sites[filter.site] ? [[filter.site, sites[filter.site]]] : []);
+              let entries = pairs.map(p=>p[1]);
               if(filter.ciclo !== 'GENERAL'){
-                entries = entries.map(d => (d.ciclos||{})[filter.ciclo]).filter(Boolean);
+                entries = pairs.map(([sn,d]) => ciaCicloEntry(d, sn, f, filter.ciclo, firstC)).filter(Boolean);
               }
               let bioKg = 0, ha = 0;
               entries.forEach(s=>{
@@ -771,17 +791,16 @@
               byDate[f].n += 1;
             });
             const fechas = Object.keys(byDate).sort();
-            // "Biomasa cosechada / Ha" es el promedio simple de kg/ha por estanque
-            // cosechado (no biomasa total / ha total): un estanque resembrado y
-            // cosechado dos veces (2do ciclo) suma su hectarea otra vez en el total
-            // de hectareas, lo que diluye artificialmente el kg/ha si se usa suma/suma.
+            // FIX 12-oct-2026: "Biomasa cosechada / Ha" = biomasa total cosechada / ha cosechadas
+            // (suma/suma), la misma metodología del reporte de Cosechas General (1,339 kg/ha) y
+            // del dashboard de Costos. Antes era el promedio simple por estanque (1,389) y no cuadraba.
             let accBio = 0, accPerHaSum = 0, accN = 0;
             const bioAcum = [], bioAcumDates = [], perHaAcum = [], perHaAcumDates = [];
             let accHa = 0;
             fechas.forEach(f=>{
               accBio += byDate[f].bio; accPerHaSum += byDate[f].perHaSum; accN += byDate[f].n; accHa += byDate[f].ha;
               bioAcum.push(accBio/1000); bioAcumDates.push(f);
-              if(accN>0){ perHaAcum.push(accPerHaSum/accN); perHaAcumDates.push(f); }
+              if(accHa>0){ perHaAcum.push(accBio/accHa); perHaAcumDates.push(f); }
             });
             if(bioAcum.length >= 1) hist['Biomasa total cosechada'] = {values:bioAcum, dates:bioAcumDates, n:accN, ha:accHa};
             if(perHaAcum.length >= 1) hist['Biomasa cosechada / Ha'] = {values:perHaAcum, dates:perHaAcumDates, n:accN, ha:accHa};
@@ -960,6 +979,7 @@
           const datesData = ciaExtractVar(txt, 'DATES_DATA');
           if(datesData){
             const fechas = Object.keys(datesData).sort();
+            const firstC = ciaFirstCicloDates(datesData);
             result.fechas = fechas;
             const sitesSet = new Set();
             fechas.forEach(f=>{ Object.keys((datesData[f]&&datesData[f].sites)||{}).forEach(s=>sitesSet.add(s)); });
@@ -979,8 +999,8 @@
               todos.GENERAL.peso.push(rg[0]); todos.GENERAL.incr.push(rg[1]);
               ['1','2','3'].forEach(ciclo=>{
                 const ent = [];
-                Object.values(sites).forEach(d=>{
-                  const c = (d.ciclos||{})[ciclo];
+                Object.entries(sites).forEach(([sn,d])=>{
+                  const c = ciaCicloEntry(d, sn, f, ciclo, firstC);
                   if(c && c.biomasa_total>0 && c.poblacion>0) ent.push({peso:c.peso,incr:c.incr,pob:c.poblacion});
                 });
                 const rc = ent.length ? weighted(ent) : [null,null];
@@ -996,7 +1016,7 @@
                 if(d && d.biomasa_total>0){ bySite.GENERAL.peso.push(Math.round(d.peso*10)/10); bySite.GENERAL.incr.push(Math.round(d.incr*10)/10); }
                 else { bySite.GENERAL.peso.push(null); bySite.GENERAL.incr.push(null); }
                 ['1','2','3'].forEach(ciclo=>{
-                  const c = d && (d.ciclos||{})[ciclo];
+                  const c = ciaCicloEntry(d, site, f, ciclo, firstC);
                   if(c && c.biomasa_total>0){ bySite[ciclo].peso.push(Math.round(c.peso*10)/10); bySite[ciclo].incr.push(Math.round(c.incr*10)/10); }
                   else { bySite[ciclo].peso.push(null); bySite[ciclo].incr.push(null); }
                 });
@@ -1457,6 +1477,7 @@
     }
     document.getElementById('selector-screen').style.display = 'none';
     document.getElementById('report-screen').style.display = 'flex';
+    document.body.classList.add('ia-report-open');
   }
 
   function backToSelector(){
@@ -1465,10 +1486,12 @@
     frame.removeAttribute('srcdoc');
     document.getElementById('report-screen').style.display = 'none';
     document.getElementById('selector-screen').style.display = 'block';
+    document.body.classList.remove('ia-report-open');
   }
 
   function logout(){
     sessionStorage.removeItem(SESSION_KEY);
+    document.body.classList.remove('ia-report-open');
     document.getElementById('report-screen').style.display = 'none';
     document.getElementById('selector-screen').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
@@ -1669,16 +1692,14 @@ window.REPORTS_DATA = {"crec_alim_densidad":"PCFkb2N0eXBlIGh0bWw+CjxodG1sIGxhbmc
           const kBio = kpiByLabel['Biomasa total cosechada'];
           const kHa = kpiByLabel['Biomasa cosechada / Ha'];
           if(kBio){ kBio.value = fmtNum(bioKg/1000, 1); kBio.delta = estCount + ' registros cosechados · acumulado 2026'; }
-          // Promedio simple de kg/ha por estanque (no biomasa total / ha total):
-          // con estanques resembrados y cosechados 2 veces (2do ciclo), sumar sus
-          // hectareas otra vez en el denominador diluye el numero hacia abajo.
-          if(kHa && estCount > 0){ kHa.value = fmtNum(Math.round(perHaSum/estCount), 0); kHa.delta = fmtNum(ha,2) + ' ha cosechadas · SANTAFE, 4-H, OWEN 1, OWEN 2'; }
+          // FIX 12-oct-2026: biomasa total / ha cosechadas (suma/suma), igual que Cosechas General y Costos.
+          if(kHa && ha > 0){ kHa.value = fmtNum(Math.round(bioKg/ha), 0); kHa.delta = fmtNum(ha,2) + ' ha cosechadas · SANTAFE, 4-H, OWEN 1, OWEN 2'; }
           // "Datos consolidados" del pie (ciaMeta.coverage) usaba el mismo conteo,
           // pero solo se refrescaba la fecha (ciaMeta.updated) — nunca el texto en
           // sí, así que se quedaba con el conteo de estanques/ha de la última vez
           // que se editó a mano. Se recalcula aquí también (bug corregido 18-sep-2026).
           if(window.ciaMeta){
-            window.ciaMeta.coverage = estCount + ' estanques cosechados · ' + fmtNum(ha,2) + ' ha · SANTAFE, 4-H, OWEN 1, OWEN 2';
+            window.ciaMeta.coverage = estCount + ' registros cosechados · ' + fmtNum(ha,2) + ' ha · SANTAFE, 4-H, OWEN 1, OWEN 2';
           }
           updated = true;
         }
@@ -2247,14 +2268,72 @@ window.REPORTS_DATA = {"crec_alim_densidad":"PCFkb2N0eXBlIGh0bWw+CjxodG1sIGxhbmc
 
   @media (max-width:640px){
     #ia-panel{right:8px;bottom:8px;width:calc(100vw - 16px);height:calc(100vh - 16px);max-height:none;border-radius:20px}
-    #ia-fab{right:18px;bottom:18px}
+    #ia-fab{right:14px;bottom:14px}
     #ia-intro{padding-top:11px}
   }
+  /* FIX 12-oct-2026: botón IA más chico (antes 64px) y, dentro de un reporte, se sube y se vuelve
+     semitransparente para no tapar la barra de páginas / zoom de Power BI. Se puede arrastrar. */
+  #ia-fab{width:48px;height:48px;border-radius:16px;touch-action:none;-webkit-user-select:none;user-select:none}
+  #ia-fab .ia-fab-core{width:26px;height:26px;border-radius:9px;font-size:13px}
+  #ia-fab .ia-fab-dot{right:5px;top:5px;width:8px;height:8px}
+  body.ia-report-open #ia-fab{width:38px;height:38px;border-radius:13px;bottom:84px;opacity:.72}
+  body.ia-report-open #ia-fab:hover,body.ia-report-open #ia-fab:active{opacity:1}
+  body.ia-report-open #ia-fab .ia-fab-core{width:22px;height:22px;border-radius:7px;font-size:11px}
+  body.ia-report-open #ia-fab .ia-fab-dot{right:4px;top:4px;width:7px;height:7px;border-width:1.5px}
+  #ia-fab.ia-dragging{transition:none;opacity:1}
+  @media (max-width:640px){ body.ia-report-open #ia-fab{right:10px;bottom:76px} }
 </style>
 
-<button id="ia-fab" onclick="window.iaOpen()" title="Centro de Inteligencia Acuícola" aria-label="Abrir asistente de producción">
+<button id="ia-fab" onclick="if(window.iaFabWasDragged){window.iaFabWasDragged=false;return;}window.iaOpen()" title="Centro de Inteligencia Acuícola (puedes arrastrarlo)" aria-label="Abrir asistente de producción">
   <span class="ia-fab-core">IA</span><span class="ia-fab-dot"></span>
 </button>
+<script>
+// FIX 12-oct-2026: el botón IA se puede arrastrar (dedo o mouse) para moverlo si tapa algo.
+// Un toque normal lo sigue abriendo. La posición se recuerda solo en ese navegador.
+(function(){
+  const fab = document.getElementById('ia-fab'); if(!fab) return;
+  const KEY = 'sf_ia_fab_pos';
+  const clamp = (v,min,max)=>Math.min(max,Math.max(min,v));
+  function place(pos){
+    if(!pos) { fab.style.left=''; fab.style.top=''; fab.style.right=''; fab.style.bottom=''; return; }
+    const w = fab.offsetWidth||48, h = fab.offsetHeight||48;
+    fab.style.left = clamp(pos.x*window.innerWidth, 6, window.innerWidth-w-6) + 'px';
+    fab.style.top = clamp(pos.y*window.innerHeight, 6, window.innerHeight-h-6) + 'px';
+    fab.style.right = 'auto'; fab.style.bottom = 'auto';
+  }
+  let saved = null;
+  try{ saved = JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ saved = null; }
+  if(saved && isFinite(saved.x) && isFinite(saved.y)) place(saved);
+  let start = null, moved = false;
+  fab.addEventListener('pointerdown', e=>{
+    const r = fab.getBoundingClientRect();
+    start = { px:e.clientX, py:e.clientY, dx:e.clientX-r.left, dy:e.clientY-r.top };
+    moved = false;
+  });
+  window.addEventListener('pointermove', e=>{
+    if(!start) return;
+    if(!moved && Math.hypot(e.clientX-start.px, e.clientY-start.py) < 8) return;
+    moved = true; fab.classList.add('ia-dragging');
+    const w = fab.offsetWidth, h = fab.offsetHeight;
+    fab.style.left = clamp(e.clientX-start.dx, 6, window.innerWidth-w-6) + 'px';
+    fab.style.top = clamp(e.clientY-start.dy, 6, window.innerHeight-h-6) + 'px';
+    fab.style.right = 'auto'; fab.style.bottom = 'auto';
+    e.preventDefault();
+  }, {passive:false});
+  function end(){
+    if(!start) return;
+    if(moved){
+      window.iaFabWasDragged = true;
+      setTimeout(()=>{ window.iaFabWasDragged = false; }, 400);
+      const r = fab.getBoundingClientRect();
+      try{ localStorage.setItem(KEY, JSON.stringify({x:r.left/window.innerWidth, y:r.top/window.innerHeight})); }catch(e){}
+    }
+    fab.classList.remove('ia-dragging'); start = null;
+  }
+  window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end);
+  window.addEventListener('resize', ()=>{ let p=null; try{ p=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){} if(p) place(p); });
+})();
+</script>
 
 <div id="ia-panel" aria-live="polite">
   <div id="ia-head">
