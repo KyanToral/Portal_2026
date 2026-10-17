@@ -240,6 +240,7 @@
   .cia-who{font-size:12px; color:var(--muted)}
 
   .cia-kpi-strip{display:grid; grid-template-columns:repeat(5,1fr); gap:9px; margin-bottom:12px}
+  @media (min-width:1181px){ .cia-kpi-strip.sin-costo{grid-template-columns:repeat(4,1fr)} }
   .cia-pi-filters{display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; align-items:center}
   .cia-pi-weeks{background:var(--navy-card); color:var(--muted); border:1px solid rgba(255,255,255,.15); border-radius:9px; padding:6px 10px; font-size:10px; font-weight:700; font-family:'Inter',sans-serif; cursor:pointer}
   .cia-pi-desde{background:var(--navy-card); color:var(--muted); border:1px solid rgba(255,255,255,.15); border-radius:9px; padding:6px 10px; font-size:10px; font-weight:700; font-family:'Inter',sans-serif; cursor:pointer}
@@ -354,6 +355,7 @@
   .cia-exec-text .et2{font-size:10.5px; color:var(--muted); margin-top:1px}
 
   #cia-op-cards{grid-template-columns:repeat(5,minmax(0,1fr))}
+  @media (min-width:1181px){ #cia-op-cards.n4{grid-template-columns:repeat(4,minmax(0,1fr))} }
   @media (max-width:1180px){
     #cia-op-cards{grid-template-columns:1fr 1fr}
     .cia-tri{grid-template-columns:1fr 1fr}
@@ -1250,7 +1252,11 @@
       const filterLabelSinFecha = (filter.site==='TODOS'?'Todos los sitios':filter.site) + (filter.ciclo==='GENERAL'?'':(' · Ciclo '+filter.ciclo));
       const hist = ciaBuildHistories(filter);
       let h = '';
+      const ocultarCosto = (typeof window.portalRole === 'function') && window.portalRole() === 'SUPERVISOR';
+      const stripEl = document.getElementById('cia-kpi-strip');
+      if(stripEl) stripEl.classList.toggle('sin-costo', ocultarCosto);
       ciaKpis.forEach((k, idx)=>{
+        if(ocultarCosto && k.label === 'Costo / kg total') return;
         const meta = ciaParseDelta(k);
         let chartColor = k.tone==='warn' ? '#FF6B6B' : CIA_CHART_PALETTE[idx % CIA_CHART_PALETTE.length];
         const isCosto = k.label === 'Costo / kg total';
@@ -1368,10 +1374,15 @@
       </div>`;
     }
     function renderCards(){
-      document.getElementById('cia-op-cards').innerHTML = ciaReports.filter(r=>r.cat==='op').map(cardHTML).join('');
-      document.getElementById('cia-cosplan-cards').innerHTML = ciaReports.filter(r=>r.cat==='cos'||r.cat==='plan').map(cardHTML).join('');
+      const can = r => (typeof window.portalCanSee === 'function') ? window.portalCanSee(r.key) : true;
+      const opList = ciaReports.filter(r=>r.cat==='op' && can(r));
+      const opEl = document.getElementById('cia-op-cards');
+      opEl.innerHTML = opList.map(cardHTML).join('');
+      opEl.classList.toggle('n4', opList.length === 4);
+      document.getElementById('cia-cosplan-cards').innerHTML = ciaReports.filter(r=>(r.cat==='cos'||r.cat==='plan') && can(r)).map(cardHTML).join('');
+      if(window.lucide && lucide.createIcons){ try{ lucide.createIcons(); }catch(e){} }
     }
-    window.ciaKpis = ciaKpis; window.ciaMeta = ciaMeta; window.renderKpis = renderKpis; window.renderMeta = renderMeta; window.renderPesoIncr = renderPesoIncr; window.renderCiaFilterBar = renderCiaFilterBar;
+    window.ciaKpis = ciaKpis; window.ciaMeta = ciaMeta; window.renderKpis = renderKpis; window.renderMeta = renderMeta; window.renderCards = renderCards; window.renderPesoIncr = renderPesoIncr; window.renderCiaFilterBar = renderCiaFilterBar;
     renderCiaFilterBar(); renderKpis(); renderMeta(); renderCards(); renderPesoIncr();
     if(window.lucide) lucide.createIcons();
     // Vuelve a pintar los íconos cada vez que se muestra el selector (por si el DOM se re-renderiza)
@@ -1411,6 +1422,38 @@
     "JulioRW":     "Julio_rw",
     "Marcoadm":    "Marco_sf"
   };
+
+  // ===== Roles y permisos por tarjeta (17-oct-2026) =====
+  // DUENO (Kyanadm): todas las tarjetas + panel Admin (incrustar index) + "Usuarios y sesiones" / en línea.
+  // ADMINISTRADOR: todas las tarjetas, SIN panel Admin y SIN ver quién está en línea.
+  // SUPERVISOR: solo las tarjetas de SUPERVISOR_CARDS (sin Costos ni el KPI de Costo/kg).
+  // Un usuario que no esté en USER_ROLES se trata como SUPERVISOR (lo más restringido).
+  const USER_ROLES = {
+    "Kyanadm":     "DUENO",
+    "Migueladm":   "ADMINISTRADOR",
+    "Tadeoadm":    "ADMINISTRADOR",
+    "Martinadm":   "ADMINISTRADOR",
+    "Frankadm":    "ADMINISTRADOR",
+    "Reneadm":     "ADMINISTRADOR",
+    "Marcoadm":    "ADMINISTRADOR",
+    "Luisow1":     "SUPERVISOR",
+    "Luisow2":     "SUPERVISOR",
+    "Rochasf":     "SUPERVISOR",
+    "Tonysf":      "SUPERVISOR",
+    "Parrasf":     "SUPERVISOR",
+    "Silvestresf": "SUPERVISOR",
+    "Javiersf":    "SUPERVISOR",
+    "JulioRW":     "SUPERVISOR"
+  };
+  const SUPERVISOR_CARDS = ['powerbi','resumen2026','mapa_biomasa','prueba_pedregal','cosechas','cosechas_general','crec_alim_densidad','mapa_estanques_cosechados'];
+  function portalCurrentUser(){ try{ return sessionStorage.getItem("sf_report_auth") || ""; }catch(e){ return ""; } }
+  function portalRole(user){ return USER_ROLES[user || portalCurrentUser()] || "SUPERVISOR"; }
+  function portalCanSee(key, user){
+    const role = portalRole(user);
+    if(role === "DUENO" || role === "ADMINISTRADOR") return true;
+    return SUPERVISOR_CARDS.indexOf(key) !== -1;
+  }
+  window.portalRole = portalRole; window.portalCanSee = portalCanSee;
 
   const SESSION_KEY = "sf_report_auth";
   const REMEMBER_KEY = "sf_remember_user";
@@ -1466,6 +1509,8 @@
     document.getElementById('who-text').textContent = "Sesión: " + user;
     const adminBtn = document.getElementById('admin-btn');
     if(adminBtn) adminBtn.style.display = (user === 'Kyanadm') ? 'inline-flex' : 'none';
+    try{ if(window.renderCards) window.renderCards(); if(window.renderKpis) window.renderKpis(); }
+    catch(e){ console.warn('[permisos] No se pudieron redibujar las tarjetas', e); }
   }
 
   // Decodifica base64 respetando UTF-8 (evita "DÃ­a" en vez de "Día")
@@ -1479,6 +1524,7 @@
   function openReport(key){
     const r = REPORTS[key];
     if(!r){ console.warn('[openReport] Reporte no registrado:', key); return; }
+    if(!portalCanSee(key)){ console.warn('[openReport] Sin permiso para', key); return; }
     const frame = document.getElementById('report-frame');
     document.getElementById('report-title').innerHTML = r.title + '<span>Grupo Acuícola Santa Fe</span>';
     if(r.src){
@@ -2535,6 +2581,7 @@ window.REPORTS_DATA = {"prueba_pedregal":"PCFkb2N0eXBlIGh0bWw+CjxodG1sIGxhbmc9Im
   }
 
   function decodeReport(key){
+    if(key !== 'estanques_activos' && typeof window.portalCanSee === 'function' && !window.portalCanSee(key)) return null;
     if(!(window.REPORTS_DATA && window.REPORTS_DATA[key])) return null;
     try{ return b64ToUtf8(window.REPORTS_DATA[key]); }catch(err){ console.warn('[IA] No se pudo decodificar '+key, err); return null; }
   }
@@ -2877,6 +2924,10 @@ window.REPORTS_DATA = {"prueba_pedregal":"PCFkb2N0eXBlIGh0bWw+CjxodG1sIGxhbmc9Im
 
 
   // ==================== Router local híbrido: ahorra llamadas a Haiku ====================
+  function iaIsCostQuestion(q){
+    const n=String(q||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    return /\$|\b(costo|costos|costea|gasto|gastos|gastado|gastamos|gasta|pesos|mxn|dinero|precio|precios|inversion|invertido|nomina|presupuesto|importe|egreso|egresos|pagado|pagamos|directo|indirecto)\b/.test(n);
+  }
   function iaNormText(s){
     let n=String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
     // Normalizaciones de lenguaje común de granja.
@@ -6559,6 +6610,11 @@ window.REPORTS_DATA = {"prueba_pedregal":"PCFkb2N0eXBlIGh0bWw+CjxodG1sIGxhbmc9Im
   }
 
   async function iaLocalRouteAsync(ctx,question){
+    // 17-oct-2026: los supervisores no tienen acceso a costos. Si preguntan por costos/gastos,
+    // se responde con un aviso claro en vez de datos operativos (y nunca se envía a Haiku).
+    if(typeof window.portalRole==='function' && window.portalRole()==='SUPERVISOR' && iaIsCostQuestion(question)){
+      return { kind:'sin_permiso_costos', answer:'Tu usuario no tiene acceso a la información de costos. Si necesitas este dato, solicítalo a un administrador.' };
+    }
     // V7.35.1 — una proyección con crecimiento supuesto debe resolverse con los
     // estanques activos, no confundirse con el Programa de Cosechas de Firebase.
     // Ej.: "próximos estanques a cosechar dando 1.2 g/sem".
